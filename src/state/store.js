@@ -16,6 +16,7 @@ const initialState = {
     items: [],
     loading: false,
     error: null,
+    filter: 'all',
   },
 
   ui: {
@@ -35,27 +36,19 @@ function setState(patch) {
     ...state,
     ...patch,
   };
-
   notify();
 }
 
 function updateState(updater) {
   const nextState = updater(state);
-
-  if (!nextState) {
-    return;
-  }
-
+  if (!nextState) return;
   state = nextState;
   notify();
 }
 
 function subscribe(listener) {
   listeners.add(listener);
-
-  return () => {
-    listeners.delete(listener);
-  };
+  return () => listeners.delete(listener);
 }
 
 function notify() {

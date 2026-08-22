@@ -1,0 +1,21 @@
+NEW AXE NET members migration audit
+===================================
+Supabase public.members rows: 25
+Legacy Excel/CSV rows:        25
+Matched member_key rows:      25 / 25
+Cross-source nickname/role/enabled-status mismatches: 0
+
+Status: active 18, inactive 1, resigned 6
+Missing Discord linkage: 5
+  - 이옥순, 곽철곤, 달빛시아, 테스트, 재환
+Discord name with literal quote characters preserved: 1
+  - 호듀
+badge=admin while role!=admin (preserved as separate fields): 1
+  - 조창봉
+
+Excluded from NEW members import by design:
+- password
+- admin_token
+- admin_token_until
+
+Reason: credentials/tokens are not copied into the browser-facing member data model.
