@@ -20,16 +20,21 @@ import {
   fetchFundRecentLedger,
   fetchFundRequests,
   fetchFundSummary,
-  fetchMyFundProfile,
+  fetchAdminFundProfile,
+  fetchSessionFundProfile,
   rejectFundRequest,
   restoreFundLedgerEntry,
   setFundFeeRuleEnabled,
-  submitFundRequest,
+  submitAdminFundRequest,
+  submitSessionFundRequest,
   updateFundLedgerEntry,
 } from './fundService.js';
 import { renderFundView } from './fundView.js';
 
 const ADMIN_SECTIONS = new Set(['review', 'history', 'balance', 'feeRules', 'exemptions', 'integrity', 'fundMembers']);
+
+let lastFundAuthSignature = '';
+let fundIdentitySyncing = false;
 
 export async function initFundModule() {
   const root = document.querySelector('#module-root');
@@ -40,8 +45,18 @@ export async function initFundModule() {
     renderFundView(root, store.getState(), buildActions());
   };
 
-  store.subscribe(rerender);
+  store.subscribe((state) => {
+    rerender();
+    const signature = getFundAuthSignature(state.auth);
+    if (signature !== lastFundAuthSignature) {
+      lastFundAuthSignature = signature;
+      void syncFundIdentityFromAuth();
+    }
+  });
+
   await loadFundBase();
+  lastFundAuthSignature = getFundAuthSignature(store.getState().auth);
+  await syncFundIdentityFromAuth();
   rerender();
 }
 
@@ -94,29 +109,14 @@ function buildActions() {
       await loadPeriod(period);
     },
 
-    async onVerifyIdentity(memberKey, discordUserId) {
-      await verifyIdentity(memberKey, discordUserId);
-    },
-
-    onClearIdentity() {
+    onOpenLogin() {
       store.updateState((state) => ({
         ...state,
-        fund: {
-          ...state.fund,
-          identity: {
-            verified: false,
-            loading: false,
-            memberKey: '',
-            discordUserId: '',
-            profile: null,
-            error: null,
-          },
-          payment: {
-            ...state.fund.payment,
-            selectedPeriod: null,
-            error: null,
-            success: null,
-          },
+        auth: {
+          ...state.auth,
+          loginOpen: true,
+          loginMode: state.auth.admin ? 'admin' : 'member',
+          error: null,
         },
       }));
     },
@@ -134,6 +134,7 @@ function buildActions() {
           payment: {
             ...state.fund.payment,
             selectedPeriod: selected,
+            amount: selected?.weekly_fee ? String(selected.weekly_fee) : '',
             error: null,
             success: null,
           },
@@ -450,54 +451,107 @@ async function loadPeriod(period) {
   }
 }
 
-async function verifyIdentity(memberKey, discordUserId) {
-  store.updateState((state) => ({
-    ...state,
-    fund: {
-      ...state.fund,
-      identity: {
-        ...state.fund.identity,
-        loading: true,
-        memberKey,
-        discordUserId,
-        error: null,
-      },
-    },
-  }));
+function getFundAuthSignature(auth) {
+  if (auth?.admin?.member_key) return `admin:${auth.admin.member_key}`;
+  if (auth?.member?.member_key) return `member:${auth.member.member_key}`;
+  return 'guest';
+}
+
+async function fetchProfileForIdentity(identity) {
+  if (!identity?.memberKey) throw new Error('로그인 멤버 정보가 없습니다.');
+  if (identity.source === 'admin') return fetchAdminFundProfile(identity.memberKey);
+  if (identity.source === 'member') return fetchSessionFundProfile();
+  throw new Error('로그인이 필요합니다.');
+}
+
+async function syncFundIdentityFromAuth() {
+  if (fundIdentitySyncing) return;
+  fundIdentitySyncing = true;
 
   try {
-    if (!memberKey) throw new Error('닉네임을 선택하세요.');
-    if (!/^\d+$/.test(discordUserId)) throw new Error('Discord 사용자 ID는 숫자만 입력하세요.');
-    const profile = await fetchMyFundProfile(memberKey, discordUserId);
-    const selectedPeriod = profile?.periods?.find((item) => item.status === '미납' && item.request_status !== 'pending') ?? null;
+    const state = store.getState();
+    const auth = state.auth;
+    const source = auth.admin?.member_key ? 'admin' : auth.member?.member_key ? 'member' : null;
+    const memberKey = auth.admin?.member_key || auth.member?.member_key || '';
 
-    store.updateState((state) => ({
-      ...state,
+    if (!source || !memberKey) {
+      store.updateState((current) => ({
+        ...current,
+        fund: {
+          ...current.fund,
+          identity: {
+            verified: false,
+            loading: false,
+            source: null,
+            memberKey: '',
+            profile: null,
+            error: null,
+          },
+          payment: {
+            ...current.fund.payment,
+            selectedPeriod: null,
+            error: null,
+            success: null,
+          },
+        },
+      }));
+      return;
+    }
+
+    const existing = state.fund.identity;
+    if (existing.verified && existing.memberKey === memberKey && existing.source === source && existing.profile) {
+      return;
+    }
+
+    store.updateState((current) => ({
+      ...current,
       fund: {
-        ...state.fund,
+        ...current.fund,
+        identity: {
+          ...current.fund.identity,
+          verified: false,
+          loading: true,
+          source,
+          memberKey,
+          profile: null,
+          error: null,
+        },
+      },
+    }));
+
+    const profile = await fetchProfileForIdentity({ source, memberKey });
+    const selectedPeriod = profile?.periods?.find(
+      (item) => item.status === '미납' && item.request_status !== 'pending',
+    ) ?? null;
+
+    store.updateState((current) => ({
+      ...current,
+      fund: {
+        ...current.fund,
         identity: {
           verified: true,
           loading: false,
+          source,
           memberKey,
-          discordUserId,
           profile,
           error: null,
         },
         payment: {
-          ...state.fund.payment,
+          ...current.fund.payment,
           selectedPeriod,
+          amount: selectedPeriod?.weekly_fee ? String(selectedPeriod.weekly_fee) : '',
           error: null,
           success: null,
         },
       },
     }));
   } catch (error) {
-    store.updateState((state) => ({
-      ...state,
+    store.updateState((current) => ({
+      ...current,
       fund: {
-        ...state.fund,
+        ...current.fund,
         identity: {
-          ...state.fund.identity,
+          ...current.fund.identity,
           verified: false,
           loading: false,
           profile: null,
@@ -505,12 +559,14 @@ async function verifyIdentity(memberKey, discordUserId) {
         },
       },
     }));
+  } finally {
+    fundIdentitySyncing = false;
   }
 }
 
 async function submitPayment(values) {
   const identity = store.getState().fund.identity;
-  if (!identity.verified) return;
+  if (!identity.verified || !identity.memberKey) return;
 
   store.updateState((state) => ({
     ...state,
@@ -521,6 +577,8 @@ async function submitPayment(values) {
         submitting: true,
         error: null,
         success: null,
+        paymentMode: values.payment_mode || '공용계좌',
+        amount: String(values.amount || ''),
         evidenceUrl: values.evidence_url,
         memo: values.memo,
       },
@@ -528,12 +586,22 @@ async function submitPayment(values) {
   }));
 
   try {
-    const requestId = await submitFundRequest({
+    const payload = {
       member_key: identity.memberKey,
-      discord_user_id: identity.discordUserId,
-      ...values,
-    });
-    const profile = await fetchMyFundProfile(identity.memberKey, identity.discordUserId);
+      year: values.year,
+      month: values.month,
+      week: values.week,
+      amount: values.amount,
+      payment_mode: values.payment_mode || '공용계좌',
+      evidence_url: values.evidence_url || null,
+      memo: values.memo || null,
+    };
+
+    const requestId = identity.source === 'admin'
+      ? await submitAdminFundRequest(payload)
+      : await submitSessionFundRequest(payload);
+
+    const profile = await fetchProfileForIdentity(identity);
 
     store.updateState((state) => ({
       ...state,
@@ -546,6 +614,8 @@ async function submitPayment(values) {
           submitting: false,
           error: null,
           success: `제출 #${requestId}이 접수되었습니다. 관리자 검수 후 완료 처리됩니다.`,
+          paymentMode: '공용계좌',
+          amount: '',
           evidenceUrl: '',
           memo: '',
         },
@@ -712,7 +782,7 @@ async function refreshAllAfterMutation(message) {
   const identity = store.getState().fund.identity;
   if (identity.verified) {
     try {
-      const profile = await fetchMyFundProfile(identity.memberKey, identity.discordUserId);
+      const profile = await fetchProfileForIdentity(identity);
       store.updateState((current) => ({
         ...current,
         fund: {

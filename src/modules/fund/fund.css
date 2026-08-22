@@ -150,10 +150,15 @@
 .fund-status-badge--scheduled, .fund-status-badge--before { color: #8d97a4; }
 
 .fund-identity-card { display: grid; gap: 16px; max-width: 720px; padding: 22px; border: 1px solid #303844; border-radius: 12px; background: #171b21; }
-.fund-identity-card__intro span { color: #758295; font-size: 10px; font-weight: 800; letter-spacing: .13em; }
-.fund-identity-card__intro h3 { margin: 6px 0 6px; font-size: 18px; }
+.fund-identity-card--session { border-color: rgba(255,179,33,.16); background: linear-gradient(135deg, rgba(255,179,33,.035), transparent 48%), #111317; }
+.fund-identity-card__intro span { color: #b17d27; font-size: 10px; font-weight: 900; letter-spacing: .13em; }
+.fund-identity-card__intro h3 { margin: 6px 0 6px; color: #f7f2e9; font-size: 18px; }
 .fund-identity-card__intro p, .fund-identity-card__help { margin: 0; color: #7d8795; font-size: 10px; line-height: 1.6; }
-.fund-identity-form { display: grid; grid-template-columns: 1fr 1fr auto; align-items: end; gap: 10px; }
+.fund-identity-loading { padding: 10px 12px; border: 1px solid rgba(255,179,33,.12); border-radius: 8px; color: #a99c86; background: rgba(255,179,33,.025); font-size: 10px; }
+.fund-session-login-box { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 14px; border: 1px solid rgba(255,255,255,.07); border-radius: 10px; background: #0c0e11; }
+.fund-session-login-box > div { display: grid; gap: 4px; }
+.fund-session-login-box strong { color: #e9e4da; font-size: 12px; }
+.fund-session-login-box span { color: #747a83; font-size: 10px; }
 
 .fund-field { display: grid; gap: 6px; min-width: 0; }
 .fund-field > span { color: #7e8997; font-size: 9px; font-weight: 700; }
@@ -173,9 +178,11 @@
 .fund-text-button { padding: 0; border: 0; color: #9aa7b7; background: transparent; }
 
 .fund-member-strip { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; padding: 12px 14px; border: 1px solid #33413a; border-radius: 10px; background: #161d19; }
-.fund-member-strip > div { display: flex; align-items: baseline; gap: 9px; }
+.fund-member-strip--session { border-color: rgba(85,157,108,.22); background: rgba(32,70,44,.10); }
+.fund-member-strip > div:first-child { display: flex; align-items: baseline; gap: 9px; }
 .fund-member-strip span, .fund-member-strip small { color: #7f8b84; font-size: 9px; }
-.fund-member-strip strong { font-size: 13px; }
+.fund-member-strip strong { color: #f2eee6; font-size: 13px; }
+.fund-member-strip__secure { padding: 5px 8px; border: 1px solid rgba(76,178,111,.22); border-radius: 999px; color: #7edaa0; background: rgba(45,108,66,.10); font-size: 9px; font-weight: 850; }
 
 .fund-own-period-list { display: grid; gap: 7px; max-height: 580px; overflow-y: auto; }
 .fund-own-period { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 12px; border: 1px solid #303844; border-radius: 8px; color: #d6dce4; background: #14181e; text-align: left; }
@@ -190,10 +197,12 @@
 
 .fund-payment-form-card { align-self: start; }
 .fund-payment-form { display: grid; gap: 12px; }
+.fund-payment-form--legacy { gap: 13px; }
 .fund-payment-summary { display: grid; gap: 8px; padding: 12px; border: 1px solid #303844; border-radius: 9px; background: #14181e; }
 .fund-payment-summary > div { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .fund-payment-summary span { color: #7e8996; font-size: 9px; }
 .fund-payment-summary strong { font-size: 11px; }
+.fund-payment-fields-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
 .fund-info-box { padding: 10px 11px; border: 1px dashed #3d4855; border-radius: 8px; color: #86919e; background: #14181e; font-size: 9px; line-height: 1.6; }
 
 .fund-inline-error, .fund-inline-success { margin-bottom: 12px; padding: 11px 12px; border-radius: 8px; font-size: 10px; font-weight: 700; }
@@ -288,7 +297,8 @@
   .fund-overview-kpis, .fund-balance-row, .fund-two-column, .fund-payment-layout, .fund-settings-grid, .fund-balance-check-grid, .fund-form-grid, .fund-form-grid--four, .fund-setting-explain { grid-template-columns: 1fr; }
   .fund-field--wide { grid-column: auto; }
   .fund-week-grid { grid-template-columns: repeat(2, 1fr); }
-  .fund-identity-form { grid-template-columns: 1fr; }
+  .fund-session-login-box { align-items: stretch; flex-direction: column; }
+  .fund-payment-fields-grid { grid-template-columns: 1fr; }
   .fund-member-status-row { grid-template-columns: 28px 1fr 74px; }
   .fund-member-status-row > b { display: none; }
   .fund-history-toolbar { grid-template-columns: 1fr; }

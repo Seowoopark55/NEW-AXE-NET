@@ -1,4 +1,5 @@
 import { api } from '../../api/api.js';
+import { fetchMemberFundProfile, submitMemberFundRequest } from '../auth/memberAuthService.js';
 
 export async function fetchFundPeriods() {
   return api.rpc('get_fund_periods');
@@ -55,9 +56,46 @@ export async function submitFundRequest(values) {
     p_month: values.month,
     p_week: values.week,
     p_amount: values.amount,
-    p_payment_mode: '공용계좌',
+    p_payment_mode: values.payment_mode || '공용계좌',
     p_evidence_url: values.evidence_url || null,
     p_memo: values.memo || null,
+  });
+}
+
+
+export async function fetchSessionFundProfile() {
+  return fetchMemberFundProfile();
+}
+
+export async function submitSessionFundRequest(values) {
+  return submitMemberFundRequest(values);
+}
+
+async function fetchAdminMemberPrivate(memberKey) {
+  const rows = await api.select('members', {
+    columns: 'member_key,nickname,discord_user_id,discord_name,status',
+    filters: { member_key: memberKey },
+    limit: 1,
+  });
+
+  const member = rows?.[0] ?? null;
+  if (!member) throw new Error('관리자 계정과 연결된 멤버를 찾을 수 없습니다.');
+  if (member.status !== 'active') throw new Error('현재 활동 상태의 멤버만 공금 정보를 사용할 수 있습니다.');
+  if (!member.discord_user_id) throw new Error('Discord 계정연동 정보가 없습니다.');
+  return member;
+}
+
+export async function fetchAdminFundProfile(memberKey) {
+  const member = await fetchAdminMemberPrivate(memberKey);
+  return fetchMyFundProfile(member.member_key, member.discord_user_id);
+}
+
+export async function submitAdminFundRequest(values) {
+  const member = await fetchAdminMemberPrivate(values.member_key);
+  return submitFundRequest({
+    ...values,
+    member_key: member.member_key,
+    discord_user_id: member.discord_user_id,
   });
 }
 

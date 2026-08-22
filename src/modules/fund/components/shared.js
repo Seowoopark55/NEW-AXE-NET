@@ -21,52 +21,34 @@ export function renderPageHeader(title, description, extra = '') {
   `;
 }
 
-export function renderIdentityGate(identity, members, title = '내 정보 확인') {
-  const activeMembers = members.filter((member) => member.status === 'active');
-
+export function renderIdentityGate(identity, _members, title = '로그인이 필요합니다') {
   return `
-    <section class="fund-identity-card">
+    <section class="fund-identity-card fund-identity-card--session">
       <div class="fund-identity-card__intro">
-        <span>MEMBER CHECK</span>
+        <span>AXE ACCOUNT</span>
         <h3>${escapeHtml(title)}</h3>
-        <p>닉네임과 Discord 숫자 ID를 확인한 뒤 본인의 공금 정보만 보여줍니다.</p>
+        <p>사이트에 한 번 로그인하면 멤버 정보와 공금 계정연동을 자동으로 확인합니다.</p>
       </div>
 
+      ${identity.loading ? '<div class="fund-identity-loading">로그인 계정의 공금 정보를 확인하고 있습니다.</div>' : ''}
       ${identity.error ? `<div class="fund-inline-error">${escapeHtml(identity.error)}</div>` : ''}
 
-      <form class="fund-identity-form" data-fund-identity-form>
-        <label class="fund-field">
-          <span>닉네임</span>
-          <select name="member_key" required>
-            <option value="">선택</option>
-            ${activeMembers.map((member) => `
-              <option value="${escapeAttribute(member.member_key)}" ${identity.memberKey === member.member_key ? 'selected' : ''}>
-                ${escapeHtml(member.nickname)}
-              </option>
-            `).join('')}
-          </select>
-        </label>
-
-        <label class="fund-field">
-          <span>Discord 사용자 ID</span>
-          <input
-            type="text"
-            inputmode="numeric"
-            name="discord_user_id"
-            value="${escapeAttribute(identity.discordUserId)}"
-            placeholder="숫자 ID"
-            required
-          />
-        </label>
-
-        <button class="fund-primary-button" type="submit" ${identity.loading ? 'disabled' : ''}>
-          ${identity.loading ? '확인 중...' : '내 공금 확인'}
-        </button>
-      </form>
-
-      <div class="fund-identity-card__help">
-        Discord 표시 이름이 아니라 개발자 모드에서 확인하는 숫자 사용자 ID를 입력합니다.
-      </div>
+      ${identity.memberKey ? `
+        <div class="fund-session-login-box">
+          <div>
+            <strong>${identity.loading ? '로그인 계정을 확인하고 있습니다.' : '계정은 확인됐지만 공금 연결을 완료하지 못했습니다.'}</strong>
+            <span>${identity.loading ? '잠시만 기다려주세요.' : '위 오류 내용을 확인하거나 관리자에게 계정연동 상태를 문의하세요.'}</span>
+          </div>
+        </div>
+      ` : `
+        <div class="fund-session-login-box">
+          <div>
+            <strong>Discord 숫자 ID 입력이 필요 없습니다.</strong>
+            <span>기존 AXE NET 닉네임·비밀번호로 로그인하세요.</span>
+          </div>
+          <button class="fund-primary-button" type="button" data-fund-open-login>로그인</button>
+        </div>
+      `}
     </section>
   `;
 }
@@ -76,13 +58,13 @@ export function renderVerifiedMember(identity) {
   if (!member) return '';
 
   return `
-    <div class="fund-member-strip">
+    <div class="fund-member-strip fund-member-strip--session">
       <div>
-        <span>확인된 멤버</span>
+        <span>${identity.source === 'admin' ? '관리자 계정으로 확인됨' : '로그인 계정으로 확인됨'}</span>
         <strong>${escapeHtml(member.nickname)}</strong>
-        <small>${escapeHtml(member.discord_name || 'Discord 이름 없음')}</small>
+        <small>${escapeHtml(member.discord_name || 'AXE 멤버')}</small>
       </div>
-      <button class="fund-text-button" type="button" data-fund-clear-identity>다른 멤버 확인</button>
+      <div class="fund-member-strip__secure">자동 본인확인</div>
     </div>
   `;
 }

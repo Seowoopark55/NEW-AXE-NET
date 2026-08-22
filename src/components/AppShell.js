@@ -16,27 +16,33 @@ export function renderAppShell(root) {
         </div>
 
         <nav class="nav">
-          <button class="nav__item" type="button" data-nav-module="members">
-            멤버
-          </button>
-          <button class="nav__item" type="button" data-nav-module="fund">
-            공금
-          </button>
+          <button class="nav__item" type="button" data-nav-module="members">멤버</button>
+          <button class="nav__item" type="button" data-nav-module="fund">공금</button>
         </nav>
       </aside>
 
       <main class="main">
-        <header class="topbar">
-          <div class="topbar__identity">
-            <span class="topbar__eyebrow">AXE INTERNAL SYSTEM</span>
-            <h1>NEW AXE NET</h1>
-            <p>Supabase-first modular operations platform</p>
-          </div>
-
-          <div class="topbar__controls">
+        <div class="utility-bar" aria-label="시스템 및 계정 상태">
+          <div class="utility-bar__left">
             <div id="connection-status" class="connection-status"></div>
+          </div>
+          <div class="utility-bar__right">
             <div id="auth-root"></div>
           </div>
+        </div>
+
+        <header class="hero-banner">
+          <div class="hero-banner__logo">
+            <img src="/assets/axe-brand-mark.webp" alt="AXE" />
+          </div>
+          <div class="hero-banner__identity">
+            <span class="hero-banner__eyebrow">AXE COMPANY NETWORK</span>
+            <h1>NEW AXE NET</h1>
+            <p>AXE 내부 운영 시스템</p>
+          </div>
+          <div class="hero-banner__watermark" aria-hidden="true">AXE</div>
+          <div class="hero-banner__network" aria-hidden="true">NETWORK</div>
+          <div class="hero-banner__shine" aria-hidden="true"></div>
         </header>
 
         <section id="module-root" class="module-root"></section>
@@ -47,13 +53,9 @@ export function renderAppShell(root) {
   root.querySelectorAll('[data-nav-module]').forEach((button) => {
     button.addEventListener('click', () => {
       const moduleName = button.dataset.navModule;
-
       store.updateState((state) => ({
         ...state,
-        ui: {
-          ...state.ui,
-          activeModule: moduleName,
-        },
+        ui: { ...state.ui, activeModule: moduleName },
       }));
     });
   });
@@ -77,23 +79,19 @@ function renderNavigation(activeModule) {
 
 function renderConnectionStatus(system) {
   const root = document.querySelector('#connection-status');
-
   if (!root) return;
 
   if (system.checking) {
-    root.innerHTML = '<span class="status-pill">SUPABASE CHECKING</span>';
+    root.innerHTML = '<span class="status-pill"><i></i> SYSTEM CHECKING</span>';
     return;
   }
-
   if (system.connected) {
-    root.innerHTML = '<span class="status-pill status-pill--ok">SUPABASE CONNECTED</span>';
+    root.innerHTML = '<span class="status-pill status-pill--ok"><i></i> SYSTEM ONLINE</span>';
     return;
   }
-
   if (system.error) {
-    root.innerHTML = '<span class="status-pill status-pill--error">SUPABASE ERROR</span>';
+    root.innerHTML = '<span class="status-pill status-pill--error"><i></i> SYSTEM ERROR</span>';
     return;
   }
-
-  root.innerHTML = '<span class="status-pill">SUPABASE WAITING</span>';
+  root.innerHTML = '<span class="status-pill"><i></i> SYSTEM WAITING</span>';
 }

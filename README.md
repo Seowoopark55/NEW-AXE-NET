@@ -1,109 +1,111 @@
-# NEW AXE NET v1.8 — 월별현황 Legacy Density
+# NEW AXE NET v1.11.0 — Account Bridge + AXE Shell Parity
 
-기존 AXE NET 월별현황 캡처를 기준으로 화면 밀도와 상태표현을 다시 맞춘 버전입니다.
+기존 AXE NET을 기능/UX 명세로 삼아 NEW AXE NET에 **이식**하기 시작한 첫 패리티 번들입니다.
+이번 버전부터 작은 기능을 하나씩 새로 설계하는 방식이 아니라 기존 AXE NET의 운영 흐름을 화면 단위로 가져옵니다.
 
-## 핵심 변경
+## 이번 버전 핵심
 
-### 월별현황 폭/밀도
-- 월별현황 콘텐츠 최대폭을 약 920px로 축소
-- 주차 열 폭을 일정하게 고정
-- 멤버/주차/미납 정보가 한 덩어리처럼 읽히도록 간격 축소
-- 행 높이 축소
-- 상태 뱃지 크기 축소
-- 20,000원 금액을 상태 뱃지 내부에서 제거
-- 현재 주차 배경 강조를 최소화
+### 1. 상단 구조를 기존 AXE NET 방향으로 재설계
+- 로그인/시스템 상태를 배너 밖의 상단 유틸리티 바로 분리
+- 메인 AXE 배너를 184px 기준으로 확대
+- 로고 128px, `AXE COMPANY NETWORK / NEW AXE NET / AXE 내부 운영 시스템` 위계 적용
+- AXE 워터마크/NETWORK 장식과 절제된 골드 광택 적용
 
-### 기존 AXE NET 상태표현 복원
-승인 완료된 공금은 납부 계좌를 기준으로:
-- 공용계좌 → `공용`
-- 회사잔고 → `잔고`
+### 2. 일반 멤버 로그인 추가
+- 기존 AXE NET 닉네임 + 비밀번호를 그대로 사용
+- 기존 AXE NET Apps Script에서 비밀번호를 검증한 뒤 NEW AXE NET 서버 세션 생성
+- 브라우저 JavaScript가 읽을 수 없는 HttpOnly 세션 쿠키 사용
+- DB에는 세션 토큰 원문이 아니라 SHA-256 해시만 저장
+- 비밀번호는 NEW AXE NET DB에 저장하지 않음
 
-그 외:
-- 검수대기 → `검수`
-- 면제 → `면제`
-- 미납 → `미납`
+### 3. 공금납부 Discord 숫자 ID 입력 제거
+- 로그인한 멤버를 자동 제출자로 사용
+- Discord 사용자 ID는 Vercel 서버가 `new_axe_net.members`에서 내부 확인
+- 일반 사용자는 Discord 개발자 모드/숫자 ID를 알 필요가 없음
+- 기존 Supabase Auth 관리자는 `admin_session.member_key`로 자동 본인확인
 
-### 멤버 표시
-기존 AXE NET 방식처럼:
-- 닉네임
-- `회원 목록 기준 자동 공금대상`
-두 줄 구조로 표시합니다.
+### 4. 공금납부를 기존 AXE NET 흐름에 더 가깝게 변경
+- 내 미납 주차 자동 조회
+- 납부 방식: 공용계좌 / 회사잔고
+- 총 납부금액 입력
+- 증빙 링크
+- 메모
+- 제출 → 검수대기 → 관리자 승인 시 원장 반영
+- 내 제출 역시 로그인 계정 기준 자동 조회
 
-### 월 선택
-화살표식 월 이동 대신 기존 AXE NET에 가깝게 월 드롭다운을 사용합니다.
+> 증빙 스크린샷 직접 붙여넣기/파일 업로드와 분할납부는 다음 패리티 번들에서 기존 AXE NET 방식으로 이식합니다.
 
-### 상단
-월별현황에서는 공금 요약 카드 4개를 생략해 표까지 도달하는 세로 동선을 줄였습니다.
+---
 
-## 적용
-1. Supabase SQL Editor에서 `supabase/015_fund_monthly_legacy_density.sql` 전체 실행
-2. ZIP을 기존 NEW-AXE-NET 폴더에 덮어쓰기
-3. GitHub Desktop Commit
-4. Push
-5. Vercel 자동배포
+## 적용 순서
 
-## CSV
-추가 Import 없음.
+### 1) Supabase SQL 1회 실행
+Supabase → SQL Editor에서 아래 파일 전체를 실행합니다.
 
+`supabase/016_member_web_sessions.sql`
 
-## v1.8.1
-- 월별현황 가독성 보강
-- 제목/설명/월 선택 폰트 확대
-- 멤버명/주차 헤더/상태 뱃지 폰트 확대
-- 행 높이와 셀 패딩을 소폭 키워 너무 빽빽하지 않게 조정
-- 전체 밀도는 유지하면서 ‘자세히 봐야 하는’ 느낌을 완화
+기존 데이터 삭제/초기화는 하지 않습니다.
 
-추가 SQL 없음.
+### 2) Vercel 환경변수 1개 추가
+Vercel → Project → Settings → Environment Variables
 
+```text
+SUPABASE_SERVICE_ROLE_KEY=Supabase의 service_role secret key
+```
 
-## v1.8.2
-- 월별현황 데스크탑 가독성 2차 확대
-- 표 폭을 소폭 늘리고, 헤더/멤버명/상태 배지/주차 텍스트를 한 단계 더 키움
-- 행 높이와 셀 여백을 추가 확대
-- 추가 SQL 없음
+중요:
+- `VITE_` 접두사를 붙이지 않습니다.
+- GitHub에 커밋하지 않습니다.
+- 브라우저 코드에 넣지 않습니다.
 
+기존 환경변수는 그대로 유지합니다.
 
-## v1.8.3
-- 월별현황 CSS 정리본으로 재구성 (누적 덧붙임 정리)
-- 멤버명/상태 배지/주차 헤더 글씨 확대
-- 5주차 뒤 미납 열 잘림 완화, 가로 스크롤 부담 완화
-- 큰 글씨를 유지하면서 전체 표는 더 촘촘하게 재정렬
-- 추가 SQL 없음
+```text
+VITE_SUPABASE_URL=...
+VITE_SUPABASE_PUBLISHABLE_KEY=...
+```
 
+기존 AXE NET Apps Script 주소가 변경된 경우에만 선택적으로 추가합니다.
 
-## v1.8.4 — Monthly Compact Parity
-- 월별현황 마지막 `미납 횟수` 열 제거
-- 멤버명 아래 `회원 목록 기준 자동 공금대상` 문구 제거
-- 1주차와 멤버명, 주차와 주차 사이 간격 축소
-- 멤버명 폰트 확대
-- 공용/잔고/미납/검수/면제 상태 폰트 확대
-- 데스크탑에서 가로 스크롤이 생기지 않도록 테이블 폭 재설계
-- 월별현황 CSS 누적 override를 제거하고 한 블록으로 재정리
-- 추가 SQL 없음
+```text
+AXE_LEGACY_API_URL=https://script.google.com/macros/s/.../exec
+```
 
+미지정하면 v1.11.0에 현재 안정본 주소가 기본값으로 들어 있습니다.
 
-## v1.8.5
-- 월별현황 멤버명 폰트 추가 확대
-- 멤버명 컬럼 폭 소폭 보정
-- 추가 SQL 없음
+### 3) 파일 덮어쓰기 → Commit → Push
+ZIP 내용을 현재 NEW-AXE-NET 저장소에 덮어씁니다.
 
+### 4) Vercel 재배포 확인
+환경변수를 새로 추가한 뒤에는 새 Deployment가 생성되어야 합니다.
 
-## v1.9.0 — 월별현황 구조 리팩터링
-- v1.7~v1.8.x에서 fund.css에 누적되던 월별현황 override를 제거
-- 월별현황 전용 `views/overview.css`로 완전 분리
-- 멤버명은 generic `strong` selector 대신 `.fund-monthly__member-name` 명시 클래스 사용
-- 상태 역시 `.fund-monthly__status` 전용 클래스로 분리
-- 멤버명 20px / 상태 13px 기준으로 위계 재정리
-- 월별현황이 다른 공금 화면 CSS와 서로 덮어쓰지 않도록 구조 개선
-- 추가 SQL 없음
+---
 
+## 확인 순서
 
-## v1.10.0 — AXE Premium Theme 1차
-- 사용자가 제공한 AXE 로고/브랜드 이미지 기반 1차 시각 테마 적용
-- 사이드바 브랜드 영역과 상단 시스템 헤더 재설계
-- 블랙/차콜 + AXE 골드 중심의 전역 디자인 토큰 정리
-- 공금 헤더/탭/카드/버튼/폼/모달 공통 스타일을 단일 Premium Theme 블록으로 재구성
-- 월별현황 전용 CSS 전체 재작성: 상태칩, 현재 주차, hover, 표 계층 개선
-- 기존 AXE NET의 밀도와 운영성을 유지하면서 광택/골드 포인트를 절제해 고급화
-- 기능/DB 로직 변경 없음
-- 추가 SQL 없음
+1. 상단에서 `SYSTEM ONLINE`이 표시되는지 확인
+2. 로그인/관리자 표시가 큰 배너 밖 위쪽에 표시되는지 확인
+3. 배너가 기존보다 크게 표시되는지 확인
+4. 로그아웃 상태에서 `공금 → 공금납부` 선택
+5. `로그인` 클릭 → 기존 AXE NET 닉네임/비밀번호 입력
+6. 로그인 후 Discord 숫자 ID 입력창 없이 내 공금현황이 자동 표시되는지 확인
+7. 미납 주차 선택 → 공용계좌/회사잔고 선택 → 제출
+8. `내 제출`에서 방금 제출 건이 보이는지 확인
+9. 관리자 로그인 상태에서는 별도의 멤버 로그인 없이 관리자 연결 멤버의 공금정보가 자동 표시되는지 확인
+
+## 구조
+
+- `/api/member-login.js` — 기존 AXE NET 로그인 검증 → NEW 웹 세션 발급
+- `/api/member-session.js` — 세션 확인 / 로그아웃 / 내 공금 조회 / 공금 제출
+- `/server/memberSession.js` — service role 전용 서버 로직
+- `/src/modules/auth/memberAuthService.js` — 브라우저 멤버 세션 클라이언트
+- `/supabase/016_member_web_sessions.sql` — 서버 전용 웹 세션 원장
+- `/docs/AXE_NET_PARITY_PLAN.md` — 이후 이식 기준
+
+## 보안 기준
+
+- `SUPABASE_SERVICE_ROLE_KEY`는 서버 전용입니다.
+- 일반 멤버는 `member_web_sessions` 테이블을 직접 읽을 수 없습니다.
+- 멤버 세션 원문은 localStorage가 아니라 HttpOnly + SameSite 쿠키로 전달합니다.
+- 사용자 비밀번호는 NEW AXE NET DB에 저장하지 않습니다.
+- Discord 숫자 ID는 공금 본인확인에 내부적으로 쓰지만 UI에는 노출하지 않습니다.

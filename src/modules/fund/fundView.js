@@ -153,17 +153,8 @@ function bindFundEvents(root, state, actions) {
     actions.onWeekSelect?.({ year, month, week });
   });
 
-  root.querySelectorAll('[data-fund-clear-identity]').forEach((button) => {
-    button.addEventListener('click', () => actions.onClearIdentity?.());
-  });
-
-  root.querySelector('[data-fund-identity-form]')?.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    actions.onVerifyIdentity?.(
-      String(data.get('member_key') || ''),
-      String(data.get('discord_user_id') || '').trim(),
-    );
+  root.querySelectorAll('[data-fund-open-login]').forEach((button) => {
+    button.addEventListener('click', () => actions.onOpenLogin?.());
   });
 
   root.querySelectorAll('[data-payment-period]').forEach((button) => {
@@ -181,6 +172,7 @@ function bindFundEvents(root, state, actions) {
       month: Number(data.get('month')),
       week: Number(data.get('week')),
       amount: Number(data.get('amount')),
+      payment_mode: String(data.get('payment_mode') || '공용계좌'),
       evidence_url: String(data.get('evidence_url') || '').trim(),
       memo: String(data.get('memo') || '').trim(),
     });

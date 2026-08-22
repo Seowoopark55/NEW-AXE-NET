@@ -19,7 +19,7 @@ export function renderPaymentView(state) {
   if (!identity.verified || !identity.profile) {
     return `
       ${renderPageHeader('공금납부', '내 미납 주차를 확인한 뒤 필요한 주차의 공금을 제출합니다.')}
-      ${renderIdentityGate(identity, members.items, '공금납부를 위해 본인 확인')}
+      ${renderIdentityGate(identity, members.items, identity.loading ? '공금 정보를 확인하는 중입니다' : '공금납부를 위해 로그인')}
     `;
   }
 
@@ -31,7 +31,7 @@ export function renderPaymentView(state) {
     ?? null;
 
   return `
-    ${renderPageHeader('공금납부', '미납 주차를 선택하고 증빙을 제출하면 관리자 검수대기로 이동합니다.')}
+    ${renderPageHeader('공금납부', '로그인 계정의 미납 주차를 선택하고 증빙을 제출합니다.')}
     ${renderVerifiedMember(identity)}
 
     <div class="fund-payment-layout">
@@ -96,42 +96,59 @@ function renderPaymentForm(state, selected) {
     `;
   }
 
+  const amount = Number(payment.amount || selected.weekly_fee || 0) || selected.weekly_fee;
+  const paymentMode = payment.paymentMode === '회사잔고' ? '회사잔고' : '공용계좌';
+
   return `
-    <form class="fund-payment-form" data-fund-payment-request-form>
+    <form class="fund-payment-form fund-payment-form--legacy" data-fund-payment-request-form>
       <input type="hidden" name="year" value="${selected.year}" />
       <input type="hidden" name="month" value="${selected.month}" />
       <input type="hidden" name="week" value="${selected.week}" />
-      <input type="hidden" name="amount" value="${selected.weekly_fee}" />
 
       <div class="fund-payment-summary">
         <div><span>납부 주차</span><strong>${formatPeriodLabel(selected)}</strong></div>
-        <div><span>납부 금액</span><strong>${formatMoney(selected.weekly_fee)}</strong></div>
-        <div><span>입금 처리</span><strong>공용계좌</strong></div>
+        <div><span>주간 기준액</span><strong>${formatMoney(selected.weekly_fee)}</strong></div>
+        <div><span>처리 상태</span><strong>검수 후 반영</strong></div>
       </div>
 
-      <label class="fund-field">
-        <span>증빙 URL</span>
-        <input
-          type="url"
-          name="evidence_url"
-          maxlength="500"
-          value="${escapeAttribute(payment.evidenceUrl || '')}"
-          placeholder="이미지/증빙 링크 (선택)"
-        />
-      </label>
+      <div class="fund-payment-fields-grid">
+        <label class="fund-field">
+          <span>납부 방식</span>
+          <select name="payment_mode">
+            <option value="공용계좌" ${paymentMode === '공용계좌' ? 'selected' : ''}>공용계좌 전액</option>
+            <option value="회사잔고" ${paymentMode === '회사잔고' ? 'selected' : ''}>회사잔고 전액</option>
+          </select>
+        </label>
 
-      <label class="fund-field">
-        <span>메모</span>
-        <input
-          name="memo"
-          maxlength="300"
-          value="${escapeAttribute(payment.memo || '')}"
-          placeholder="관리자에게 전달할 내용 (선택)"
-        />
-      </label>
+        <label class="fund-field">
+          <span>총 납부금액</span>
+          <input type="number" step="1" min="1" name="amount" value="${escapeAttribute(amount)}" required />
+        </label>
+
+        <label class="fund-field fund-field--wide">
+          <span>증빙 링크</span>
+          <input
+            type="url"
+            name="evidence_url"
+            maxlength="500"
+            value="${escapeAttribute(payment.evidenceUrl || '')}"
+            placeholder="이미지/증빙 링크 (선택)"
+          />
+        </label>
+
+        <label class="fund-field fund-field--wide">
+          <span>메모</span>
+          <input
+            name="memo"
+            maxlength="300"
+            value="${escapeAttribute(payment.memo || '')}"
+            placeholder="관리자에게 전달할 내용 (선택)"
+          />
+        </label>
+      </div>
 
       <div class="fund-info-box">
-        제출만으로 납부 완료가 되지는 않습니다. 관리자가 확인해 승인하면 공금내역에 자동 등록되고 완료 상태로 바뀝니다.
+        제출자는 로그인 계정으로 자동 고정됩니다. Discord 숫자 ID는 서버에서 계정연동 정보를 확인하므로 직접 입력하지 않습니다.
       </div>
 
       <button class="fund-primary-button fund-primary-button--wide" type="submit" ${payment.submitting ? 'disabled' : ''}>

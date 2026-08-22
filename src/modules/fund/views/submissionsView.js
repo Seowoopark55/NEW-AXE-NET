@@ -18,7 +18,7 @@ export function renderSubmissionsView(state) {
   if (!identity.verified || !identity.profile) {
     return `
       ${renderPageHeader('내 제출', '내가 제출한 공금의 검수 상태와 관리자 처리 결과를 확인합니다.')}
-      ${renderIdentityGate(identity, members.items, '내 제출 확인')}
+      ${renderIdentityGate(identity, members.items, identity.loading ? '공금 정보를 확인하는 중입니다' : '내 제출을 보려면 로그인')}
     `;
   }
 
@@ -58,6 +58,7 @@ function renderSubmission(item) {
         ${item.reviewed_at ? `<span>${formatDateTime(item.reviewed_at)}</span>` : ''}
       </div>
 
+      ${item.payment_mode ? `<p>납부 방식 · ${escapeHtml(item.payment_mode)}</p>` : ''}
       ${item.memo ? `<p>메모 · ${escapeHtml(item.memo)}</p>` : ''}
       ${item.review_note ? `<p class="fund-submission-item__review">검수 메모 · ${escapeHtml(item.review_note)}</p>` : ''}
       ${item.evidence_url ? `<a href="${escapeHtml(item.evidence_url)}" target="_blank" rel="noopener noreferrer">증빙 보기</a>` : ''}
