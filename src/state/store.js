@@ -57,13 +57,14 @@ const initialState = {
 
     admin: {
       open: false,
-      tab: 'exemptions',
+      tab: 'ledger',
       loading: false,
       saving: false,
       error: null,
       message: null,
       exemptions: [],
       feeRules: [],
+      ledgerItems: [],
     },
   },
 

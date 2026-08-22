@@ -70,6 +70,33 @@ export async function fetchFundExemptions(period) {
   });
 }
 
+export async function fetchFundAdminLedger(limit = 50) {
+  return api.select('fund_ledger', {
+    columns: [
+      'id',
+      'member_key',
+      'nickname',
+      'year',
+      'month',
+      'week',
+      'entry_type',
+      'amount',
+      'status',
+      'memo',
+      'ledger_date',
+      'ledger_type',
+      'category',
+      'direction',
+      'account',
+      'approved_by_name',
+      'created_at',
+    ].join(','),
+    orderBy: 'ledger_date',
+    ascending: false,
+    limit,
+  });
+}
+
 export async function createFundExemption(values) {
   return api.rpc('create_fund_exemption', {
     p_member_key: values.member_key,
@@ -100,5 +127,37 @@ export async function setFundFeeRuleEnabled(ruleId, enabled) {
   return api.rpc('set_fund_fee_rule_enabled', {
     p_rule_id: ruleId,
     p_enabled: enabled,
+  });
+}
+
+export async function createFundPayment(values) {
+  return api.rpc('create_fund_payment', {
+    p_member_key: values.member_key,
+    p_year: values.year,
+    p_month: values.month,
+    p_week: values.week,
+    p_amount: values.amount,
+    p_account: values.account,
+    p_ledger_date: values.ledger_date || null,
+    p_memo: values.memo || null,
+  });
+}
+
+export async function createFundTransaction(values) {
+  return api.rpc('create_fund_transaction', {
+    p_direction: values.direction,
+    p_account: values.account,
+    p_amount: values.amount,
+    p_category: values.category,
+    p_ledger_date: values.ledger_date || null,
+    p_member_key: values.member_key || null,
+    p_memo: values.memo || null,
+  });
+}
+
+export async function cancelFundLedgerEntry(ledgerId, reason) {
+  return api.rpc('cancel_fund_ledger_entry', {
+    p_ledger_id: ledgerId,
+    p_reason: reason || null,
   });
 }

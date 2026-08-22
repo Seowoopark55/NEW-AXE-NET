@@ -1,8 +1,12 @@
 import { store } from '../../state/store.js';
 import {
+  cancelFundLedgerEntry,
   createFundExemption,
   createFundFeeRule,
+  createFundPayment,
+  createFundTransaction,
   disableFundExemption,
+  fetchFundAdminLedger,
   fetchFundExemptions,
   fetchFundFeeRules,
   fetchFundPeriods,
@@ -120,6 +124,35 @@ export async function initFundModule() {
             : '회비 규칙이 비활성화되었습니다.';
         });
       },
+
+      async onCreatePayment(values) {
+        if (!store.getState().auth.admin) return;
+
+        await runAdminMutation(async () => {
+          validatePayment(values);
+          await createFundPayment(values);
+          return '주간 공금 납부가 원장에 등록되었습니다.';
+        });
+      },
+
+      async onCreateTransaction(values) {
+        if (!store.getState().auth.admin) return;
+
+        await runAdminMutation(async () => {
+          validateTransaction(values);
+          await createFundTransaction(values);
+          return '공금 거래가 원장에 등록되었습니다.';
+        });
+      },
+
+      async onCancelLedger(ledgerId, reason) {
+        if (!store.getState().auth.admin) return;
+
+        await runAdminMutation(async () => {
+          await cancelFundLedgerEntry(ledgerId, reason);
+          return '원장 기록이 취소 처리되었습니다.';
+        });
+      },
     });
   };
 
@@ -213,6 +246,7 @@ async function refreshFundAfterAdminChange(message) {
     recentLedger,
     feeRules,
     exemptions,
+    ledgerItems,
   ] = await Promise.all([
     fetchFundPeriods(),
     fetchFundSummary(period),
@@ -220,6 +254,7 @@ async function refreshFundAfterAdminChange(message) {
     fetchFundRecentLedger(12),
     fetchFundFeeRules(),
     fetchFundExemptions(period),
+    fetchFundAdminLedger(50),
   ]);
 
   store.updateState((state) => ({
@@ -238,6 +273,7 @@ async function refreshFundAfterAdminChange(message) {
         message,
         feeRules: feeRules ?? [],
         exemptions: exemptions ?? [],
+        ledgerItems: ledgerItems ?? [],
       },
     },
   }));
@@ -259,9 +295,10 @@ async function loadFundAdminData(period) {
   }));
 
   try {
-    const [feeRules, exemptions] = await Promise.all([
+    const [feeRules, exemptions, ledgerItems] = await Promise.all([
       fetchFundFeeRules(),
       fetchFundExemptions(period),
+      fetchFundAdminLedger(50),
     ]);
 
     store.updateState((state) => ({
@@ -274,6 +311,7 @@ async function loadFundAdminData(period) {
           error: null,
           feeRules: feeRules ?? [],
           exemptions: exemptions ?? [],
+          ledgerItems: ledgerItems ?? [],
         },
       },
     }));
@@ -336,11 +374,51 @@ async function loadFundPeriod(period) {
   }
 }
 
+function validatePayment(values) {
+  const amount = Number(values.amount);
+
+  if (!values.member_key) {
+    throw new Error('납부 멤버를 선택하세요.');
+  }
+
+  if (!Number.isInteger(amount) || amount <= 0) {
+    throw new Error('납부 금액은 0원보다 큰 정수로 입력하세요.');
+  }
+}
+
+function validateTransaction(values) {
+  const amount = Number(values.amount);
+
+  if (!['수입', '지출', '조정'].includes(values.direction)) {
+    throw new Error('거래 유형을 선택하세요.');
+  }
+
+  if (!values.category.trim()) {
+    throw new Error('분류를 입력하세요.');
+  }
+
+  if (!Number.isInteger(amount) || amount === 0) {
+    throw new Error('금액은 0이 아닌 정수로 입력하세요.');
+  }
+
+  if (['수입', '지출'].includes(values.direction) && amount < 0) {
+    throw new Error('수입/지출 금액은 양수로 입력하세요.');
+  }
+}
+
 function formatFundAdminError(error) {
   const message = error?.message ?? String(error);
 
+  if (message.includes('fund_ledger_one_active_payment_idx')) {
+    return '이미 해당 멤버의 주차 납부 기록이 있습니다.';
+  }
+
+  if (message.includes('활성 납부 기록')) {
+    return '이미 해당 멤버의 주차 납부 기록이 있습니다.';
+  }
+
   if (message.includes('duplicate key value')) {
-    return '이미 같은 조건의 활성 설정이 존재합니다.';
+    return '이미 같은 조건의 활성 데이터가 존재합니다.';
   }
 
   if (message.includes('관리자 권한')) {

@@ -199,6 +199,60 @@ export function renderFundView(root, state, actions = {}) {
     });
   });
 
+  const paymentForm = root.querySelector('[data-fund-payment-form]');
+  paymentForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(paymentForm);
+    const selectedPeriod = fund.selectedPeriod;
+
+    if (!selectedPeriod) return;
+
+    actions.onCreatePayment?.({
+      member_key: String(formData.get('member_key') ?? ''),
+      year: selectedPeriod.year,
+      month: selectedPeriod.month,
+      week: selectedPeriod.week,
+      amount: Number(formData.get('amount')),
+      account: String(formData.get('account') ?? ''),
+      ledger_date: String(formData.get('ledger_date') ?? ''),
+      memo: String(formData.get('memo') ?? '').trim(),
+    });
+  });
+
+  const transactionForm = root.querySelector('[data-fund-transaction-form]');
+  transactionForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(transactionForm);
+
+    actions.onCreateTransaction?.({
+      direction: String(formData.get('direction') ?? ''),
+      account: String(formData.get('account') ?? ''),
+      amount: Number(formData.get('amount')),
+      category: String(formData.get('category') ?? '').trim(),
+      ledger_date: String(formData.get('ledger_date') ?? ''),
+      member_key: String(formData.get('member_key') ?? ''),
+      memo: String(formData.get('memo') ?? '').trim(),
+    });
+  });
+
+  root.querySelectorAll('[data-cancel-ledger]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const reason = window.prompt(
+        '취소 사유를 입력하세요. 사유 없이 취소하려면 빈칸으로 확인하세요.',
+        '',
+      );
+
+      if (reason === null) return;
+
+      actions.onCancelLedger?.(
+        Number(button.dataset.cancelLedger),
+        reason.trim(),
+      );
+    });
+  });
+
   const exemptionForm = root.querySelector('[data-fund-exemption-form]');
   exemptionForm?.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -261,7 +315,7 @@ function renderFundAdminModal(fund, memberItems) {
         <div>
           <span>FUND ADMIN</span>
           <h3>공금 관리</h3>
-          <p>면제와 주간 공금 규칙을 Supabase에 즉시 반영합니다.</p>
+          <p>납부 · 수입/지출/조정 · 면제 · 회비 규칙을 관리합니다.</p>
         </div>
 
         <button
@@ -275,7 +329,8 @@ function renderFundAdminModal(fund, memberItems) {
       </div>
 
       <div class="fund-admin-tabs">
-        ${renderAdminTab('exemptions', '면제 관리', admin.tab)}
+        ${renderAdminTab('ledger', '원장', admin.tab)}
+        ${renderAdminTab('exemptions', '면제', admin.tab)}
         ${renderAdminTab('feeRules', '회비 규칙', admin.tab)}
       </div>
 
@@ -299,12 +354,255 @@ function renderFundAdminModal(fund, memberItems) {
         }
 
         ${
-          admin.tab === 'feeRules'
-            ? renderFeeRulesAdmin(admin, period)
-            : renderExemptionsAdmin(admin, period, activeMembers)
+          admin.tab === 'ledger'
+            ? renderLedgerAdmin(admin, fund, activeMembers, memberItems)
+            : admin.tab === 'feeRules'
+              ? renderFeeRulesAdmin(admin, period)
+              : renderExemptionsAdmin(admin, period, activeMembers)
         }
       </div>
     </section>
+  `;
+}
+
+function renderLedgerAdmin(admin, fund, activeMembers, allMembers) {
+  const period = fund.selectedPeriod;
+  const weeklyFee = Number(fund.summary?.fee ?? 0);
+  const today = getLocalDateString();
+
+  return `
+    <div class="fund-admin-ledger-grid">
+      <section class="fund-admin-box">
+        <div class="fund-admin-section-head">
+          <div>
+            <h4>주간 공금 납부 등록</h4>
+            <p>${formatPeriodLabel(period)} · LIVE ENGINE 즉시 반영</p>
+          </div>
+        </div>
+
+        <form class="fund-admin-form fund-admin-form--plain" data-fund-payment-form>
+          <div class="fund-admin-form-grid">
+            <label class="member-edit-field">
+              <span>멤버</span>
+              <select name="member_key" required>
+                <option value="">선택</option>
+                ${activeMembers.map((member) => `
+                  <option value="${escapeAttribute(member.member_key)}">
+                    ${escapeHtml(member.nickname)}
+                  </option>
+                `).join('')}
+              </select>
+            </label>
+
+            <label class="member-edit-field">
+              <span>납부 금액</span>
+              <input
+                type="number"
+                name="amount"
+                min="1"
+                step="1000"
+                value="${weeklyFee}"
+                required
+              />
+            </label>
+
+            <label class="member-edit-field">
+              <span>계좌</span>
+              <select name="account">
+                <option value="공용계좌" selected>공용계좌</option>
+                <option value="회사잔고">회사잔고</option>
+              </select>
+            </label>
+
+            <label class="member-edit-field">
+              <span>처리일</span>
+              <input type="date" name="ledger_date" value="${today}" required />
+            </label>
+
+            <label class="member-edit-field fund-admin-form-grid__wide">
+              <span>메모</span>
+              <input
+                type="text"
+                name="memo"
+                maxlength="300"
+                placeholder="선택"
+              />
+            </label>
+          </div>
+
+          <div class="fund-admin-warning">
+            기존 AXE NET과 동일하게 0원보다 큰 active 납부 기록이 하나라도 있으면 해당 주차는 완료로 계산됩니다.
+          </div>
+
+          <button
+            class="fund-admin-primary"
+            type="submit"
+            ${admin.saving ? 'disabled' : ''}
+          >
+            ${admin.saving ? '처리 중...' : '납부 등록'}
+          </button>
+        </form>
+      </section>
+
+      <section class="fund-admin-box">
+        <div class="fund-admin-section-head">
+          <div>
+            <h4>수입 · 지출 · 조정</h4>
+            <p>공금 잔액에 직접 반영되는 일반 원장 항목</p>
+          </div>
+        </div>
+
+        <form class="fund-admin-form fund-admin-form--plain" data-fund-transaction-form>
+          <div class="fund-admin-form-grid">
+            <label class="member-edit-field">
+              <span>거래 유형</span>
+              <select name="direction">
+                <option value="지출" selected>지출</option>
+                <option value="수입">수입</option>
+                <option value="조정">조정</option>
+              </select>
+            </label>
+
+            <label class="member-edit-field">
+              <span>계좌</span>
+              <select name="account">
+                <option value="공용계좌" selected>공용계좌</option>
+                <option value="회사잔고">회사잔고</option>
+              </select>
+            </label>
+
+            <label class="member-edit-field">
+              <span>금액</span>
+              <input
+                type="number"
+                name="amount"
+                step="100"
+                placeholder="예: 21000"
+                required
+              />
+            </label>
+
+            <label class="member-edit-field">
+              <span>처리일</span>
+              <input type="date" name="ledger_date" value="${today}" required />
+            </label>
+
+            <label class="member-edit-field">
+              <span>관련 멤버</span>
+              <select name="member_key">
+                <option value="">없음</option>
+                ${allMembers.map((member) => `
+                  <option value="${escapeAttribute(member.member_key)}">
+                    ${escapeHtml(member.nickname)}
+                  </option>
+                `).join('')}
+              </select>
+            </label>
+
+            <label class="member-edit-field">
+              <span>분류</span>
+              <input
+                type="text"
+                name="category"
+                maxlength="100"
+                placeholder="예: 화약 구매 / 전쟁비 / 의뢰비"
+                required
+              />
+            </label>
+
+            <label class="member-edit-field fund-admin-form-grid__wide">
+              <span>메모</span>
+              <input
+                type="text"
+                name="memo"
+                maxlength="300"
+                placeholder="선택"
+              />
+            </label>
+          </div>
+
+          <div class="fund-admin-warning">
+            수입/지출은 양수로 입력합니다. 조정은 잔액 증가 시 양수, 감소 시 음수로 입력합니다.
+          </div>
+
+          <button
+            class="fund-admin-primary"
+            type="submit"
+            ${admin.saving ? 'disabled' : ''}
+          >
+            ${admin.saving ? '처리 중...' : '거래 등록'}
+          </button>
+        </form>
+      </section>
+    </div>
+
+    <div class="fund-admin-section-head fund-admin-ledger-heading">
+      <div>
+        <h4>최근 원장</h4>
+        <p>최근 50건 · 취소는 삭제가 아니라 cancelled로 보존</p>
+      </div>
+    </div>
+
+    <div class="fund-admin-ledger-list">
+      ${
+        admin.ledgerItems.length
+          ? admin.ledgerItems.map(renderAdminLedgerItem).join('')
+          : '<div class="fund-admin-empty">원장 내역이 없습니다.</div>'
+      }
+    </div>
+  `;
+}
+
+function renderAdminLedgerItem(item) {
+  return `
+    <article class="fund-admin-ledger-item ${item.status === 'cancelled' ? 'fund-admin-ledger-item--cancelled' : ''}">
+      <div class="fund-admin-ledger-item__top">
+        <div>
+          <strong>${escapeHtml(item.category || item.ledger_type || '공금')}</strong>
+          <span>
+            ${escapeHtml(item.nickname || item.account || '공용')}
+            · ${escapeHtml(item.direction || '')}
+            · ${escapeHtml(item.account || '')}
+          </span>
+        </div>
+
+        <b class="fund-ledger-amount fund-ledger-amount--${ledgerAmountType(item)}">
+          ${ledgerSign(item)}${formatMoney(Math.abs(Number(item.amount ?? 0)))}
+        </b>
+      </div>
+
+      <div class="fund-admin-ledger-item__bottom">
+        <div>
+          <span>${formatDate(item.ledger_date)}</span>
+          ${
+            item.year && item.month && item.week
+              ? `<span>${item.year}년 ${item.month}월 ${item.week}주차</span>`
+              : ''
+          }
+          <span>${item.status === 'active' ? 'active' : 'cancelled'}</span>
+        </div>
+
+        ${
+          item.status === 'active'
+            ? `
+              <button
+                class="fund-admin-danger"
+                type="button"
+                data-cancel-ledger="${item.id}"
+              >
+                취소
+              </button>
+            `
+            : '<span class="fund-admin-locked">취소됨</span>'
+        }
+      </div>
+
+      ${
+        item.memo
+          ? `<p class="fund-admin-ledger-item__memo">${escapeHtml(item.memo)}</p>`
+          : ''
+      }
+    </article>
   `;
 }
 
@@ -565,14 +863,6 @@ function renderStatusBadge(status) {
 }
 
 function renderLedgerItem(item) {
-  const amount = Number(item.amount ?? 0);
-  const sign =
-    item.direction === '지출'
-      ? '-'
-      : item.direction === '조정'
-        ? (amount >= 0 ? '+' : '')
-        : '+';
-
   return `
     <article class="fund-ledger-item">
       <div class="fund-ledger-item__main">
@@ -581,7 +871,7 @@ function renderLedgerItem(item) {
           <span>${escapeHtml(item.nickname || item.account || '공용')}</span>
         </div>
         <b class="fund-ledger-amount fund-ledger-amount--${ledgerAmountType(item)}">
-          ${sign}${formatMoney(Math.abs(amount))}
+          ${ledgerSign(item)}${formatMoney(Math.abs(Number(item.amount ?? 0)))}
         </b>
       </div>
       <div class="fund-ledger-item__meta">
@@ -590,6 +880,14 @@ function renderLedgerItem(item) {
       </div>
     </article>
   `;
+}
+
+function ledgerSign(item) {
+  if (item.direction === '지출') return '-';
+  if (item.direction === '조정') {
+    return Number(item.amount ?? 0) >= 0 ? '+' : '-';
+  }
+  return '+';
 }
 
 function ledgerAmountType(item) {
@@ -640,6 +938,13 @@ function formatDateTime(value) {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+function getLocalDateString() {
+  const now = new Date();
+  const offset = now.getTimezoneOffset();
+  const local = new Date(now.getTime() - offset * 60_000);
+  return local.toISOString().slice(0, 10);
 }
 
 function escapeHtml(value) {
