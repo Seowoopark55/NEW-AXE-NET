@@ -25,22 +25,44 @@ export function renderSubmissionsView(state) {
 }
 
 function renderSubmission(item) {
+  const evidence = item.evidence_url
+    ? `
+      <button
+        class="fund-submission-evidence"
+        type="button"
+        data-evidence-preview="${escapeAttribute(item.evidence_url)}"
+        data-evidence-label="${escapeAttribute(`${formatPeriodLabel(item)} 증빙`)}"
+      >
+        <img src="${escapeAttribute(item.evidence_url)}" alt="증빙 미리보기" />
+        <span>증빙 크게 보기</span>
+      </button>
+    `
+    : '<div class="fund-submission-evidence fund-submission-evidence--missing">증빙 없음</div>';
+
   return `
     <article class="fund-submission-item fund-submission-item--parity">
-      <div class="fund-submission-item__main">
-        <div><span>${formatPeriodLabel(item)}</span><strong>${formatMoney(item.amount)}</strong></div>
-        <span class="fund-request-pill fund-request-pill--${item.status}">${requestStatusLabel(item.status)}</span>
+      ${evidence}
+      <div class="fund-submission-item__body">
+        <div class="fund-submission-item__head">
+          <div>
+            <span class="fund-submission-period">${formatPeriodLabel(item)}</span>
+            <strong>${formatMoney(item.amount)}</strong>
+          </div>
+          <span class="fund-request-pill fund-request-pill--${item.status}">${requestStatusLabel(item.status)}</span>
+        </div>
+
+        <div class="fund-payment-breakdown">${paymentDetail(item)}</div>
+
+        <dl class="fund-submission-facts">
+          <div><dt>제출</dt><dd>${formatDateTime(item.created_at)}</dd></div>
+          ${item.proxy_admin_name ? `<div><dt>대리제출</dt><dd>${escapeHtml(item.proxy_admin_name)}</dd></div>` : ''}
+          ${item.reviewer ? `<div><dt>검수자</dt><dd>${escapeHtml(item.reviewer)}</dd></div>` : ''}
+          ${item.reviewed_at ? `<div><dt>검수일</dt><dd>${formatDateTime(item.reviewed_at)}</dd></div>` : ''}
+        </dl>
+
+        ${item.memo ? `<p class="fund-submission-note"><b>메모</b>${escapeHtml(item.memo)}</p>` : ''}
+        ${item.review_note ? `<p class="fund-submission-note fund-submission-item__review"><b>검수 메모</b>${escapeHtml(item.review_note)}</p>` : ''}
       </div>
-      <div class="fund-payment-breakdown">${paymentDetail(item)}</div>
-      ${item.evidence_url ? `<a class="fund-evidence-thumb" href="${escapeAttribute(item.evidence_url)}" target="_blank" rel="noopener noreferrer"><img src="${escapeAttribute(item.evidence_url)}" alt="증빙" /><span>증빙 크게 보기</span></a>` : ''}
-      <div class="fund-submission-item__meta">
-        <span>제출 ${formatDateTime(item.created_at)}</span>
-        ${item.proxy_admin_name ? `<span>대리제출 · ${escapeHtml(item.proxy_admin_name)}</span>` : ''}
-        ${item.reviewer ? `<span>검수 · ${escapeHtml(item.reviewer)}</span>` : ''}
-        ${item.reviewed_at ? `<span>${formatDateTime(item.reviewed_at)}</span>` : ''}
-      </div>
-      ${item.memo ? `<p>메모 · ${escapeHtml(item.memo)}</p>` : ''}
-      ${item.review_note ? `<p class="fund-submission-item__review">검수 메모 · ${escapeHtml(item.review_note)}</p>` : ''}
     </article>`;
 }
 

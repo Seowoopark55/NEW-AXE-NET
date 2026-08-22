@@ -72,7 +72,7 @@ function renderProxyBar(state) {
         <strong>${escapeHtml(auth.admin?.nickname || '관리자')}</strong>
         <small>관리자는 제출자를 선택할 수 있습니다.</small>
       </div>
-      <select data-fund-proxy-member ${fund.payment.proxyLoading ? 'disabled' : ''}>
+      <select class="fund-premium-select" data-fund-proxy-member ${fund.payment.proxyLoading ? 'disabled' : ''}>
         ${active.map((member) => `<option value="${escapeAttribute(member.member_key)}" ${member.member_key === currentKey ? 'selected' : ''}>${escapeHtml(member.nickname)}</option>`).join('')}
       </select>
     </div>
@@ -118,7 +118,7 @@ function renderPaymentForm(state, selected, profile) {
       <div class="fund-payment-fields-grid">
         <label class="fund-field">
           <span>납부 방식</span>
-          <select name="payment_mode" data-payment-mode>
+          <select class="fund-premium-select" name="payment_mode" data-payment-mode>
             <option value="공용계좌" ${mode === '공용계좌' ? 'selected' : ''}>공용계좌</option>
             <option value="회사잔고" ${mode === '회사잔고' ? 'selected' : ''}>회사잔고</option>
             <option value="분할납부" ${mode === '분할납부' ? 'selected' : ''}>분할납부</option>

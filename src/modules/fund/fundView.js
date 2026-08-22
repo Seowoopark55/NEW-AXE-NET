@@ -219,6 +219,15 @@ function bindFundEvents(root, state, actions) {
     });
   });
 
+  root.querySelectorAll('[data-evidence-preview]').forEach((button) => {
+    button.addEventListener('click', () => {
+      openEvidencePreview(
+        String(button.dataset.evidencePreview || ''),
+        String(button.dataset.evidenceLabel || '공금 증빙'),
+      );
+    });
+  });
+
   root.querySelectorAll('[data-request-filter]').forEach((button) => {
     button.addEventListener('click', () => actions.onRequestFilterChange?.(button.dataset.requestFilter));
   });
@@ -373,3 +382,43 @@ function renderShellMessage(title, message, error = false) {
     </section>
   `;
 }
+
+
+function openEvidencePreview(src, label = '공금 증빙') {
+  if (!src) return;
+
+  document.querySelector('[data-evidence-lightbox]')?.remove();
+
+  const overlay = document.createElement('div');
+  overlay.className = 'fund-evidence-lightbox';
+  overlay.dataset.evidenceLightbox = '';
+  overlay.innerHTML = `
+    <div class="fund-evidence-lightbox__backdrop" data-evidence-lightbox-close></div>
+    <section class="fund-evidence-lightbox__panel" role="dialog" aria-modal="true" aria-label="${label.replaceAll('"', '&quot;')}">
+      <header>
+        <div>
+          <span>EVIDENCE</span>
+          <strong>${label}</strong>
+        </div>
+        <button type="button" aria-label="닫기" data-evidence-lightbox-close>×</button>
+      </header>
+      <div class="fund-evidence-lightbox__image-wrap">
+        <img src="${src}" alt="${label.replaceAll('"', '&quot;')}" />
+      </div>
+    </section>
+  `;
+
+  const close = () => overlay.remove();
+  overlay.querySelectorAll('[data-evidence-lightbox-close]').forEach((element) => {
+    element.addEventListener('click', close);
+  });
+
+  const onKey = (event) => {
+    if (event.key !== 'Escape') return;
+    document.removeEventListener('keydown', onKey);
+    close();
+  };
+  document.addEventListener('keydown', onKey);
+  document.body.appendChild(overlay);
+}
+

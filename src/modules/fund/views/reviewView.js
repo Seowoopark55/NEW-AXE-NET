@@ -24,7 +24,7 @@ function renderRequest(item) {
   return `
     <article class="fund-review-item fund-review-item--parity ${pending ? 'fund-review-item--pending' : ''}">
       <div class="fund-review-item__content">
-        ${item.evidence_url ? `<a class="fund-review-evidence" href="${escapeAttribute(item.evidence_url)}" target="_blank" rel="noopener noreferrer"><img src="${escapeAttribute(item.evidence_url)}" alt="${escapeAttribute(item.nickname || '')} 증빙" /><span>증빙 원본 보기</span></a>` : '<div class="fund-review-evidence fund-review-evidence--missing">증빙 없음</div>'}
+        ${item.evidence_url ? `<button class="fund-review-evidence" type="button" data-evidence-preview="${escapeAttribute(item.evidence_url)}" data-evidence-label="${escapeAttribute(`${item.nickname || '멤버'} · ${formatPeriodLabel(item)} 증빙`)}"><img src="${escapeAttribute(item.evidence_url)}" alt="${escapeAttribute(item.nickname || '')} 증빙" /><span>증빙 크게 보기</span></button>` : '<div class="fund-review-evidence fund-review-evidence--missing">증빙 없음</div>'}
         <div class="fund-review-item__body">
           <div class="fund-review-item__head">
             <div><div class="fund-review-item__title"><strong>${escapeHtml(item.nickname || '멤버')}</strong><span class="fund-request-pill fund-request-pill--${item.status}">${requestStatusLabel(item.status)}</span></div><span>${formatPeriodLabel(item)} · ${paymentDetail(item)}</span></div>
