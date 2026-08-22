@@ -5,8 +5,14 @@ export function renderAppShell(root) {
     <div class="app-shell">
       <aside class="sidebar">
         <div class="brand">
-          <div class="brand__title">NEW AXE NET</div>
-          <div class="brand__subtitle">Modular System</div>
+          <div class="brand__mark">
+            <img src="/assets/axe-brand-mark.webp" alt="AXE" />
+          </div>
+          <div class="brand__copy">
+            <div class="brand__eyebrow">AXE NETWORK</div>
+            <div class="brand__title">NEW AXE NET</div>
+            <div class="brand__subtitle">Operations Console</div>
+          </div>
         </div>
 
         <nav class="nav">
@@ -21,9 +27,10 @@ export function renderAppShell(root) {
 
       <main class="main">
         <header class="topbar">
-          <div>
+          <div class="topbar__identity">
+            <span class="topbar__eyebrow">AXE INTERNAL SYSTEM</span>
             <h1>NEW AXE NET</h1>
-            <p>Supabase-first modular architecture</p>
+            <p>Supabase-first modular operations platform</p>
           </div>
 
           <div class="topbar__controls">

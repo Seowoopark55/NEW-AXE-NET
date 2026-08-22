@@ -1,26 +1,27 @@
-/* NEW AXE NET v1.9.0 - monthly overview isolated styles
-   월별현황은 다른 공금 UI와 selector를 공유하지 않는다.
-   이전 fund.css의 v1.7~v1.8.x 누적 override를 제거하고 이 파일 하나에서 관리한다. */
+/* NEW AXE NET v1.10.0 - AXE premium monthly overview
+   월별현황 전용 스타일. 공금 공통 테마와 분리하여 selector 충돌을 방지한다. */
 
 .fund-monthly {
-  width: min(940px, 100%);
+  width: min(980px, 100%);
 }
 
 .fund-monthly .fund-page-header {
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .fund-monthly .fund-page-header h2 {
-  margin: 0 0 5px;
-  font-size: 24px;
+  margin: 0 0 4px;
+  color: #f7f2e8;
+  font-size: 22px;
   font-weight: 900;
-  line-height: 1.1;
+  line-height: 1.12;
+  letter-spacing: -.025em;
 }
 
 .fund-monthly .fund-page-header p {
   margin: 0;
-  color: #a8a8a8;
-  font-size: 12px;
+  color: #858990;
+  font-size: 11px;
   line-height: 1.45;
 }
 
@@ -30,50 +31,79 @@
 
 .fund-monthly__month-select select {
   width: auto;
-  min-width: 146px;
-  height: 42px;
-  padding: 0 34px 0 13px;
-  border: 1px solid rgba(255,255,255,.10);
-  border-radius: 11px;
-  color: #f1f1f1;
-  background: #151515;
-  font-size: 13px;
+  min-width: 142px;
+  height: 39px;
+  padding: 0 32px 0 12px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 8px;
+  color: #f0ece4;
+  background: #0d0f12;
+  font-size: 12px;
   font-weight: 850;
   cursor: pointer;
 }
 
+.fund-monthly__month-select select:focus {
+  outline: none;
+  border-color: rgba(255,179,33,.34);
+  box-shadow: 0 0 0 2px rgba(255,179,33,.05);
+}
+
 .fund-monthly__summary {
+  position: relative;
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 9px;
-  min-height: 50px;
-  margin-bottom: 10px;
-  padding: 0 14px;
-  border: 1px solid rgba(255,181,46,.22);
-  border-radius: 12px;
-  background: rgba(255,181,46,.025);
+  min-height: 46px;
+  margin-bottom: 9px;
+  padding: 0 13px 0 15px;
+  overflow: hidden;
+  border: 1px solid rgba(255,179,33,.16);
+  border-radius: 9px;
+  background:
+    linear-gradient(90deg, rgba(255,179,33,.055), transparent 34%),
+    #0d0f12;
+}
+
+.fund-monthly__summary::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 2px;
+  background: linear-gradient(180deg, #ffc24b, #bb7612);
 }
 
 .fund-monthly__summary-title {
   flex: 0 0 auto;
-  color: #fff;
-  font-size: 17px;
-  font-weight: 950;
+  color: #fff1cd;
+  font-size: 15px;
+  font-weight: 900;
 }
 
 .fund-monthly__summary-text {
   overflow: hidden;
-  color: #8a8a8a;
-  font-size: 10px;
+  color: #73777e;
+  font-size: 9px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .fund-monthly__panel {
+  position: relative;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 13px;
-  background: rgba(12,12,12,.88);
+  border: 1px solid rgba(255,255,255,.075);
+  border-radius: 11px;
+  background: #0d0f12;
+  box-shadow: 0 16px 42px rgba(0,0,0,.14);
+}
+
+.fund-monthly__panel::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,179,33,.18), transparent 72%);
+  pointer-events: none;
 }
 
 .fund-monthly__scroll {
@@ -88,40 +118,37 @@
   border-collapse: collapse;
 }
 
-.fund-monthly__col-member {
-  width: 188px;
-}
-
-.fund-monthly__col-week {
-  width: auto;
-}
+.fund-monthly__col-member { width: 180px; }
+.fund-monthly__col-week { width: auto; }
 
 .fund-monthly__head-cell,
 .fund-monthly__member-cell,
 .fund-monthly__status-cell {
-  height: 51px;
-  padding: 6px 7px;
-  border-bottom: 1px solid rgba(255,255,255,.065);
+  height: 48px;
+  padding: 5px 6px;
+  border-bottom: 1px solid rgba(255,255,255,.05);
   vertical-align: middle;
 }
 
 .fund-monthly__head-cell {
-  height: 48px;
-  color: #898989;
-  background: rgba(255,255,255,.012);
+  height: 45px;
+  color: #777b82;
+  background: linear-gradient(180deg, rgba(255,255,255,.018), rgba(255,255,255,.006));
   text-align: center;
 }
 
 .fund-monthly__head-cell--member {
-  padding-left: 12px;
+  padding-left: 13px;
+  color: #777b82;
   text-align: left;
-  font-size: 10px;
+  font-size: 9px;
+  font-weight: 750;
 }
 
 .fund-monthly__week-title {
   display: block;
-  color: #ededed;
-  font-size: 14px;
+  color: #e9e5dc;
+  font-size: 13px;
   font-weight: 900;
   line-height: 1.05;
 }
@@ -129,144 +156,134 @@
 .fund-monthly__week-date {
   display: block;
   margin-top: 3px;
-  color: #737373;
-  font-size: 9px;
+  color: #676b72;
+  font-size: 8px;
   line-height: 1;
 }
 
 .fund-monthly__member-cell {
-  padding-left: 12px;
+  position: relative;
+  padding-left: 13px;
   text-align: left;
 }
 
 .fund-monthly__member-name {
   display: block;
-  color: #f7f7f7;
-  font-size: 20px;
+  color: #f4f0e8;
+  font-size: 17px;
   font-weight: 900;
   line-height: 1.05;
-  letter-spacing: -0.02em;
+  letter-spacing: -.025em;
 }
 
-.fund-monthly__status-cell {
-  text-align: center;
-}
+.fund-monthly__status-cell { text-align: center; }
 
 .fund-monthly__status {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 58px;
-  min-height: 30px;
-  padding: 0 11px;
-  border: 1px solid rgba(108,108,108,.42);
-  border-radius: 999px;
-  color: #d7d7d7;
-  background: rgba(255,255,255,.035);
-  font-size: 13px;
-  font-weight: 900;
+  min-width: 54px;
+  min-height: 26px;
+  padding: 0 9px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 6px;
+  color: #c5c8cc;
+  background: rgba(255,255,255,.025);
+  font-size: 11px;
+  font-weight: 880;
   line-height: 1;
+  letter-spacing: -.01em;
 }
 
 .fund-monthly__status--public {
-  border-color: rgba(52,125,193,.58);
-  color: #7cc3ff;
-  background: rgba(31,99,162,.14);
+  border-color: rgba(81,146,205,.28);
+  color: #8bc7ff;
+  background: linear-gradient(180deg, rgba(45,113,174,.13), rgba(26,72,112,.07));
 }
 
 .fund-monthly__status--company {
-  border-color: rgba(209,144,30,.58);
-  color: #ffc257;
-  background: rgba(184,120,18,.12);
+  border-color: rgba(225,153,37,.34);
+  color: #ffc75a;
+  background: linear-gradient(180deg, rgba(205,127,20,.14), rgba(126,76,12,.07));
 }
 
 .fund-monthly__status--done {
-  border-color: rgba(55,151,95,.55);
-  color: #75e5a2;
-  background: rgba(39,132,78,.12);
+  border-color: rgba(74,169,112,.28);
+  color: #8ce1ac;
+  background: rgba(48,132,81,.08);
 }
 
 .fund-monthly__status--pending {
-  border-color: rgba(185,157,58,.52);
-  color: #e5cc6b;
-  background: rgba(167,139,42,.10);
+  border-color: rgba(203,169,65,.30);
+  color: #e5ce79;
+  background: rgba(174,139,39,.075);
 }
 
 .fund-monthly__status--unpaid {
-  border-color: rgba(108,108,108,.42);
-  color: #d7d7d7;
-  background: rgba(255,255,255,.035);
+  border-color: rgba(197,83,77,.28);
+  color: #ff9289;
+  background: rgba(151,55,51,.065);
 }
 
 .fund-monthly__status--exempt {
-  border-color: rgba(96,96,96,.45);
-  color: #bdbdbd;
-  background: rgba(255,255,255,.025);
+  border-color: rgba(130,136,145,.22);
+  color: #aeb3ba;
+  background: rgba(110,116,124,.055);
 }
 
 .fund-monthly__status--future,
 .fund-monthly__status--muted {
-  border-color: rgba(75,75,75,.28);
-  color: #707070;
+  border-color: rgba(255,255,255,.055);
+  color: #666a70;
   background: rgba(255,255,255,.012);
 }
 
 .fund-monthly__head-cell.is-current-week {
-  box-shadow: inset 0 2px 0 rgba(255,181,46,.62);
-  background: rgba(255,181,46,.026);
+  box-shadow: inset 0 2px 0 rgba(255,179,33,.72);
+  background:
+    linear-gradient(180deg, rgba(255,179,33,.065), rgba(255,179,33,.014)),
+    rgba(255,255,255,.008);
 }
 
 .fund-monthly__status-cell.is-current-week {
-  background: rgba(255,181,46,.008);
+  background: rgba(255,179,33,.006);
+}
+
+.fund-monthly__table tbody tr {
+  transition: background .13s ease, box-shadow .13s ease;
 }
 
 .fund-monthly__table tbody tr:hover {
-  background: rgba(255,255,255,.012);
+  background: linear-gradient(90deg, rgba(255,179,33,.04), rgba(255,179,33,.008) 35%, transparent 72%);
+  box-shadow: inset 2px 0 0 rgba(255,179,33,.34);
 }
 
-.fund-monthly__table tbody tr:hover .fund-monthly__status-cell.is-current-week {
-  background: rgba(255,181,46,.022);
+.fund-monthly__table tbody tr:hover .fund-monthly__member-name {
+  color: #fff6e3;
 }
 
 .fund-monthly__empty {
   padding: 20px;
-  color: #777;
-  font-size: 12px;
+  color: #70747a;
+  font-size: 11px;
   text-align: center;
 }
 
 @media (max-width: 920px) {
-  .fund-monthly {
-    width: 100%;
-  }
-
-  .fund-monthly__scroll {
-    overflow-x: auto;
-  }
-
-  .fund-monthly__table {
-    min-width: 720px;
-  }
-
-  .fund-monthly__col-member {
-    width: 174px;
-  }
-
-  .fund-monthly__member-name {
-    font-size: 18px;
-  }
+  .fund-monthly { width: 100%; }
+  .fund-monthly__scroll { overflow-x: auto; }
+  .fund-monthly__table { min-width: 700px; }
+  .fund-monthly__col-member { width: 166px; }
+  .fund-monthly__member-name { font-size: 16px; }
 }
 
 @media (max-width: 680px) {
   .fund-monthly__summary {
     align-items: flex-start;
     flex-direction: column;
-    gap: 3px;
-    padding-top: 9px;
-    padding-bottom: 9px;
+    gap: 2px;
+    padding-top: 8px;
+    padding-bottom: 8px;
   }
-
-  .fund-monthly__summary-text {
-    white-space: normal;
-  }
+  .fund-monthly__summary-text { white-space: normal; }
 }

@@ -37,7 +37,8 @@ export function renderFundView(root, state, actions = {}) {
   root.innerHTML = `
     <section class="fund-workspace fund-workspace--axe">
       <div class="fund-page-head fund-page-head--legacy">
-        <div>
+        <div class="fund-page-head__copy">
+          <span class="fund-page-head__eyebrow">AXE FUND OPERATIONS</span>
           <h1>공금관리</h1>
           <p>증빙 제출, 검수, 기간 면제, 공금내역과 잔액 정합성을 통합 관리합니다.</p>
         </div>
