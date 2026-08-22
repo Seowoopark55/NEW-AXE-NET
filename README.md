@@ -86,3 +86,13 @@
 - 월별현황 멤버명 폰트 추가 확대
 - 멤버명 컬럼 폭 소폭 보정
 - 추가 SQL 없음
+
+
+## v1.9.0 — 월별현황 구조 리팩터링
+- v1.7~v1.8.x에서 fund.css에 누적되던 월별현황 override를 제거
+- 월별현황 전용 `views/overview.css`로 완전 분리
+- 멤버명은 generic `strong` selector 대신 `.fund-monthly__member-name` 명시 클래스 사용
+- 상태 역시 `.fund-monthly__status` 전용 클래스로 분리
+- 멤버명 20px / 상태 13px 기준으로 위계 재정리
+- 월별현황이 다른 공금 화면 CSS와 서로 덮어쓰지 않도록 구조 개선
+- 추가 SQL 없음

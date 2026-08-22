@@ -1,3 +1,4 @@
+import './overview.css';
 import {
   escapeHtml,
   formatMonthLabel,
@@ -13,34 +14,34 @@ export function renderOverviewView(state) {
   const todayKst = getKstDateString();
 
   return `
-    <div class="fund-overview-legacy">
+    <div class="fund-monthly">
       ${renderPageHeader(
         '월별현황',
         '월별 공금표에서 멤버별 납부·검수·면제 상태를 한 번에 확인합니다.',
         renderMonthPicker(fund.selectedMonth, fund.periods),
       )}
 
-      <section class="fund-month-strip">
-        <strong>${formatMonthLabel(fund.selectedMonth)}</strong>
-        <span>${renderMonthSummary(weeks)}</span>
+      <section class="fund-monthly__summary">
+        <strong class="fund-monthly__summary-title">${formatMonthLabel(fund.selectedMonth)}</strong>
+        <span class="fund-monthly__summary-text">${renderMonthSummary(weeks)}</span>
       </section>
 
-      <section class="fund-legacy-panel fund-legacy-panel--monthly">
-        <div class="fund-matrix-wrap">
-          <table class="fund-matrix fund-matrix--legacy">
+      <section class="fund-monthly__panel">
+        <div class="fund-monthly__scroll">
+          <table class="fund-monthly__table">
             <colgroup>
-              <col class="fund-col-member" />
-              ${weeks.map(() => '<col class="fund-col-week" />').join('')}
+              <col class="fund-monthly__col-member" />
+              ${weeks.map(() => '<col class="fund-monthly__col-week" />').join('')}
             </colgroup>
             <thead>
               <tr>
-                <th class="left">멤버명</th>
+                <th class="fund-monthly__head-cell fund-monthly__head-cell--member">멤버명</th>
                 ${weeks.map((week) => {
                   const current = isDateInsideWeek(todayKst, week);
                   return `
-                    <th class="${current ? 'is-current-week' : ''}">
-                      <strong>${Number(week.week)}주차</strong>
-                      <small>${shortRange(week.period_start, week.period_end)}</small>
+                    <th class="fund-monthly__head-cell ${current ? 'is-current-week' : ''}">
+                      <span class="fund-monthly__week-title">${Number(week.week)}주차</span>
+                      <span class="fund-monthly__week-date">${shortRange(week.period_start, week.period_end)}</span>
                     </th>
                   `;
                 }).join('')}
@@ -49,7 +50,7 @@ export function renderOverviewView(state) {
             <tbody>
               ${members.length
                 ? members.map((member) => renderMemberRow(member, weeks, todayKst)).join('')
-                : `<tr><td colspan="${weeks.length + 1}" class="fund-empty-state">공금 대상 멤버가 없습니다.</td></tr>`}
+                : `<tr><td colspan="${weeks.length + 1}" class="fund-monthly__empty">공금 대상 멤버가 없습니다.</td></tr>`}
             </tbody>
           </table>
         </div>
@@ -65,14 +66,14 @@ function renderMemberRow(member, weeks, todayKst) {
 
   return `
     <tr>
-      <td class="left fund-member-cell">
-        <strong>${escapeHtml(member.nickname)}</strong>
+      <td class="fund-monthly__member-cell">
+        <span class="fund-monthly__member-name">${escapeHtml(member.nickname)}</span>
       </td>
       ${weeks.map((week) => {
         const cell = cellMap.get(Number(week.week));
         const current = isDateInsideWeek(todayKst, week);
         return `
-          <td class="${current ? 'is-current-week' : ''}">
+          <td class="fund-monthly__status-cell ${current ? 'is-current-week' : ''}">
             ${renderMatrixStatus(cell)}
           </td>
         `;
@@ -83,15 +84,15 @@ function renderMemberRow(member, weeks, todayKst) {
 
 function renderMatrixStatus(cell) {
   if (!cell) {
-    return '<span class="fund-matrix-status muted">—</span>';
+    return '<span class="fund-monthly__status fund-monthly__status--muted">—</span>';
   }
 
   const display = displayStatus(cell);
   const cls = statusClass(display);
 
   return `
-    <span class="fund-matrix-status ${cls}">
-      <b>${escapeHtml(display)}</b>
+    <span class="fund-monthly__status fund-monthly__status--${cls}">
+      ${escapeHtml(display)}
     </span>
   `;
 }
@@ -137,7 +138,7 @@ function renderMonthPicker(month, periods = []) {
   }
 
   return `
-    <label class="fund-month-select">
+    <label class="fund-monthly__month-select">
       <select data-fund-month-select>
         ${months.map((item) => `
           <option
