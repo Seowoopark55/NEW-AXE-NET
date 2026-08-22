@@ -49,35 +49,66 @@ const initialState = {
     initialized: false,
     loading: false,
     error: null,
+
+    section: 'overview',
     periods: [],
     selectedPeriod: null,
+    selectedMonth: null,
+    monthOverview: null,
     summary: null,
     statusItems: [],
     recentLedger: [],
 
-    request: {
-      open: false,
+    identity: {
+      verified: false,
+      loading: false,
+      memberKey: '',
+      discordUserId: '',
+      profile: null,
+      error: null,
+    },
+
+    payment: {
+      selectedPeriod: null,
       submitting: false,
       error: null,
       success: null,
+      evidenceUrl: '',
+      memo: '',
     },
 
     admin: {
-      open: false,
-      tab: 'requests',
+      initialized: false,
       loading: false,
       saving: false,
       error: null,
       message: null,
-      exemptions: [],
-      feeRules: [],
-      ledgerItems: [],
+
       requests: [],
+      requestFilter: 'pending',
+
+      ledgerItems: [],
+      historyFilters: {
+        search: '',
+        type: 'all',
+        account: 'all',
+        status: 'active',
+        month: 'all',
+      },
 
       ledgerEditor: {
         open: false,
         itemId: null,
       },
+
+      entryCreator: {
+        open: false,
+        mode: 'payment',
+      },
+
+      exemptions: [],
+      feeRules: [],
+      balanceChecks: [],
     },
   },
 

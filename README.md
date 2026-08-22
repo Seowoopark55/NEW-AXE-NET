@@ -1,71 +1,96 @@
-# NEW AXE NET v1.4
+# NEW AXE NET v1.5 — 공금 운영 흐름 재설계
 
-공금 원장 운영 관리 고도화 버전입니다.
+이번 버전은 기능 하나를 더 붙이는 버전이 아니라, 지금까지 만든 공금 기능을 **기존 AXE NET의 실제 운영 흐름 중심으로 재배치**한 버전입니다.
 
-## 추가 기능
+## 새 공금 메뉴
+일반:
+- 월별현황
+- 공금납부
+- 내 제출
 
-### 원장 수정
-관리자 `공금 관리 → 원장`에서 active 원장에 `수정` 버튼이 생깁니다.
+관리자 추가:
+- 검수대기
+- 공금내역
+- 잔액점검
+- 공금설정
 
-주간 공금 납부:
-- 금액
-- 계좌
-- 처리일
-- 메모
+기존 개발자 명칭인 `원장`, `회비 규칙`, `공금 관리`를 메인 UI에서 제거했습니다.
+DB 내부 테이블/함수명은 안정성을 위해 그대로 유지합니다.
 
-수정 가능.
+## 월별현황
+- 월 단위 주차 카드
+- 완료 / 미납 / 면제 / 검수대기 건수
+- 공용계좌 / 회사잔고 / 총 잔액
+- 주차 선택 → 해당 주차 멤버 현황
+- 최근 공금내역
 
-멤버/납부 주차는 LIVE ENGINE의 상태 계산 기준이므로 잠급니다.
-잘못된 멤버/주차는 해당 원장을 삭제하고 올바르게 다시 등록합니다.
+## 공금납부
+- 닉네임 + Discord 숫자 ID로 본인 확인
+- 최근 주차별 본인 납부 상태
+- 미납 주차만 선택 가능
+- 금액은 해당 주차 공금액으로 고정
+- 일반 멤버는 공용계좌 제출로 단순화
+- 제출 → 검수대기
 
-일반 원장:
-- 수입 / 지출 / 조정
-- 계좌
-- 금액
-- 처리일
-- 관련 멤버
-- 분류
-- 메모
+## 내 제출
+- 본인 확인 후 자신의 제출만 조회
+- 검수대기 / 승인 / 거절 / 삭제됨
+- 제출시간 / 검수자 / 검수메모 / 증빙 확인
 
-수정 가능.
+## 검수대기
+- 관리자 독립 화면
+- 대기 / 승인 / 거절 / 삭제 / 전체 필터
+- 승인하면 기존처럼 fund_ledger payment 자동 생성
 
-### 원장 삭제
-회계 데이터는 실제 DELETE 하지 않습니다.
+## 공금내역
+- 기존 `원장` 명칭 제거
+- 최대 1000건 조회
+- 검색
+- 납부/수입/지출/조정 필터
+- 계좌 필터
+- 정상/삭제 필터
+- 월 필터
+- 관리자 직접 납부 등록
+- 수입·지출·조정 직접 등록
+- 상세 수정 / 삭제 / 삭제내역 복구
 
-`삭제`를 누르면:
-- status = cancelled
-- deleted_at
-- deleted_by
-- delete_reason
+## 잔액점검
+- 시스템 계산 잔액 표시
+- 실제 공용계좌 / 회사잔고 입력
+- 차이 기록
+- 점검자 / 시간 / 메모 이력 보존
 
-을 기록합니다.
+## 공금설정
+- 기존 `회비 규칙` → `주간 공금 설정`
+- 면제관리 통합
+- 납부 대상 기준 설명
 
-삭제 즉시:
-- 전체 잔액 재계산
-- 납부 payment인 경우 주간 완료 상태 재계산
-- 승인 요청에서 생성된 payment라면 해당 request도 deleted 처리
+## 코드 구조
+기존의 거대한 fundView.js를 다시 분리했습니다.
 
-### 삭제 원장 복구
-삭제된 항목에 `복구` 버튼이 생깁니다.
-payment 복구 시 같은 멤버/주차의 다른 active payment가 있으면 복구를 막습니다.
+- fundView.js : 화면 라우터/이벤트 바인딩
+- fundService.js : Supabase API
+- fundUtils.js : 공통 유틸
+- components/fundNav.js
+- components/shared.js
+- views/overviewView.js
+- views/paymentView.js
+- views/submissionsView.js
+- views/reviewView.js
+- views/historyView.js
+- views/balanceView.js
+- views/settingsView.js
+- fund.css
 
-### 요청 ↔ 원장 연결
-v1.4부터 승인된 NEW 공금 신청은 fund_ledger.request_id로 명시적으로 연결합니다.
-v1.3에서 이미 승인된 요청도 audit log를 이용해 가능한 항목은 자동 backfill합니다.
-
-### 감사 로그
-- update_ledger
-- delete_ledger
-- restore_ledger
-
-이 `fund_admin_audit_log`에 남습니다.
-
-## 적용
-1. Supabase SQL Editor에서 `supabase/012_fund_ledger_edit_delete.sql` 전체 실행
+## 적용 순서
+1. Supabase SQL Editor에서 `supabase/013_fund_workspace_reorg.sql` 전체 실행
 2. ZIP을 기존 NEW-AXE-NET 폴더에 덮어쓰기
-3. GitHub Desktop → Commit → Push
+3. GitHub Desktop Commit → Push
 4. Vercel 자동배포
-5. 관리자 로그인 → 공금 → 공금 관리 → 원장
+5. 공금 탭 진입
 
 ## 추가 CSV Import
 없습니다.
+
+## 참고
+일반 멤버의 정식 계정/로그인 체계는 아직 붙이지 않았기 때문에 `공금납부`와 `내 제출`은 현재 DB의 member_key + Discord 숫자 ID 일치 검증을 사용합니다. 관리자 로그인과는 별개입니다.

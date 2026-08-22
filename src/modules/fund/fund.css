@@ -1,0 +1,312 @@
+/* NEW AXE NET v1.5 - fund workspace */
+.fund-workspace {
+  display: grid;
+  gap: 16px;
+  width: min(1280px, 100%);
+}
+
+.fund-workspace__heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.fund-workspace__heading > div > span,
+.fund-page-header > div > span,
+.fund-section-card__header > div > span {
+  color: #758295;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .13em;
+}
+
+.fund-workspace__heading h1 {
+  margin: 4px 0 4px;
+  font-size: 27px;
+}
+
+.fund-workspace__heading p,
+.fund-page-header p {
+  margin: 0;
+  color: #8590a0;
+  font-size: 12px;
+}
+
+.fund-workspace-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 50px;
+  padding: 7px;
+  border: 1px solid #303844;
+  border-radius: 12px;
+  background: #171b21;
+}
+
+.fund-workspace-nav__group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.fund-workspace-nav__group--admin { flex: 1; }
+.fund-workspace-nav__divider { width: 1px; height: 26px; background: #343c48; }
+.fund-workspace-nav__admin-label { padding: 0 4px 0 2px; color: #697483; font-size: 9px; font-weight: 800; letter-spacing: .08em; }
+
+.fund-workspace-nav__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #8e98a6;
+  background: transparent;
+  font-size: 11px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.fund-workspace-nav__item:hover { color: #d7dce4; background: #1e232b; }
+.fund-workspace-nav__item--active { border-color: #465160; color: #fff; background: #252b34; }
+.fund-workspace-nav__item b { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; color: #ffd2d2; background: #713d3d; font-size: 9px; }
+
+.fund-workspace__content { min-width: 0; }
+
+.fund-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 14px;
+}
+
+.fund-page-header h2 { margin: 0 0 5px; font-size: 21px; }
+
+.fund-month-picker { display: flex; align-items: center; gap: 10px; padding: 5px; border: 1px solid #343d49; border-radius: 9px; background: #171b21; }
+.fund-month-picker button { width: 30px; height: 28px; border: 0; border-radius: 6px; color: #b8c1ce; background: #20252d; cursor: pointer; font-size: 18px; }
+.fund-month-picker strong { min-width: 100px; text-align: center; font-size: 11px; }
+
+.fund-overview-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 10px; }
+.fund-overview-kpi { display: grid; gap: 8px; padding: 15px 16px; border: 1px solid #303844; border-radius: 10px; background: #171b21; }
+.fund-overview-kpi span { color: #7f8998; font-size: 10px; }
+.fund-overview-kpi strong { font-size: 21px; }
+.fund-overview-kpi strong small { margin-left: 3px; color: #7f8998; font-size: 10px; }
+.fund-overview-kpi--danger { border-color: #56383b; }
+.fund-overview-kpi--danger strong { color: #ff9f9f; }
+.fund-overview-kpi--warn { border-color: #5a533a; }
+.fund-overview-kpi--warn strong { color: #dfcb81; }
+
+.fund-balance-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+.fund-balance-card { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 13px 16px; border: 1px solid #2d3540; border-radius: 10px; background: #14181e; }
+.fund-balance-card span { color: #7d8795; font-size: 10px; }
+.fund-balance-card strong { font-size: 16px; }
+.fund-balance-card--strong { border-color: #405149; background: #17201b; }
+
+.fund-section-card { min-width: 0; padding: 16px; border: 1px solid #303844; border-radius: 12px; background: #171b21; }
+.fund-section-card + .fund-section-card { margin-top: 12px; }
+.fund-section-card__header { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; margin-bottom: 13px; }
+.fund-section-card__header h3 { margin: 4px 0 0; font-size: 15px; }
+.fund-section-card__header p { margin: 0; color: #76818f; font-size: 10px; }
+
+.fund-week-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.fund-week-card { display: grid; gap: 11px; padding: 12px; border: 1px solid #303844; border-radius: 9px; color: #cbd2dc; background: #14181e; text-align: left; cursor: pointer; }
+.fund-week-card:hover { border-color: #465160; }
+.fund-week-card--active { border-color: #59697e; background: #1c232d; box-shadow: inset 0 0 0 1px rgba(125, 150, 182, .12); }
+.fund-week-card__top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.fund-week-card__top strong { font-size: 13px; }
+.fund-week-card__top span { color: #8e98a6; font-size: 9px; }
+.fund-week-card__stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px 8px; }
+.fund-week-card__stats span { color: #7f8996; font-size: 9px; }
+.fund-week-card__stats b { color: #d4dae2; }
+.fund-week-card__stats .is-danger b { color: #f1a0a0; }
+.fund-week-card__stats .is-warn b { color: #dac77d; }
+
+.fund-two-column, .fund-payment-layout, .fund-settings-grid, .fund-balance-check-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(320px, .8fr); gap: 12px; margin-top: 12px; }
+.fund-settings-grid, .fund-balance-check-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 0; }
+.fund-two-column > .fund-section-card, .fund-payment-layout > .fund-section-card, .fund-settings-grid > .fund-section-card, .fund-balance-check-grid > .fund-section-card { margin-top: 0; }
+
+.fund-member-status-list { overflow: hidden; border: 1px solid #2b333e; border-radius: 9px; }
+.fund-member-status-row { display: grid; grid-template-columns: 36px minmax(120px, 1fr) 90px 100px; align-items: center; gap: 8px; min-height: 43px; padding: 0 12px; border-bottom: 1px solid #29313b; }
+.fund-member-status-row:last-child { border-bottom: 0; }
+.fund-member-status-row__order { color: #697483; font-size: 10px; }
+.fund-member-status-row strong { font-size: 11px; }
+.fund-member-status-row > b { text-align: right; font-size: 10px; }
+
+.fund-compact-ledger-list { display: grid; gap: 7px; }
+.fund-compact-ledger { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 48px; padding: 9px 10px; border: 1px solid #2d3540; border-radius: 8px; background: #14181e; }
+.fund-compact-ledger > div { display: grid; gap: 4px; min-width: 0; }
+.fund-compact-ledger strong { font-size: 11px; }
+.fund-compact-ledger span { overflow: hidden; color: #788391; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.fund-money--in { color: #8de8b0; }
+.fund-money--out { color: #ff9f9f; }
+
+.fund-status-badge { display: inline-flex; align-items: center; width: fit-content; min-height: 22px; padding: 0 7px; border: 1px solid #3c4653; border-radius: 999px; font-size: 9px; font-weight: 800; }
+.fund-status-badge--done { border-color: #315a46; color: #92e8b4; }
+.fund-status-badge--unpaid { border-color: #633d40; color: #ff9f9f; }
+.fund-status-badge--exempt { border-color: #4b4867; color: #c0b8f2; }
+.fund-status-badge--scheduled, .fund-status-badge--before { color: #8d97a4; }
+
+.fund-identity-card { display: grid; gap: 16px; max-width: 720px; padding: 22px; border: 1px solid #303844; border-radius: 12px; background: #171b21; }
+.fund-identity-card__intro span { color: #758295; font-size: 10px; font-weight: 800; letter-spacing: .13em; }
+.fund-identity-card__intro h3 { margin: 6px 0 6px; font-size: 18px; }
+.fund-identity-card__intro p, .fund-identity-card__help { margin: 0; color: #7d8795; font-size: 10px; line-height: 1.6; }
+.fund-identity-form { display: grid; grid-template-columns: 1fr 1fr auto; align-items: end; gap: 10px; }
+
+.fund-field { display: grid; gap: 6px; min-width: 0; }
+.fund-field > span { color: #7e8997; font-size: 9px; font-weight: 700; }
+.fund-field input, .fund-field select, .fund-history-toolbar select, .fund-search-field { width: 100%; min-height: 37px; border: 1px solid #35404c; border-radius: 8px; color: #e3e7ed; background: #13171c; font-size: 11px; }
+.fund-field input, .fund-field select, .fund-history-toolbar select { padding: 0 10px; }
+.fund-field--wide { grid-column: 1 / -1; }
+.fund-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.fund-form-grid--four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+.fund-primary-button, .fund-secondary-button, .fund-danger-button, .fund-text-button { border-radius: 8px; font-size: 10px; font-weight: 800; cursor: pointer; }
+.fund-primary-button { min-height: 37px; padding: 0 14px; border: 1px solid #45604f; color: #e1efe5; background: #243329; }
+.fund-primary-button--wide { width: 100%; min-height: 42px; }
+.fund-primary-button:disabled { opacity: .5; cursor: wait; }
+.fund-secondary-button { min-height: 34px; padding: 0 11px; border: 1px solid #3c4653; color: #cbd2dc; background: #20252d; }
+.fund-secondary-button--small { min-height: 29px; padding: 0 9px; font-size: 9px; }
+.fund-danger-button { min-height: 34px; padding: 0 11px; border: 1px solid #653d40; color: #ffabab; background: #211719; }
+.fund-text-button { padding: 0; border: 0; color: #9aa7b7; background: transparent; }
+
+.fund-member-strip { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; padding: 12px 14px; border: 1px solid #33413a; border-radius: 10px; background: #161d19; }
+.fund-member-strip > div { display: flex; align-items: baseline; gap: 9px; }
+.fund-member-strip span, .fund-member-strip small { color: #7f8b84; font-size: 9px; }
+.fund-member-strip strong { font-size: 13px; }
+
+.fund-own-period-list { display: grid; gap: 7px; max-height: 580px; overflow-y: auto; }
+.fund-own-period { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 12px; border: 1px solid #303844; border-radius: 8px; color: #d6dce4; background: #14181e; text-align: left; }
+.fund-own-period:not(:disabled) { cursor: pointer; }
+.fund-own-period:disabled { opacity: .72; }
+.fund-own-period--active { border-color: #55667b; background: #1d2530; }
+.fund-own-period > div:first-child { display: grid; gap: 3px; }
+.fund-own-period strong { font-size: 11px; }
+.fund-own-period span { color: #7f8996; font-size: 9px; }
+.fund-own-period__status { display: flex; align-items: center; gap: 7px; }
+.fund-own-period__status small { color: #d2bb72; font-size: 9px; }
+
+.fund-payment-form-card { align-self: start; }
+.fund-payment-form { display: grid; gap: 12px; }
+.fund-payment-summary { display: grid; gap: 8px; padding: 12px; border: 1px solid #303844; border-radius: 9px; background: #14181e; }
+.fund-payment-summary > div { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.fund-payment-summary span { color: #7e8996; font-size: 9px; }
+.fund-payment-summary strong { font-size: 11px; }
+.fund-info-box { padding: 10px 11px; border: 1px dashed #3d4855; border-radius: 8px; color: #86919e; background: #14181e; font-size: 9px; line-height: 1.6; }
+
+.fund-inline-error, .fund-inline-success { margin-bottom: 12px; padding: 11px 12px; border-radius: 8px; font-size: 10px; font-weight: 700; }
+.fund-inline-error { border: 1px solid #653d40; color: #ffabab; background: #1c1517; }
+.fund-inline-success { border: 1px solid #315a46; color: #98e6b5; background: #151d18; }
+.fund-empty-state { padding: 18px; color: #77818e; text-align: center; font-size: 10px; }
+.fund-empty-state--large { padding: 44px 18px; }
+
+.fund-submission-list, .fund-review-list, .fund-history-list, .fund-balance-check-list, .fund-rule-list, .fund-exemption-list { display: grid; gap: 8px; }
+.fund-submission-item, .fund-review-item, .fund-balance-check-item, .fund-rule-item, .fund-exemption-item { padding: 13px 14px; border: 1px solid #303844; border-radius: 9px; background: #14181e; }
+.fund-submission-item__main, .fund-review-item__head, .fund-balance-check-item, .fund-rule-item, .fund-exemption-item { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.fund-submission-item__main > div, .fund-review-item__head > div:first-child, .fund-rule-item > div, .fund-exemption-item > div, .fund-balance-check-item > div:first-child { display: grid; gap: 4px; }
+.fund-submission-item__main span, .fund-review-item__head span, .fund-rule-item span, .fund-exemption-item span, .fund-balance-check-item span { color: #7f8996; font-size: 9px; }
+.fund-submission-item__main strong, .fund-review-item__head strong { font-size: 12px; }
+.fund-submission-item__meta, .fund-review-item__meta { display: flex; flex-wrap: wrap; gap: 7px 12px; margin-top: 9px; color: #75808e; font-size: 9px; }
+.fund-submission-item p, .fund-review-item p { margin: 9px 0 0; padding-top: 8px; border-top: 1px solid #2a313a; color: #87919e; font-size: 10px; }
+.fund-submission-item a, .fund-review-item a { display: inline-block; margin-top: 8px; color: #a9b8ca; font-size: 10px; }
+.fund-submission-item__review, .fund-review-item__review { color: #b7ab79 !important; }
+
+.fund-request-pill { display: inline-flex; align-items: center; min-height: 22px; padding: 0 7px; border: 1px solid #3b4551; border-radius: 999px; font-size: 9px; font-weight: 800; }
+.fund-request-pill--pending { border-color: #665b39; color: #dcc87e; }
+.fund-request-pill--approved { border-color: #315a46; color: #92e8b4; }
+.fund-request-pill--rejected, .fund-request-pill--deleted { border-color: #653d40; color: #ff9f9f; }
+
+.fund-review-toolbar { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 12px; }
+.fund-filter-chip { min-height: 32px; padding: 0 11px; border: 1px solid #343d49; border-radius: 8px; color: #8e98a6; background: #171b21; font-size: 10px; font-weight: 750; cursor: pointer; }
+.fund-filter-chip--active { border-color: #516072; color: #fff; background: #252b34; }
+.fund-filter-chip b { color: #e1c87b; }
+.fund-review-item--pending { border-color: #5a5136; }
+.fund-review-item__title { display: flex; align-items: center; gap: 8px; }
+.fund-review-item__actions { display: grid; grid-template-columns: .7fr 1.3fr; gap: 8px; margin-top: 11px; }
+
+.fund-history-toolbar { display: grid; grid-template-columns: minmax(220px, 1fr) repeat(4, minmax(125px, auto)); gap: 8px; margin-bottom: 9px; }
+.fund-search-field { display: flex; align-items: center; gap: 7px; padding: 0 10px; }
+.fund-search-field span { color: #778391; }
+.fund-search-field input { flex: 1; min-width: 0; border: 0; outline: 0; color: #e3e7ed; background: transparent; font-size: 11px; }
+.fund-history-summary { display: flex; gap: 12px; margin-bottom: 9px; color: #7d8795; font-size: 9px; }
+.fund-history-item { display: grid; grid-template-columns: 92px minmax(220px, 1fr) 72px 110px 66px; align-items: center; gap: 10px; min-height: 58px; padding: 9px 12px; border: 1px solid #303844; border-radius: 9px; background: #14181e; }
+.fund-history-item--deleted { opacity: .58; }
+.fund-history-item__date { color: #788391; font-size: 9px; }
+.fund-history-item__body { display: grid; gap: 3px; min-width: 0; }
+.fund-history-item__body strong { font-size: 11px; }
+.fund-history-item__body span, .fund-history-item__body small { overflow: hidden; color: #7d8795; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.fund-history-item__type { width: fit-content; padding: 4px 6px; border: 1px solid #39434f; border-radius: 999px; color: #8e98a6; font-size: 8px; }
+.fund-history-item > b { text-align: right; font-size: 11px; }
+.fund-history-item__actions { text-align: right; }
+
+.fund-balance-check-values { display: grid; gap: 8px; }
+.fund-balance-check-values > div { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 12px; border: 1px solid #303844; border-radius: 8px; background: #14181e; }
+.fund-balance-check-values span { color: #7f8996; font-size: 9px; }
+.fund-balance-check-values strong { font-size: 13px; }
+.fund-balance-check-values .is-total { border-color: #405149; }
+.fund-balance-check-form, .fund-settings-form { display: grid; gap: 11px; }
+.fund-balance-check-list { margin-top: 2px; }
+.fund-balance-check-item__numbers { display: flex; align-items: center; gap: 12px; }
+.fund-balance-check-item__numbers .is-match { color: #8de8b0; }
+.fund-balance-check-item__numbers .is-diff { color: #ff9f9f; }
+
+.fund-rule-list, .fund-exemption-list { margin-top: 12px; }
+.fund-rule-item strong, .fund-exemption-item strong { font-size: 10px; }
+.fund-lock-pill { padding: 5px 7px; border: 1px solid #3a4450; border-radius: 999px; color: #84909d; font-size: 8px; }
+.fund-setting-explain { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
+.fund-setting-explain > div { display: grid; gap: 5px; padding: 12px; border: 1px solid #303844; border-radius: 8px; background: #14181e; }
+.fund-setting-explain strong { font-size: 10px; }
+.fund-setting-explain span { color: #7f8996; font-size: 9px; line-height: 1.55; }
+
+.fund-overlay { position: fixed; inset: 0; z-index: 92; background: rgba(0,0,0,.62); }
+.fund-dialog { position: fixed; top: 50%; left: 50%; z-index: 93; width: min(620px, calc(100vw - 32px)); max-height: calc(100vh - 40px); transform: translate(-50%, -50%); overflow-y: auto; border: 1px solid #3a434f; border-radius: 14px; background: #171b21; box-shadow: 0 30px 100px rgba(0,0,0,.58); }
+.fund-dialog__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; padding: 21px 22px 17px; border-bottom: 1px solid #2e3540; }
+.fund-dialog__header > div > span { color: #7e8996; font-size: 10px; font-weight: 800; letter-spacing: .12em; }
+.fund-dialog__header h3 { margin: 6px 0 5px; font-size: 20px; }
+.fund-dialog__header p { margin: 0; color: #8b95a2; font-size: 11px; }
+.fund-dialog__close { width: 34px; height: 34px; border: 1px solid #3a424e; border-radius: 9px; color: #d8dde5; background: #20252d; font-size: 20px; cursor: pointer; }
+.fund-dialog__body { display: grid; gap: 14px; padding: 20px 22px 22px; }
+.fund-dialog__actions { display: grid; grid-template-columns: .7fr 1.3fr; gap: 9px; }
+.fund-lock-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; }
+.fund-lock-grid > div { display: grid; gap: 5px; padding: 11px 12px; border: 1px solid #303844; border-radius: 8px; background: #14181e; }
+.fund-lock-grid span { color: #7e8895; font-size: 9px; }
+.fund-lock-grid strong { font-size: 11px; }
+
+@media (max-width: 1050px) {
+  .fund-workspace-nav { align-items: flex-start; flex-direction: column; }
+  .fund-workspace-nav__divider { display: none; }
+  .fund-workspace-nav__group { flex-wrap: wrap; }
+  .fund-week-grid { grid-template-columns: repeat(3, 1fr); }
+  .fund-history-toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fund-search-field { grid-column: 1 / -1; }
+}
+
+@media (max-width: 760px) {
+  .fund-page-header { align-items: stretch; flex-direction: column; }
+  .fund-overview-kpis, .fund-balance-row, .fund-two-column, .fund-payment-layout, .fund-settings-grid, .fund-balance-check-grid, .fund-form-grid, .fund-form-grid--four, .fund-setting-explain { grid-template-columns: 1fr; }
+  .fund-field--wide { grid-column: auto; }
+  .fund-week-grid { grid-template-columns: repeat(2, 1fr); }
+  .fund-identity-form { grid-template-columns: 1fr; }
+  .fund-member-status-row { grid-template-columns: 28px 1fr 74px; }
+  .fund-member-status-row > b { display: none; }
+  .fund-history-toolbar { grid-template-columns: 1fr; }
+  .fund-search-field { grid-column: auto; }
+  .fund-history-item { grid-template-columns: 72px minmax(0, 1fr) 84px; }
+  .fund-history-item__type, .fund-history-item__actions { display: none; }
+  .fund-review-item__actions, .fund-dialog__actions, .fund-lock-grid { grid-template-columns: 1fr; }
+}
+
+
+.fund-page-actions { display: flex; align-items: center; gap: 8px; }
+.fund-settings-period { display: grid; gap: 5px; min-width: 220px; }
+.fund-settings-period > span { color: #7e8997; font-size: 9px; font-weight: 700; }
+.fund-settings-period select { min-height: 35px; padding: 0 10px; border: 1px solid #35404c; border-radius: 8px; color: #e3e7ed; background: #13171c; font-size: 10px; }
+.fund-dialog__actions--three { grid-template-columns: .6fr .7fr 1.3fr; }
+
+@media (max-width: 760px) {
+  .fund-page-actions { align-items: stretch; flex-direction: column; }
+  .fund-settings-period { min-width: 0; }
+  .fund-dialog__actions--three { grid-template-columns: 1fr; }
+}

@@ -4,6 +4,13 @@ export async function fetchFundPeriods() {
   return api.rpc('get_fund_periods');
 }
 
+export async function fetchFundMonthOverview(year, month) {
+  return api.rpc('get_fund_month_overview', {
+    p_year: year,
+    p_month: month,
+  });
+}
+
 export async function fetchFundSummary(period = null) {
   return api.rpc('get_fund_summary', {
     p_year: period?.year ?? null,
@@ -26,83 +33,28 @@ export async function fetchFundRecentLedger(limit = 12) {
   });
 }
 
-export async function fetchFundFeeRules() {
-  return api.select('fund_fee_rules', {
-    columns: [
-      'id',
-      'start_year',
-      'start_month',
-      'start_week',
-      'weekly_fee',
-      'note',
-      'enabled',
-      'source_key',
-      'created_at',
-      'updated_at',
-    ].join(','),
-    orderBy: 'id',
-    ascending: false,
+export async function fetchMyFundProfile(memberKey, discordUserId) {
+  return api.rpc('get_my_fund_profile', {
+    p_member_key: memberKey,
+    p_discord_user_id: discordUserId,
   });
 }
 
-export async function fetchFundExemptions(period) {
-  return api.select('fund_exemptions', {
-    columns: [
-      'id',
-      'member_key',
-      'nickname',
-      'year',
-      'month',
-      'week',
-      'reason',
-      'enabled',
-      'created_by',
-      'created_at',
-    ].join(','),
-    filters: {
-      year: period.year,
-      month: period.month,
-      week: period.week,
-      enabled: true,
-    },
-    orderBy: 'created_at',
-    ascending: false,
+export async function submitFundRequest(values) {
+  return api.rpc('submit_fund_request', {
+    p_member_key: values.member_key,
+    p_discord_user_id: values.discord_user_id,
+    p_year: values.year,
+    p_month: values.month,
+    p_week: values.week,
+    p_amount: values.amount,
+    p_payment_mode: '공용계좌',
+    p_evidence_url: values.evidence_url || null,
+    p_memo: values.memo || null,
   });
 }
 
-export async function fetchFundAdminLedger(limit = 50) {
-  return api.select('fund_ledger', {
-    columns: [
-      'id',
-      'member_key',
-      'nickname',
-      'year',
-      'month',
-      'week',
-      'entry_type',
-      'amount',
-      'status',
-      'memo',
-      'ledger_date',
-      'ledger_type',
-      'category',
-      'direction',
-      'account',
-      'approved_by_name',
-      'request_id',
-      'deleted_at',
-      'deleted_by',
-      'delete_reason',
-      'created_at',
-      'updated_at',
-    ].join(','),
-    orderBy: 'ledger_date',
-    ascending: false,
-    limit,
-  });
-}
-
-export async function fetchFundRequests(limit = 100) {
+export async function fetchFundRequests(limit = 500) {
   return api.select('fund_requests', {
     columns: [
       'id',
@@ -131,20 +83,6 @@ export async function fetchFundRequests(limit = 100) {
   });
 }
 
-export async function submitFundRequest(values) {
-  return api.rpc('submit_fund_request', {
-    p_member_key: values.member_key,
-    p_discord_user_id: values.discord_user_id,
-    p_year: values.year,
-    p_month: values.month,
-    p_week: values.week,
-    p_amount: values.amount,
-    p_payment_mode: values.payment_mode,
-    p_evidence_url: values.evidence_url || null,
-    p_memo: values.memo || null,
-  });
-}
-
 export async function approveFundRequest(requestId, reviewNote) {
   return api.rpc('approve_fund_request', {
     p_request_id: requestId,
@@ -159,36 +97,35 @@ export async function rejectFundRequest(requestId, reviewNote) {
   });
 }
 
-export async function createFundExemption(values) {
-  return api.rpc('create_fund_exemption', {
-    p_member_key: values.member_key,
-    p_year: values.year,
-    p_month: values.month,
-    p_week: values.week,
-    p_reason: values.reason || null,
-  });
-}
-
-export async function disableFundExemption(exemptionId) {
-  return api.rpc('disable_fund_exemption', {
-    p_exemption_id: exemptionId,
-  });
-}
-
-export async function createFundFeeRule(values) {
-  return api.rpc('create_fund_fee_rule', {
-    p_start_year: values.start_year,
-    p_start_month: values.start_month,
-    p_start_week: values.start_week,
-    p_weekly_fee: values.weekly_fee,
-    p_note: values.note || null,
-  });
-}
-
-export async function setFundFeeRuleEnabled(ruleId, enabled) {
-  return api.rpc('set_fund_fee_rule_enabled', {
-    p_rule_id: ruleId,
-    p_enabled: enabled,
+export async function fetchFundAdminLedger(limit = 1000) {
+  return api.select('fund_ledger', {
+    columns: [
+      'id',
+      'member_key',
+      'nickname',
+      'year',
+      'month',
+      'week',
+      'entry_type',
+      'amount',
+      'status',
+      'memo',
+      'ledger_date',
+      'ledger_type',
+      'category',
+      'direction',
+      'account',
+      'approved_by_name',
+      'request_id',
+      'deleted_at',
+      'deleted_by',
+      'delete_reason',
+      'created_at',
+      'updated_at',
+    ].join(','),
+    orderBy: 'ledger_date',
+    ascending: false,
+    limit,
   });
 }
 
@@ -243,7 +180,107 @@ export async function restoreFundLedgerEntry(ledgerId) {
   });
 }
 
-// v1.2 호환용
-export async function cancelFundLedgerEntry(ledgerId, reason) {
-  return deleteFundLedgerEntry(ledgerId, reason);
+export async function fetchFundFeeRules() {
+  return api.select('fund_fee_rules', {
+    columns: [
+      'id',
+      'start_year',
+      'start_month',
+      'start_week',
+      'weekly_fee',
+      'note',
+      'enabled',
+      'source_key',
+      'created_at',
+      'updated_at',
+    ].join(','),
+    orderBy: 'id',
+    ascending: false,
+  });
+}
+
+export async function fetchFundExemptions(period) {
+  return api.select('fund_exemptions', {
+    columns: [
+      'id',
+      'member_key',
+      'nickname',
+      'year',
+      'month',
+      'week',
+      'reason',
+      'enabled',
+      'created_by',
+      'created_at',
+    ].join(','),
+    filters: {
+      year: period.year,
+      month: period.month,
+      week: period.week,
+      enabled: true,
+    },
+    orderBy: 'created_at',
+    ascending: false,
+  });
+}
+
+export async function createFundExemption(values) {
+  return api.rpc('create_fund_exemption', {
+    p_member_key: values.member_key,
+    p_year: values.year,
+    p_month: values.month,
+    p_week: values.week,
+    p_reason: values.reason || null,
+  });
+}
+
+export async function disableFundExemption(exemptionId) {
+  return api.rpc('disable_fund_exemption', {
+    p_exemption_id: exemptionId,
+  });
+}
+
+export async function createFundFeeRule(values) {
+  return api.rpc('create_fund_fee_rule', {
+    p_start_year: values.start_year,
+    p_start_month: values.start_month,
+    p_start_week: values.start_week,
+    p_weekly_fee: values.weekly_fee,
+    p_note: values.note || null,
+  });
+}
+
+export async function setFundFeeRuleEnabled(ruleId, enabled) {
+  return api.rpc('set_fund_fee_rule_enabled', {
+    p_rule_id: ruleId,
+    p_enabled: enabled,
+  });
+}
+
+export async function fetchFundBalanceChecks(limit = 30) {
+  return api.select('fund_balance_checks', {
+    columns: [
+      'id',
+      'computed_public',
+      'computed_company',
+      'actual_public',
+      'actual_company',
+      'difference_public',
+      'difference_company',
+      'checked_by_name',
+      'note',
+      'created_at',
+    ].join(','),
+    orderBy: 'created_at',
+    ascending: false,
+    limit,
+  });
+}
+
+export async function createFundBalanceCheck(values) {
+  return api.rpc('create_fund_balance_check', {
+    p_actual_public: values.actual_public,
+    p_actual_company: values.actual_company,
+    p_note: values.note || null,
+  });
 }
