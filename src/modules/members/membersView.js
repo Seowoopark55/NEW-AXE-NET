@@ -75,8 +75,10 @@ export function renderMembersView(root, state, actions = {}) {
     });
   });
 
-  root.querySelector('[data-close-member-detail]')?.addEventListener('click', () => {
-    actions.onCloseDetail?.();
+  root.querySelectorAll('[data-close-member-detail]').forEach((element) => {
+    element.addEventListener('click', () => {
+      actions.onCloseDetail?.();
+    });
   });
 }
 
