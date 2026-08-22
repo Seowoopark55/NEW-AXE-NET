@@ -8,9 +8,9 @@ export async function initMembersModule() {
     throw new Error('#module-root element not found.');
   }
 
-  renderMembersView(root, store.getState().members);
+  renderMembersView(root, store.getState());
 
   store.subscribe((state) => {
-    renderMembersView(root, state.members);
+    renderMembersView(root, state);
   });
 }

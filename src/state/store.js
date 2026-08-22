@@ -3,6 +3,13 @@ const initialState = {
     ready: false,
   },
 
+  system: {
+    checking: false,
+    connected: false,
+    message: null,
+    error: null,
+  },
+
   user: null,
 
   members: {
@@ -29,9 +36,7 @@ function setState(patch) {
     ...patch,
   };
 
-  for (const listener of listeners) {
-    listener(state);
-  }
+  notify();
 }
 
 function updateState(updater) {
@@ -42,10 +47,7 @@ function updateState(updater) {
   }
 
   state = nextState;
-
-  for (const listener of listeners) {
-    listener(state);
-  }
+  notify();
 }
 
 function subscribe(listener) {
@@ -54,6 +56,12 @@ function subscribe(listener) {
   return () => {
     listeners.delete(listener);
   };
+}
+
+function notify() {
+  for (const listener of listeners) {
+    listener(state);
+  }
 }
 
 export const store = {
