@@ -16,7 +16,7 @@ export function renderHistoryView(state) {
   const publicBalance = Number(state.fund.summary?.balance?.public ?? 0);
 
   return `
-    <div class="fund-admin">
+    <div class="fund-admin fund-admin--wide">
       ${renderPageHeader(
         '공금내역',
         '공용계좌를 중심으로 납부·수입·지출·조정 기록을 빠르게 확인하고 관리합니다.',
@@ -36,7 +36,7 @@ export function renderHistoryView(state) {
         ${metric('표시 내역', `${filtered.length}건`, `전체 ${admin.ledgerItems.length}건`)}
       </div>
 
-      <section class="fund-admin-panel">
+      <section class="fund-admin-panel fund-admin-panel--ledger">
         <div class="fund-admin-toolbar">
           <label class="fund-admin-search">
             <span>⌕</span>

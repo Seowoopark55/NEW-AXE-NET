@@ -7,7 +7,7 @@ export function renderIntegrityView(state) {
   const total = Number(counts.total ?? 0);
 
   return `
-    <div class="fund-admin">
+    <div class="fund-admin fund-admin--medium">
       ${renderPageHeader('정합성점검', 'Supabase 원본에서 신청·원장 연결 오류만 빠르게 확인합니다.', '<button class="fund-secondary-button" type="button" data-fund-refresh>다시 점검</button>')}
 
       <div class="fund-admin-integrity-head ${total ? 'is-warning' : 'is-ok'}">
@@ -39,7 +39,7 @@ function metric(label, value) {
 
 function renderSection(title, desc, items, renderer) {
   return `
-    <section class="fund-admin-panel fund-admin-integrity-section ${items.length ? 'has-issues' : ''}">
+    <section class="fund-admin-panel fund-admin-panel--integrity fund-admin-integrity-section ${items.length ? 'has-issues' : ''}">
       <div class="fund-admin-panel__head is-row"><div><span>CHECK</span><h3>${title}</h3><p>${desc}</p></div><b>${items.length}건</b></div>
       ${items.length ? `<div class="fund-admin-integrity-list">${items.map(renderer).join('')}</div>` : '<div class="fund-admin-integrity-empty">이상 없음</div>'}
     </section>
@@ -47,7 +47,7 @@ function renderSection(title, desc, items, renderer) {
 }
 
 function renderDuplicate(item) {
-  return `<article><div><strong>${escapeHtml(item.nickname || item.member_key || '멤버')}</strong><span>${item.year}년 ${item.month}월 ${item.week}주차</span></div><b>활성 ${Number(item.active_count || 0)}건</b><small>원장 #${(item.ledger_ids || []).join(', #')}</small></article>`;
+  return `<article><div><strong>${escapeHtml(item.nickname || item.member_key || '멤버')}</strong><span>${item.year}년 ${item.month}월 ${item.week}주차</span></div><b>활성 ${Number(item.active_count || 0)}건</b><details class="fund-admin-integrity-detail"><summary>원장 ID 보기</summary><small>#${(item.ledger_ids || []).join(', #')}</small></details></article>`;
 }
 
 function renderRequestIssue(item) {

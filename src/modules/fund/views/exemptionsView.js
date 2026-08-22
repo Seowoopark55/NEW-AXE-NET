@@ -8,7 +8,7 @@ export function renderExemptionsView(state) {
   const activeMembers = members.items.filter((member) => member.status === 'active');
 
   return `
-    <div class="fund-admin">
+    <div class="fund-admin fund-admin--narrow">
       ${renderPageHeader('면제관리', '특정 멤버의 특정 주차만 납부 대상에서 제외합니다.', renderPeriodSelect(fund.periods, period))}
       ${admin.message ? `<div class="fund-inline-success">${escapeHtml(admin.message)}</div>` : ''}
       ${admin.error ? `<div class="fund-inline-error">${escapeHtml(admin.error)}</div>` : ''}

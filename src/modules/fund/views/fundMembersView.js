@@ -18,7 +18,7 @@ export function renderFundMembersView(state) {
   const excluded = rows.filter((member) => member.status === 'active' && !(settings.get(member.member_key)?.enabled ?? true)).length;
 
   return `
-    <div class="fund-admin">
+    <div class="fund-admin fund-admin--medium">
       ${renderPageHeader('멤버관리', '공금 대상 여부와 예외 기준만 관리합니다. 회원 원본 정보는 멤버 메뉴가 단일 원본입니다.', renderPeriodSelect(fund.periods, period))}
       ${admin.message ? `<div class="fund-inline-success">${escapeHtml(admin.message)}</div>` : ''}
       ${admin.error ? `<div class="fund-inline-error">${escapeHtml(admin.error)}</div>` : ''}
@@ -29,7 +29,7 @@ export function renderFundMembersView(state) {
         ${metric('조회 주차', period ? `${period.month}월 ${period.week}주차` : '—', formatPeriodLabel(period))}
       </div>
 
-      <section class="fund-admin-panel">
+      <section class="fund-admin-panel fund-admin-panel--members">
         <div class="fund-admin-panel__head is-row"><div><span>FUND MEMBERS</span><h3>공금 대상 설정</h3><p>기본 목록은 간단히 보고, 예외가 필요한 멤버만 설정을 펼칩니다.</p></div><b>${rows.length}명</b></div>
         <div class="fund-admin-member-list">
           ${rows.map((member) => renderMember(member, settings.get(member.member_key), statusMap.get(member.nickname), period, admin.saving)).join('')}

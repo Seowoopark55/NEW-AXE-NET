@@ -13,7 +13,7 @@ export function renderBalanceView(state) {
   const latest = admin.balanceChecks?.[0] || null;
 
   return `
-    <div class="fund-admin">
+    <div class="fund-admin fund-admin--medium">
       ${renderPageHeader('잔액점검', '공용계좌를 중심으로 사이트 계산값과 인게임 실제 잔액을 대조합니다.')}
       ${admin.message ? `<div class="fund-inline-success">${escapeHtml(admin.message)}</div>` : ''}
       ${admin.error ? `<div class="fund-inline-error">${escapeHtml(admin.error)}</div>` : ''}
@@ -69,7 +69,7 @@ export function renderBalanceView(state) {
         </section>
       </div>
 
-      <section class="fund-admin-panel">
+      <section class="fund-admin-panel fund-admin-panel--history">
         ${panelHead('HISTORY', '잔액점검 이력', `${admin.balanceChecks.length}건`, true)}
         <div class="fund-admin-balance-history">
           ${admin.balanceChecks.length ? admin.balanceChecks.map(renderCheck).join('') : '<div class="fund-empty-state">아직 잔액점검 기록이 없습니다.</div>'}
