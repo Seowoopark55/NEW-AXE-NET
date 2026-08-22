@@ -2152,3 +2152,147 @@ button, input, select, textarea { font: inherit; }
     grid-template-columns: 1fr;
   }
 }
+
+
+/* v1.4 ledger edit / soft delete */
+.fund-admin-ledger-actions {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.fund-admin-ledger-item__delete-reason {
+  margin: 0;
+  padding-top: 8px;
+  border-top: 1px solid #3a2d30;
+  color: #c18f94;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.fund-ledger-editor-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 92;
+  background: rgba(0, 0, 0, 0.62);
+}
+
+.fund-ledger-editor {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 93;
+  width: min(620px, calc(100vw - 32px));
+  max-height: calc(100vh - 40px);
+  transform: translate(-50%, -50%);
+  overflow-y: auto;
+  border: 1px solid #3a434f;
+  border-radius: 14px;
+  background: #171b21;
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.58);
+}
+
+.fund-ledger-editor__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 21px 22px 17px;
+  border-bottom: 1px solid #2e3540;
+}
+
+.fund-ledger-editor__header > div > span {
+  color: #7e8996;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.fund-ledger-editor__header h3 {
+  margin: 6px 0 5px;
+  font-size: 20px;
+}
+
+.fund-ledger-editor__header p {
+  margin: 0;
+  color: #8b95a2;
+  font-size: 11px;
+}
+
+.fund-ledger-editor__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  border: 1px solid #3a424e;
+  border-radius: 9px;
+  color: #d8dde5;
+  background: #20252d;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.fund-ledger-editor__body {
+  display: grid;
+  gap: 14px;
+  padding: 20px 22px 22px;
+}
+
+.fund-ledger-editor-locks {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.fund-ledger-editor-locks > div {
+  display: grid;
+  gap: 5px;
+  padding: 11px 12px;
+  border: 1px solid #303844;
+  border-radius: 8px;
+  background: #14171c;
+}
+
+.fund-ledger-editor-locks span {
+  color: #7e8895;
+  font-size: 9px;
+}
+
+.fund-ledger-editor-locks strong {
+  font-size: 12px;
+}
+
+.fund-ledger-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.fund-ledger-edit-grid__wide {
+  grid-column: 1 / -1;
+}
+
+.fund-ledger-editor__actions {
+  display: grid;
+  grid-template-columns: 0.7fr 1.3fr;
+  gap: 9px;
+}
+
+@media (max-width: 680px) {
+  .fund-admin-ledger-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .fund-ledger-editor-locks,
+  .fund-ledger-edit-grid,
+  .fund-ledger-editor__actions {
+    grid-template-columns: 1fr;
+  }
+
+  .fund-ledger-edit-grid__wide {
+    grid-column: auto;
+  }
+}

@@ -6,6 +6,7 @@ import {
   createFundFeeRule,
   createFundPayment,
   createFundTransaction,
+  deleteFundLedgerEntry,
   disableFundExemption,
   fetchFundAdminLedger,
   fetchFundExemptions,
@@ -16,8 +17,10 @@ import {
   fetchFundRequests,
   fetchFundSummary,
   rejectFundRequest,
+  restoreFundLedgerEntry,
   setFundFeeRuleEnabled,
   submitFundRequest,
+  updateFundLedgerEntry,
 } from './fundService.js';
 import { renderFundView } from './fundView.js';
 
@@ -228,6 +231,78 @@ export async function initFundModule() {
         });
       },
 
+      onOpenLedgerEditor(ledgerId) {
+        if (!store.getState().auth.admin) return;
+
+        store.updateState((state) => ({
+          ...state,
+          fund: {
+            ...state.fund,
+            admin: {
+              ...state.fund.admin,
+              ledgerEditor: {
+                open: true,
+                itemId: ledgerId,
+              },
+              error: null,
+              message: null,
+            },
+          },
+        }));
+      },
+
+      onCloseLedgerEditor() {
+        store.updateState((state) => ({
+          ...state,
+          fund: {
+            ...state.fund,
+            admin: {
+              ...state.fund.admin,
+              ledgerEditor: {
+                open: false,
+                itemId: null,
+              },
+            },
+          },
+        }));
+      },
+
+      async onUpdateLedger(values) {
+        if (!store.getState().auth.admin) return;
+
+        const success = await runAdminMutation(async () => {
+          validateLedgerUpdate(values);
+          await updateFundLedgerEntry(values);
+          return '원장 내역이 수정되었습니다.';
+        });
+
+        if (success) {
+          closeLedgerEditor();
+        }
+      },
+
+      async onDeleteLedger(ledgerId, reason) {
+        if (!store.getState().auth.admin) return;
+
+        const success = await runAdminMutation(async () => {
+          await deleteFundLedgerEntry(ledgerId, reason);
+          return '원장 내역이 삭제 처리되었습니다.';
+        });
+
+        if (success) {
+          closeLedgerEditor();
+        }
+      },
+
+      async onRestoreLedger(ledgerId) {
+        if (!store.getState().auth.admin) return;
+
+        await runAdminMutation(async () => {
+          await restoreFundLedgerEntry(ledgerId);
+          return '삭제된 원장 내역을 복구했습니다.';
+        });
+      },
+
       async onCreatePayment(values) {
         if (!store.getState().auth.admin) return;
 
@@ -321,6 +396,7 @@ async function runAdminMutation(mutation) {
   try {
     const message = await mutation();
     await refreshFundAfterAdminChange(message);
+    return true;
   } catch (error) {
     console.error('[NEW AXE NET] fund admin mutation failed:', error);
 
@@ -336,7 +412,25 @@ async function runAdminMutation(mutation) {
         },
       },
     }));
+
+    return false;
   }
+}
+
+function closeLedgerEditor() {
+  store.updateState((state) => ({
+    ...state,
+    fund: {
+      ...state.fund,
+      admin: {
+        ...state.fund.admin,
+        ledgerEditor: {
+          open: false,
+          itemId: null,
+        },
+      },
+    },
+  }));
 }
 
 async function refreshFundAfterAdminChange(message) {
@@ -358,7 +452,7 @@ async function refreshFundAfterAdminChange(message) {
     fetchFundRecentLedger(12),
     fetchFundFeeRules(),
     fetchFundExemptions(period),
-    fetchFundAdminLedger(50),
+    fetchFundAdminLedger(100),
     fetchFundRequests(100),
   ]);
 
@@ -404,7 +498,7 @@ async function loadFundAdminData(period) {
     const [feeRules, exemptions, ledgerItems, requests] = await Promise.all([
       fetchFundFeeRules(),
       fetchFundExemptions(period),
-      fetchFundAdminLedger(50),
+      fetchFundAdminLedger(100),
       fetchFundRequests(100),
     ]);
 
@@ -521,6 +615,34 @@ function validateTransaction(values) {
 
   if (!Number.isInteger(amount) || amount === 0) {
     throw new Error('금액은 0이 아닌 정수로 입력하세요.');
+  }
+
+  if (['수입', '지출'].includes(values.direction) && amount < 0) {
+    throw new Error('수입/지출 금액은 양수로 입력하세요.');
+  }
+}
+
+function validateLedgerUpdate(values) {
+  const amount = Number(values.amount);
+
+  if (!Number.isInteger(amount) || amount === 0) {
+    throw new Error('금액은 0이 아닌 정수로 입력하세요.');
+  }
+
+  if (values.entry_type === 'payment') {
+    if (amount <= 0) {
+      throw new Error('납부 금액은 0원보다 커야 합니다.');
+    }
+
+    return;
+  }
+
+  if (!['수입', '지출', '조정'].includes(values.direction)) {
+    throw new Error('거래 유형을 선택하세요.');
+  }
+
+  if (!String(values.category ?? '').trim()) {
+    throw new Error('분류를 입력하세요.');
   }
 
   if (['수입', '지출'].includes(values.direction) && amount < 0) {

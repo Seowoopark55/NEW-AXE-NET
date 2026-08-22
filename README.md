@@ -1,59 +1,71 @@
-# NEW AXE NET v1.3
+# NEW AXE NET v1.4
 
-공금 신청 → 관리자 승인/거절 → 승인 시 원장 자동 생성 워크플로우입니다.
+공금 원장 운영 관리 고도화 버전입니다.
 
-## 멤버 화면
-공금 상단에 `납부 신청` 버튼이 추가됩니다.
+## 추가 기능
 
-신청 항목:
-- 멤버
-- Discord 사용자 ID
-- 현재 선택 주차
-- 신청 금액
-- 입금 계좌
-- 증빙 URL
+### 원장 수정
+관리자 `공금 관리 → 원장`에서 active 원장에 `수정` 버튼이 생깁니다.
+
+주간 공금 납부:
+- 금액
+- 계좌
+- 처리일
 - 메모
 
-보안:
-- 선택한 member_key의 DB Discord ID와 입력한 Discord ID가 일치해야 함
-- 직접 fund_requests INSERT 권한은 없음
-- 공개 RPC는 pending 요청 생성만 가능
-- 이미 납부 완료/면제/중복 pending인 주차는 신청 불가
+수정 가능.
 
-## 관리자 화면
-공금 관리에 `요청` 탭 추가:
-- 검토 대기 건수 표시
-- 신청 상세 확인
-- 승인
-- 거절
+멤버/납부 주차는 LIVE ENGINE의 상태 계산 기준이므로 잠급니다.
+잘못된 멤버/주차는 해당 원장을 삭제하고 올바르게 다시 등록합니다.
 
-승인:
-- approve_fund_request()
-- 동일 트랜잭션에서 create_fund_payment()
-- fund_ledger에 active payment 생성
-- fund_requests.status = approved
-- LIVE ENGINE 즉시 완료/잔액 재계산
+일반 원장:
+- 수입 / 지출 / 조정
+- 계좌
+- 금액
+- 처리일
+- 관련 멤버
+- 분류
+- 메모
 
-거절:
-- 원장 생성 없음
-- fund_requests.status = rejected
-- 검토자/검토시간/거절메모 보존
+수정 가능.
+
+### 원장 삭제
+회계 데이터는 실제 DELETE 하지 않습니다.
+
+`삭제`를 누르면:
+- status = cancelled
+- deleted_at
+- deleted_by
+- delete_reason
+
+을 기록합니다.
+
+삭제 즉시:
+- 전체 잔액 재계산
+- 납부 payment인 경우 주간 완료 상태 재계산
+- 승인 요청에서 생성된 payment라면 해당 request도 deleted 처리
+
+### 삭제 원장 복구
+삭제된 항목에 `복구` 버튼이 생깁니다.
+payment 복구 시 같은 멤버/주차의 다른 active payment가 있으면 복구를 막습니다.
+
+### 요청 ↔ 원장 연결
+v1.4부터 승인된 NEW 공금 신청은 fund_ledger.request_id로 명시적으로 연결합니다.
+v1.3에서 이미 승인된 요청도 audit log를 이용해 가능한 항목은 자동 backfill합니다.
+
+### 감사 로그
+- update_ledger
+- delete_ledger
+- restore_ledger
+
+이 `fund_admin_audit_log`에 남습니다.
 
 ## 적용
-1. Supabase SQL Editor에서 `supabase/011_fund_requests_workflow.sql` 전체 실행
+1. Supabase SQL Editor에서 `supabase/012_fund_ledger_edit_delete.sql` 전체 실행
 2. ZIP을 기존 NEW-AXE-NET 폴더에 덮어쓰기
 3. GitHub Desktop → Commit → Push
 4. Vercel 자동배포
-5. 공금 → 납부 신청 테스트
-6. 관리자 로그인 → 공금 관리 → 요청 → 승인/거절 확인
+5. 관리자 로그인 → 공금 → 공금 관리 → 원장
 
 ## 추가 CSV Import
 없습니다.
-
-
-## v1.3.1 hotfix
-- 공금 납부 신청 금액 입력 오류 수정
-- 관리자 직접 납부 금액 입력 오류 수정
-- 기존 `min=1 + step=1000` 때문에 20,000원이 invalid 처리되던 문제 해결
-- 금액 입력을 DB 규칙과 동일하게 `1원 이상 정수`로 통일
-- 추가 SQL 없음

@@ -89,7 +89,12 @@ export async function fetchFundAdminLedger(limit = 50) {
       'direction',
       'account',
       'approved_by_name',
+      'request_id',
+      'deleted_at',
+      'deleted_by',
+      'delete_reason',
       'created_at',
+      'updated_at',
     ].join(','),
     orderBy: 'ledger_date',
     ascending: false,
@@ -212,9 +217,33 @@ export async function createFundTransaction(values) {
   });
 }
 
-export async function cancelFundLedgerEntry(ledgerId, reason) {
-  return api.rpc('cancel_fund_ledger_entry', {
+export async function updateFundLedgerEntry(values) {
+  return api.rpc('update_fund_ledger_entry', {
+    p_ledger_id: values.ledger_id,
+    p_amount: values.amount,
+    p_account: values.account,
+    p_ledger_date: values.ledger_date,
+    p_direction: values.direction || null,
+    p_category: values.category || null,
+    p_member_key: values.member_key || null,
+    p_memo: values.memo || null,
+  });
+}
+
+export async function deleteFundLedgerEntry(ledgerId, reason) {
+  return api.rpc('delete_fund_ledger_entry', {
     p_ledger_id: ledgerId,
     p_reason: reason || null,
   });
+}
+
+export async function restoreFundLedgerEntry(ledgerId) {
+  return api.rpc('restore_fund_ledger_entry', {
+    p_ledger_id: ledgerId,
+  });
+}
+
+// v1.2 호환용
+export async function cancelFundLedgerEntry(ledgerId, reason) {
+  return deleteFundLedgerEntry(ledgerId, reason);
 }

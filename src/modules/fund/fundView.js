@@ -185,6 +185,14 @@ export function renderFundView(root, state, actions = {}) {
         ? renderFundAdminModal(fund, members.items)
         : ''
     }
+
+    ${
+      fund.admin.open &&
+      auth.admin &&
+      fund.admin.ledgerEditor?.open
+        ? renderLedgerEditModal(fund.admin, members.items)
+        : ''
+    }
   `;
 
   root.querySelector('[data-fund-period]')?.addEventListener('change', (event) => {
@@ -304,19 +312,66 @@ export function renderFundView(root, state, actions = {}) {
     });
   });
 
-  root.querySelectorAll('[data-cancel-ledger]').forEach((button) => {
+  root.querySelectorAll('[data-edit-ledger]').forEach((button) => {
+    button.addEventListener('click', () => {
+      actions.onOpenLedgerEditor?.(
+        Number(button.dataset.editLedger),
+      );
+    });
+  });
+
+  root.querySelectorAll('[data-delete-ledger]').forEach((button) => {
     button.addEventListener('click', () => {
       const reason = window.prompt(
-        '취소 사유를 입력하세요. 사유 없이 취소하려면 빈칸으로 확인하세요.',
+        '삭제 사유를 입력하세요. 실제 데이터는 지우지 않고 취소 상태로 보존됩니다.',
         '',
       );
 
       if (reason === null) return;
 
-      actions.onCancelLedger?.(
-        Number(button.dataset.cancelLedger),
+      actions.onDeleteLedger?.(
+        Number(button.dataset.deleteLedger),
         reason.trim(),
       );
+    });
+  });
+
+  root.querySelectorAll('[data-restore-ledger]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const confirmed = window.confirm(
+        '이 원장 내역을 다시 활성 상태로 복구할까요?',
+      );
+
+      if (!confirmed) return;
+
+      actions.onRestoreLedger?.(
+        Number(button.dataset.restoreLedger),
+      );
+    });
+  });
+
+  root.querySelectorAll('[data-close-ledger-editor]').forEach((element) => {
+    element.addEventListener('click', () => {
+      actions.onCloseLedgerEditor?.();
+    });
+  });
+
+  const ledgerEditForm = root.querySelector('[data-ledger-edit-form]');
+  ledgerEditForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(ledgerEditForm);
+
+    actions.onUpdateLedger?.({
+      ledger_id: Number(formData.get('ledger_id')),
+      entry_type: String(formData.get('entry_type') ?? ''),
+      amount: Number(formData.get('amount')),
+      account: String(formData.get('account') ?? ''),
+      ledger_date: String(formData.get('ledger_date') ?? ''),
+      direction: String(formData.get('direction') ?? ''),
+      category: String(formData.get('category') ?? '').trim(),
+      member_key: String(formData.get('member_key') ?? ''),
+      memo: String(formData.get('memo') ?? '').trim(),
     });
   });
 
@@ -860,7 +915,7 @@ function renderLedgerAdmin(admin, fund, activeMembers, allMembers) {
     <div class="fund-admin-section-head fund-admin-ledger-heading">
       <div>
         <h4>최근 원장</h4>
-        <p>최근 50건 · 취소는 삭제가 아니라 cancelled로 보존</p>
+        <p>최근 100건 · 수정/삭제 이력은 감사 로그에 보존</p>
       </div>
     </div>
 
@@ -875,8 +930,10 @@ function renderLedgerAdmin(admin, fund, activeMembers, allMembers) {
 }
 
 function renderAdminLedgerItem(item) {
+  const isDeleted = item.status === 'cancelled';
+
   return `
-    <article class="fund-admin-ledger-item ${item.status === 'cancelled' ? 'fund-admin-ledger-item--cancelled' : ''}">
+    <article class="fund-admin-ledger-item ${isDeleted ? 'fund-admin-ledger-item--cancelled' : ''}">
       <div class="fund-admin-ledger-item__top">
         <div>
           <strong>${escapeHtml(item.category || item.ledger_type || '공금')}</strong>
@@ -884,6 +941,7 @@ function renderAdminLedgerItem(item) {
             ${escapeHtml(item.nickname || item.account || '공용')}
             · ${escapeHtml(item.direction || '')}
             · ${escapeHtml(item.account || '')}
+            ${item.request_id ? ` · 신청 #${item.request_id}` : ''}
           </span>
         </div>
 
@@ -900,21 +958,44 @@ function renderAdminLedgerItem(item) {
               ? `<span>${item.year}년 ${item.month}월 ${item.week}주차</span>`
               : ''
           }
-          <span>${item.status === 'active' ? 'active' : 'cancelled'}</span>
+          <span>${isDeleted ? '삭제됨' : 'active'}</span>
+          ${
+            isDeleted && item.deleted_by
+              ? `<span>${escapeHtml(item.deleted_by)} 삭제</span>`
+              : ''
+          }
         </div>
 
         ${
-          item.status === 'active'
+          isDeleted
             ? `
               <button
-                class="fund-admin-danger"
+                class="fund-admin-secondary"
                 type="button"
-                data-cancel-ledger="${item.id}"
+                data-restore-ledger="${item.id}"
               >
-                취소
+                복구
               </button>
             `
-            : '<span class="fund-admin-locked">취소됨</span>'
+            : `
+              <div class="fund-admin-ledger-actions">
+                <button
+                  class="fund-admin-secondary"
+                  type="button"
+                  data-edit-ledger="${item.id}"
+                >
+                  수정
+                </button>
+
+                <button
+                  class="fund-admin-danger"
+                  type="button"
+                  data-delete-ledger="${item.id}"
+                >
+                  삭제
+                </button>
+              </div>
+            `
         }
       </div>
 
@@ -923,7 +1004,196 @@ function renderAdminLedgerItem(item) {
           ? `<p class="fund-admin-ledger-item__memo">${escapeHtml(item.memo)}</p>`
           : ''
       }
+
+      ${
+        isDeleted && item.delete_reason
+          ? `<p class="fund-admin-ledger-item__delete-reason">삭제 사유 · ${escapeHtml(item.delete_reason)}</p>`
+          : ''
+      }
     </article>
+  `;
+}
+
+function renderLedgerEditModal(admin, memberItems) {
+  const item = admin.ledgerItems.find(
+    (ledger) => Number(ledger.id) === Number(admin.ledgerEditor?.itemId),
+  );
+
+  if (!item) return '';
+
+  const isPayment = item.entry_type === 'payment';
+  const allMembers = memberItems ?? [];
+
+  return `
+    <div class="fund-ledger-editor-backdrop" data-close-ledger-editor></div>
+
+    <section class="fund-ledger-editor" role="dialog" aria-modal="true" aria-label="원장 내역 수정">
+      <div class="fund-ledger-editor__header">
+        <div>
+          <span>LEDGER EDIT</span>
+          <h3>공금 내역 수정</h3>
+          <p>
+            ${isPayment ? '주간 공금 납부' : '일반 원장'}
+            · #${item.id}
+            ${item.request_id ? ` · 신청 #${item.request_id}` : ''}
+          </p>
+        </div>
+
+        <button
+          class="fund-ledger-editor__close"
+          type="button"
+          aria-label="닫기"
+          data-close-ledger-editor
+        >
+          ×
+        </button>
+      </div>
+
+      <form class="fund-ledger-editor__body" data-ledger-edit-form>
+        <input type="hidden" name="ledger_id" value="${item.id}" />
+        <input type="hidden" name="entry_type" value="${escapeAttribute(item.entry_type || '')}" />
+
+        ${
+          isPayment
+            ? `
+              <div class="fund-ledger-editor-locks">
+                <div>
+                  <span>멤버</span>
+                  <strong>${escapeHtml(item.nickname || '—')}</strong>
+                </div>
+                <div>
+                  <span>납부 주차</span>
+                  <strong>${item.year}년 ${item.month}월 ${item.week}주차</strong>
+                </div>
+              </div>
+
+              <input type="hidden" name="direction" value="수입" />
+              <input type="hidden" name="category" value="${escapeAttribute(item.category || '주간공금')}" />
+              <input type="hidden" name="member_key" value="${escapeAttribute(item.member_key || '')}" />
+            `
+            : `
+              <div class="fund-ledger-edit-grid">
+                <label class="member-edit-field">
+                  <span>거래 유형</span>
+                  <select name="direction">
+                    ${renderSelectOption('수입', item.direction)}
+                    ${renderSelectOption('지출', item.direction)}
+                    ${renderSelectOption('조정', item.direction)}
+                  </select>
+                </label>
+
+                <label class="member-edit-field">
+                  <span>관련 멤버</span>
+                  <select name="member_key">
+                    <option value="">없음</option>
+                    ${allMembers.map((member) => `
+                      <option
+                        value="${escapeAttribute(member.member_key)}"
+                        ${member.member_key === item.member_key ? 'selected' : ''}
+                      >
+                        ${escapeHtml(member.nickname)}
+                      </option>
+                    `).join('')}
+                  </select>
+                </label>
+
+                <label class="member-edit-field fund-ledger-edit-grid__wide">
+                  <span>분류</span>
+                  <input
+                    type="text"
+                    name="category"
+                    maxlength="100"
+                    value="${escapeAttribute(item.category || '')}"
+                    required
+                  />
+                </label>
+              </div>
+            `
+        }
+
+        <div class="fund-ledger-edit-grid">
+          <label class="member-edit-field">
+            <span>금액</span>
+            <input
+              type="number"
+              name="amount"
+              step="1"
+              value="${Number(item.amount ?? 0)}"
+              required
+            />
+          </label>
+
+          <label class="member-edit-field">
+            <span>계좌</span>
+            <select name="account">
+              ${renderSelectOption('공용계좌', item.account)}
+              ${renderSelectOption('회사잔고', item.account)}
+            </select>
+          </label>
+
+          <label class="member-edit-field">
+            <span>처리일</span>
+            <input
+              type="date"
+              name="ledger_date"
+              value="${toInputDate(item.ledger_date)}"
+              required
+            />
+          </label>
+
+          <label class="member-edit-field fund-ledger-edit-grid__wide">
+            <span>메모</span>
+            <input
+              type="text"
+              name="memo"
+              maxlength="300"
+              value="${escapeAttribute(item.memo || '')}"
+              placeholder="선택"
+            />
+          </label>
+        </div>
+
+        ${
+          isPayment
+            ? `
+              <div class="fund-admin-warning">
+                납부자의 멤버와 주차는 공금 상태 계산 기준이므로 수정하지 않습니다.
+                잘못된 멤버/주차로 등록했다면 이 내역을 삭제한 뒤 올바르게 다시 등록하세요.
+              </div>
+            `
+            : ''
+        }
+
+        <div class="fund-ledger-editor__actions">
+          <button
+            class="fund-admin-secondary"
+            type="button"
+            data-close-ledger-editor
+          >
+            취소
+          </button>
+
+          <button
+            class="fund-admin-primary"
+            type="submit"
+            ${admin.saving ? 'disabled' : ''}
+          >
+            ${admin.saving ? '저장 중...' : '수정 저장'}
+          </button>
+        </div>
+      </form>
+    </section>
+  `;
+}
+
+function renderSelectOption(value, selectedValue) {
+  return `
+    <option
+      value="${escapeAttribute(value)}"
+      ${value === selectedValue ? 'selected' : ''}
+    >
+      ${escapeHtml(value)}
+    </option>
   `;
 }
 
@@ -1260,6 +1530,20 @@ function formatDateTime(value) {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+function toInputDate(value) {
+  if (!value) return getLocalDateString();
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return String(value).slice(0, 10);
+  }
+
+  const offset = date.getTimezoneOffset();
+  const local = new Date(date.getTime() - offset * 60_000);
+  return local.toISOString().slice(0, 10);
 }
 
 function getLocalDateString() {

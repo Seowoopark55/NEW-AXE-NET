@@ -73,6 +73,11 @@ const initialState = {
       feeRules: [],
       ledgerItems: [],
       requests: [],
+
+      ledgerEditor: {
+        open: false,
+        itemId: null,
+      },
     },
   },
 
