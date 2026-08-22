@@ -686,3 +686,60 @@
   .fund-tabs { padding: 4px; }
   .fund-tabs button { padding: 0 9px; font-size: 10px; }
 }
+
+
+/* =========================================================
+   v1.12 · FUND SUBMIT / MINE / REVIEW PARITY
+========================================================= */
+.fund-payment-layout--parity { grid-template-columns:minmax(360px,.78fr) minmax(480px,1.22fr); gap:14px; }
+.fund-proxy-bar { display:flex; align-items:center; justify-content:space-between; gap:18px; margin-bottom:12px; padding:13px 15px; border:1px solid rgba(255,181,46,.24); border-radius:12px; background:rgba(255,181,46,.04); }
+.fund-proxy-bar > div { display:grid; grid-template-columns:auto auto 1fr; align-items:center; gap:6px 10px; }
+.fund-proxy-bar span { color:#ffb52e; font-size:10px; font-weight:900; letter-spacing:.08em; }
+.fund-proxy-bar strong { font-size:14px; }
+.fund-proxy-bar small { color:#7f8791; font-size:10px; }
+.fund-proxy-bar select { min-width:200px; height:38px; border:1px solid rgba(255,255,255,.1); border-radius:9px; background:#0d0f12; color:#fff; padding:0 10px; font-weight:800; }
+.fund-payment-form--parity { gap:14px; }
+.fund-payment-summary--compact { grid-template-columns:repeat(3,1fr); gap:0; padding:0; overflow:hidden; }
+.fund-payment-summary--compact > div { display:grid; gap:4px; padding:12px; border-right:1px solid rgba(255,255,255,.06); }
+.fund-payment-summary--compact > div:last-child { border-right:0; }
+.fund-payment-summary--compact span { font-size:10px; }
+.fund-payment-summary--compact strong { font-size:13px; }
+.fund-split-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:11px; border:1px solid rgba(255,181,46,.18); border-radius:10px; background:rgba(255,181,46,.025); }
+.fund-evidence-field { display:grid; gap:8px; }
+.fund-field-label { color:#aab1bc; font-size:11px; font-weight:850; }
+.fund-field-label b { color:#ffb52e; margin-left:4px; }
+.fund-evidence-drop { position:relative; min-height:180px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; overflow:hidden; border:1px dashed rgba(255,181,46,.36); border-radius:12px; background:linear-gradient(180deg,rgba(255,181,46,.035),rgba(255,255,255,.012)); cursor:pointer; transition:.18s ease; }
+.fund-evidence-drop:hover,.fund-evidence-drop.is-dragging { border-color:rgba(255,181,46,.72); background:rgba(255,181,46,.065); }
+.fund-evidence-drop .fund-evidence-icon { color:#ffb52e; font-size:28px; }
+.fund-evidence-drop strong { font-size:13px; }
+.fund-evidence-drop span { color:#7b8490; font-size:10px; }
+.fund-evidence-drop img { width:100%; max-height:300px; object-fit:contain; background:#070809; }
+.fund-evidence-overlay { position:absolute; left:0; right:0; bottom:0; padding:9px 12px; color:#d8d8d8; background:rgba(0,0,0,.72); text-align:center; font-size:10px; opacity:0; transition:.18s ease; }
+.fund-evidence-drop:hover .fund-evidence-overlay { opacity:1; }
+.fund-evidence-actions { display:flex; align-items:center; gap:8px; min-height:30px; }
+.fund-evidence-actions span { margin-right:auto; color:#777f89; font-size:10px; }
+.fund-mini-help { color:#777f89; font-size:10px; line-height:1.5; }
+.fund-payment-breakdown { margin-top:9px; padding:8px 10px; border:1px solid rgba(255,255,255,.06); border-radius:8px; color:#9ba4af; background:rgba(255,255,255,.018); font-size:10px; }
+.fund-payment-breakdown b { color:#d9dde2; }
+.fund-evidence-thumb { position:relative; display:block!important; width:min(320px,100%); margin-top:10px!important; overflow:hidden; border:1px solid rgba(255,255,255,.08); border-radius:10px; background:#08090b; }
+.fund-evidence-thumb img { display:block; width:100%; max-height:190px; object-fit:cover; }
+.fund-evidence-thumb span { position:absolute; right:8px; bottom:8px; padding:5px 8px; border-radius:999px; color:#fff; background:rgba(0,0,0,.72); font-size:9px; }
+.fund-review-item--parity { padding:0; overflow:hidden; }
+.fund-review-item__content { display:grid; grid-template-columns:220px 1fr; min-height:180px; }
+.fund-review-evidence { position:relative; display:flex!important; align-items:center; justify-content:center; min-height:180px; margin:0!important; overflow:hidden; border-right:1px solid rgba(255,255,255,.07); background:#08090a; }
+.fund-review-evidence img { width:100%; height:100%; min-height:180px; max-height:260px; object-fit:cover; }
+.fund-review-evidence span { position:absolute; left:8px; bottom:8px; padding:5px 8px; border-radius:999px; color:#fff; background:rgba(0,0,0,.72); font-size:9px; }
+.fund-review-evidence--missing { color:#646b74; font-size:10px; }
+.fund-review-item__body { padding:14px; }
+.fund-review-item__head strong { font-size:15px; }
+.fund-review-item__head > b { color:#ffcf72; font-size:17px; }
+.fund-review-item__actions { margin-top:14px; }
+.fund-monthly__status.split { color:#ffd46f; border-color:rgba(255,181,46,.46); background:rgba(255,181,46,.08); }
+@media(max-width:900px){
+  .fund-payment-layout--parity { grid-template-columns:1fr; }
+  .fund-proxy-bar { align-items:stretch; flex-direction:column; }
+  .fund-proxy-bar select { width:100%; }
+  .fund-payment-summary--compact,.fund-split-grid { grid-template-columns:1fr; }
+  .fund-review-item__content { grid-template-columns:1fr; }
+  .fund-review-evidence { border-right:0; border-bottom:1px solid rgba(255,255,255,.07); }
+}

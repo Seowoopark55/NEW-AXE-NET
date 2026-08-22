@@ -30,6 +30,7 @@ import {
   updateFundLedgerEntry,
 } from './fundService.js';
 import { renderFundView } from './fundView.js';
+import { prepareEvidenceFile } from './evidence.js';
 
 const ADMIN_SECTIONS = new Set(['review', 'history', 'balance', 'feeRules', 'exemptions', 'integrity', 'fundMembers']);
 
@@ -122,7 +123,10 @@ function buildActions() {
     },
 
     onPaymentPeriodSelect(period) {
-      const profile = store.getState().fund.identity.profile;
+      const state = store.getState();
+      const profile = state.auth.admin && state.fund.payment.proxyProfile
+        ? state.fund.payment.proxyProfile
+        : state.fund.identity.profile;
       const selected = profile?.periods?.find((item) =>
         item.year === period.year && item.month === period.month && item.week === period.week,
       ) ?? null;
@@ -140,6 +144,54 @@ function buildActions() {
           },
         },
       }));
+    },
+
+    async onProxyMemberSelect(memberKey) {
+      if (!store.getState().auth.admin || !memberKey) return;
+      store.updateState((state) => ({
+        ...state,
+        fund: { ...state.fund, payment: { ...state.fund.payment, proxyMemberKey: memberKey, proxyLoading: true, proxyProfile: null, selectedPeriod: null, error: null, success: null } },
+      }));
+      try {
+        const profile = await fetchAdminFundProfile(memberKey);
+        const selectedPeriod = profile?.periods?.find((item) => item.status === '미납' && item.request_status !== 'pending') ?? null;
+        store.updateState((state) => ({
+          ...state,
+          fund: { ...state.fund, payment: { ...state.fund.payment, proxyLoading: false, proxyProfile: profile, selectedPeriod, amount: selectedPeriod?.weekly_fee ? String(selectedPeriod.weekly_fee) : '', publicAmount: '', companyAmount: '' } },
+        }));
+      } catch (error) {
+        store.updateState((state) => ({ ...state, fund: { ...state.fund, payment: { ...state.fund.payment, proxyLoading: false, error: formatError(error) } } }));
+      }
+    },
+
+    onPaymentModeChange(mode) {
+      store.updateState((state) => ({
+        ...state,
+        fund: { ...state.fund, payment: { ...state.fund.payment, paymentMode: mode, publicAmount: '', companyAmount: '', error: null } },
+      }));
+    },
+
+    onPaymentDraftChange(key, value) {
+      const allowed = new Set(['amount', 'publicAmount', 'companyAmount', 'memo']);
+      if (!allowed.has(key)) return;
+      store.updateState((state) => ({
+        ...state,
+        fund: { ...state.fund, payment: { ...state.fund.payment, [key]: value } },
+      }));
+    },
+
+    async onEvidenceFile(file) {
+      if (!file) return;
+      try {
+        const evidence = await prepareEvidenceFile(file);
+        store.updateState((state) => ({ ...state, fund: { ...state.fund, payment: { ...state.fund.payment, evidence, evidencePreview: evidence.dataUrl, error: null } } }));
+      } catch (error) {
+        store.updateState((state) => ({ ...state, fund: { ...state.fund, payment: { ...state.fund.payment, evidence: null, evidencePreview: '', error: formatError(error) } } }));
+      }
+    },
+
+    onEvidenceClear() {
+      store.updateState((state) => ({ ...state, fund: { ...state.fund, payment: { ...state.fund.payment, evidence: null, evidencePreview: '', error: null } } }));
     },
 
     async onSubmitPayment(values) {
@@ -490,6 +542,11 @@ async function syncFundIdentityFromAuth() {
           payment: {
             ...current.fund.payment,
             selectedPeriod: null,
+            proxyMemberKey: '',
+            proxyProfile: null,
+            proxyLoading: false,
+            evidence: null,
+            evidencePreview: '',
             error: null,
             success: null,
           },
@@ -565,77 +622,86 @@ async function syncFundIdentityFromAuth() {
 }
 
 async function submitPayment(values) {
-  const identity = store.getState().fund.identity;
+  const state = store.getState();
+  const identity = state.fund.identity;
+  const paymentState = state.fund.payment;
   if (!identity.verified || !identity.memberKey) return;
 
-  store.updateState((state) => ({
-    ...state,
-    fund: {
-      ...state.fund,
-      payment: {
-        ...state.fund.payment,
-        submitting: true,
-        error: null,
-        success: null,
-        paymentMode: values.payment_mode || '공용계좌',
-        amount: String(values.amount || ''),
-        evidenceUrl: values.evidence_url,
-        memo: values.memo,
-      },
-    },
+  const isAdmin = Boolean(state.auth.admin);
+  const targetMemberKey = isAdmin
+    ? (paymentState.proxyMemberKey || paymentState.proxyProfile?.member?.member_key || identity.memberKey)
+    : identity.memberKey;
+  const targetProfile = isAdmin && paymentState.proxyProfile ? paymentState.proxyProfile : identity.profile;
+
+  const mode = values.payment_mode || '공용계좌';
+  let publicAmount = Number(values.public_amount || 0);
+  let companyAmount = Number(values.company_amount || 0);
+  if (mode === '공용계좌') { publicAmount = values.amount; companyAmount = 0; }
+  if (mode === '회사잔고') { publicAmount = 0; companyAmount = values.amount; }
+
+  if (!paymentState.evidence?.dataUrl) {
+    store.updateState((current) => ({ ...current, fund: { ...current.fund, payment: { ...current.fund.payment, error: '증빙 스크린샷을 먼저 첨부하세요.', success: null } } }));
+    return;
+  }
+  if (mode === '분할납부' && (publicAmount <= 0 || companyAmount <= 0 || publicAmount + companyAmount !== values.amount)) {
+    store.updateState((current) => ({ ...current, fund: { ...current.fund, payment: { ...current.fund.payment, error: '분할납부 합계가 총 납부금액과 일치하도록 입력하세요.', success: null } } }));
+    return;
+  }
+
+  store.updateState((current) => ({
+    ...current,
+    fund: { ...current.fund, payment: { ...current.fund.payment, submitting: true, error: null, success: null, paymentMode: mode, amount: String(values.amount || ''), publicAmount: String(publicAmount || ''), companyAmount: String(companyAmount || ''), memo: values.memo } },
   }));
 
   try {
     const payload = {
-      member_key: identity.memberKey,
+      member_key: targetMemberKey,
       year: values.year,
       month: values.month,
       week: values.week,
       amount: values.amount,
-      payment_mode: values.payment_mode || '공용계좌',
-      evidence_url: values.evidence_url || null,
+      payment_mode: mode,
+      public_amount: publicAmount,
+      company_amount: companyAmount,
+      evidence: paymentState.evidence,
       memo: values.memo || null,
+      proxy_admin_name: isAdmin && targetMemberKey !== identity.memberKey ? state.auth.admin.nickname : null,
     };
 
-    const requestId = identity.source === 'admin'
+    const requestId = isAdmin
       ? await submitAdminFundRequest(payload)
       : await submitSessionFundRequest(payload);
 
-    const profile = await fetchProfileForIdentity(identity);
+    const profile = isAdmin
+      ? await fetchAdminFundProfile(targetMemberKey)
+      : await fetchProfileForIdentity(identity);
 
-    store.updateState((state) => ({
-      ...state,
+    store.updateState((current) => ({
+      ...current,
       fund: {
-        ...state.fund,
-        identity: { ...state.fund.identity, profile },
+        ...current.fund,
+        identity: isAdmin && targetMemberKey !== identity.memberKey ? current.fund.identity : { ...current.fund.identity, profile },
         payment: {
-          ...state.fund.payment,
+          ...current.fund.payment,
+          proxyProfile: isAdmin ? profile : current.fund.payment.proxyProfile,
           selectedPeriod: null,
           submitting: false,
           error: null,
-          success: `제출 #${requestId}이 접수되었습니다. 관리자 검수 후 완료 처리됩니다.`,
+          success: `제출 #${requestId}이 검수대기로 접수되었습니다.`,
           paymentMode: '공용계좌',
           amount: '',
-          evidenceUrl: '',
+          publicAmount: '',
+          companyAmount: '',
+          evidence: null,
+          evidencePreview: '',
           memo: '',
         },
       },
     }));
 
-    if (store.getState().auth.admin) await refreshAdminWorkspace();
+    if (isAdmin) await refreshAdminWorkspace();
   } catch (error) {
-    store.updateState((state) => ({
-      ...state,
-      fund: {
-        ...state.fund,
-        payment: {
-          ...state.fund.payment,
-          submitting: false,
-          error: formatError(error),
-          success: null,
-        },
-      },
-    }));
+    store.updateState((current) => ({ ...current, fund: { ...current.fund, payment: { ...current.fund.payment, submitting: false, error: formatError(error), success: null } } }));
   }
 }
 

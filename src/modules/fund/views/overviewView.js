@@ -99,6 +99,7 @@ function renderMatrixStatus(cell) {
 
 function displayStatus(cell) {
   if (cell.status === '완료') {
+    if (cell.payment_account === '분할납부') return '분할';
     if (cell.payment_account === '회사잔고') return '잔고';
     if (cell.payment_account === '공용계좌') return '공용';
     return '완료';
@@ -110,6 +111,7 @@ function displayStatus(cell) {
 
 function statusClass(status) {
   if (status === '공용') return 'public';
+  if (status === '분할') return 'split';
   if (status === '잔고') return 'company';
   if (status === '완료') return 'done';
   if (status === '검수') return 'pending';

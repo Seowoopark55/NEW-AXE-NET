@@ -72,8 +72,35 @@ async function rpc(functionName, args = {}) {
   return data;
 }
 
+async function storageUpload(bucket, path, file, options = {}) {
+  const client = requireSupabase();
+  const { data, error } = await client.storage.from(bucket).upload(path, file, {
+    upsert: false,
+    ...options,
+  });
+  if (error) throw error;
+  return data;
+}
+
+async function storageRemove(bucket, paths) {
+  const client = requireSupabase();
+  const { data, error } = await client.storage.from(bucket).remove(paths);
+  if (error) throw error;
+  return data;
+}
+
+async function storageSignedUrl(bucket, path, expiresIn = 3600) {
+  const client = requireSupabase();
+  const { data, error } = await client.storage.from(bucket).createSignedUrl(path, expiresIn);
+  if (error) throw error;
+  return data?.signedUrl || null;
+}
+
 export const api = {
   select,
   update,
   rpc,
+  storageUpload,
+  storageRemove,
+  storageSignedUrl,
 };

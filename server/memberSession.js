@@ -330,3 +330,78 @@ export function normalizeApiError(error) {
 
   return { status: 500, message };
 }
+
+
+const FUND_EVIDENCE_BUCKET = 'fund-evidence';
+const FUND_EVIDENCE_MAX_BYTES = 3 * 1024 * 1024;
+
+export function storageEvidencePath(value) {
+  const prefix = `storage://${FUND_EVIDENCE_BUCKET}/`;
+  const text = String(value || '').trim();
+  return text.startsWith(prefix) ? text.slice(prefix.length) : null;
+}
+
+export async function signFundEvidenceUrl(client, value, expiresIn = 3600) {
+  const path = storageEvidencePath(value);
+  if (!path) return value || null;
+  const { data, error } = await client.storage
+    .from(FUND_EVIDENCE_BUCKET)
+    .createSignedUrl(path, expiresIn);
+  if (error) throw error;
+  return data?.signedUrl || null;
+}
+
+export async function hydrateFundEvidence(profile, client) {
+  if (!profile || !Array.isArray(profile.requests)) return profile;
+  const requests = await Promise.all(profile.requests.map(async (row) => ({
+    ...row,
+    evidence_storage_ref: row.evidence_url || null,
+    evidence_url: await signFundEvidenceUrl(client, row.evidence_url),
+  })));
+  return { ...profile, requests };
+}
+
+export async function uploadFundEvidence(client, memberKey, evidence) {
+  const dataUrl = String(evidence?.data_url || evidence?.dataUrl || '').trim();
+  if (!dataUrl) throw new Error('증빙 스크린샷을 첨부하세요.');
+
+  const match = dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,(.+)$/s);
+  if (!match) throw new Error('증빙 이미지 형식이 올바르지 않습니다.');
+
+  const mime = String(match[1]).toLowerCase();
+  const buffer = Buffer.from(match[2], 'base64');
+  if (!buffer.length) throw new Error('증빙 이미지가 비어 있습니다.');
+  if (buffer.length > FUND_EVIDENCE_MAX_BYTES) throw new Error('증빙 이미지는 3MB 이하로 첨부하세요.');
+
+  const ext = mimeExtension(mime);
+  const safeMember = String(memberKey || 'member').replace(/[^a-zA-Z0-9_-]/g, '_');
+  const path = `${safeMember}/${new Date().toISOString().slice(0, 7)}/${crypto.randomUUID()}.${ext}`;
+
+  const { error } = await client.storage
+    .from(FUND_EVIDENCE_BUCKET)
+    .upload(path, buffer, {
+      contentType: mime,
+      upsert: false,
+      cacheControl: '3600',
+    });
+  if (error) throw error;
+  return { path, ref: `storage://${FUND_EVIDENCE_BUCKET}/${path}` };
+}
+
+export async function removeFundEvidence(client, path) {
+  if (!path) return;
+  try {
+    await client.storage.from(FUND_EVIDENCE_BUCKET).remove([path]);
+  } catch (error) {
+    console.warn('[NEW AXE NET] orphan fund evidence cleanup skipped:', error?.message || error);
+  }
+}
+
+function mimeExtension(mime) {
+  if (mime === 'image/png') return 'png';
+  if (mime === 'image/webp') return 'webp';
+  if (mime === 'image/gif') return 'gif';
+  if (mime === 'image/heic') return 'heic';
+  if (mime === 'image/heif') return 'heif';
+  return 'jpg';
+}

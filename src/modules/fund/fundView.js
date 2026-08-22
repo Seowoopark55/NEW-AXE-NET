@@ -1,4 +1,5 @@
 import { renderFundNav } from './components/fundNav.js';
+import { evidenceFromClipboard, evidenceFromDrop } from './evidence.js';
 import { renderEntryCreatorModal, renderLedgerEditModal } from './components/shared.js';
 import { renderOverviewView } from './views/overviewView.js';
 import { renderPaymentView } from './views/paymentView.js';
@@ -164,6 +165,45 @@ function bindFundEvents(root, state, actions) {
     });
   });
 
+  root.querySelector('[data-fund-proxy-member]')?.addEventListener('change', (event) => {
+    actions.onProxyMemberSelect?.(String(event.target.value || ''));
+  });
+
+  root.querySelector('[data-payment-mode]')?.addEventListener('change', (event) => {
+    actions.onPaymentModeChange?.(String(event.target.value || '공용계좌'));
+  });
+
+  root.querySelectorAll('[data-payment-draft]').forEach((input) => {
+    input.addEventListener('change', () => {
+      actions.onPaymentDraftChange?.(input.dataset.paymentDraft, input.value);
+    });
+  });
+
+  const evidenceInput = root.querySelector('[data-evidence-file]');
+  root.querySelector('[data-evidence-browse]')?.addEventListener('click', () => evidenceInput?.click());
+  evidenceInput?.addEventListener('change', () => actions.onEvidenceFile?.(evidenceInput.files?.[0] || null));
+  root.querySelector('[data-evidence-clear]')?.addEventListener('click', () => actions.onEvidenceClear?.());
+
+  const evidenceDrop = root.querySelector('[data-evidence-drop]');
+  evidenceDrop?.addEventListener('click', () => evidenceInput?.click());
+  evidenceDrop?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); evidenceInput?.click(); }
+  });
+  evidenceDrop?.addEventListener('paste', (event) => {
+    const file = evidenceFromClipboard(event);
+    if (!file) return;
+    event.preventDefault();
+    actions.onEvidenceFile?.(file);
+  });
+  evidenceDrop?.addEventListener('dragover', (event) => { event.preventDefault(); evidenceDrop.classList.add('is-dragging'); });
+  evidenceDrop?.addEventListener('dragleave', () => evidenceDrop.classList.remove('is-dragging'));
+  evidenceDrop?.addEventListener('drop', (event) => {
+    event.preventDefault();
+    evidenceDrop.classList.remove('is-dragging');
+    const file = evidenceFromDrop(event);
+    if (file) actions.onEvidenceFile?.(file);
+  });
+
   root.querySelector('[data-fund-payment-request-form]')?.addEventListener('submit', (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -173,7 +213,8 @@ function bindFundEvents(root, state, actions) {
       week: Number(data.get('week')),
       amount: Number(data.get('amount')),
       payment_mode: String(data.get('payment_mode') || '공용계좌'),
-      evidence_url: String(data.get('evidence_url') || '').trim(),
+      public_amount: Number(data.get('public_amount') || 0),
+      company_amount: Number(data.get('company_amount') || 0),
       memo: String(data.get('memo') || '').trim(),
     });
   });
