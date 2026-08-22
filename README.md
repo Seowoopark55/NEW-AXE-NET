@@ -1,29 +1,38 @@
-# NEW AXE NET v1.0
+# NEW AXE NET v1.1
 
-공금 모듈의 Supabase-first 실시간 계산 전환 버전입니다.
+공금 LIVE ENGINE의 첫 운영 쓰기 기능입니다.
 
-## 핵심 변경
-v0.9까지는 이전한 `fund_status_snapshot`을 화면에 표시했습니다.
+## 추가 기능
+관리자 로그인 시 공금 화면 상단에 `공금 관리` 버튼이 표시됩니다.
 
-v1.0부터는 snapshot을 계산 원본에서 제거하고 다음 4개 데이터만으로 주간 상태를 실시간 계산합니다.
+### 면제 관리
+- 현재 선택한 주차에 멤버 면제 등록
+- 면제 사유 기록
+- 활성 면제 목록 확인
+- 면제 해제
+- 해제 시 행 삭제가 아니라 enabled=false로 과거 기록 보존
+- 변경 즉시 LIVE ENGINE 재계산
 
-- members
-- fund_fee_rules
-- fund_exemptions
-- fund_ledger
+### 회비 규칙
+- 적용 시작 연/월/주차 지정
+- 새 주간 공금 금액 추가
+- 기존 규칙을 덮어쓰지 않고 이력 누적
+- 규칙 활성/비활성 전환
+- base_weekly_fee fallback 규칙은 비활성화 불가
+- 변경 즉시 LIVE ENGINE 재계산
 
-## 검증
-기존 fund_status 324행과 새 계산 로직을 전 행 비교했고 324/324 일치했습니다.
+### 보안
+- fund_* 테이블의 INSERT/UPDATE 권한을 브라우저에 직접 열지 않음
+- 모든 쓰기는 SECURITY DEFINER RPC
+- 각 RPC 내부에서 new_axe_net.is_admin() 재검사
+- 공금 설정 변경은 fund_admin_audit_log에 기록
 
 ## 적용
-1. Supabase SQL Editor에서 `supabase/008_fund_live_engine.sql` 전체 실행
+1. Supabase SQL Editor에서 `supabase/009_fund_admin.sql` 전체 실행
 2. ZIP을 기존 NEW-AXE-NET 폴더에 덮어쓰기
 3. GitHub Desktop → Commit → Push
 4. Vercel 자동 배포
-5. 공금 화면에서 LIVE ENGINE 표시 확인
+5. 관리자 로그인 → 공금 → 공금 관리 확인
 
-## 추가 Import
+## 추가 CSV Import
 없습니다.
-
-`fund_status_snapshot`은 삭제하지 않습니다.
-과거 이전 결과 검증용으로만 보존합니다.

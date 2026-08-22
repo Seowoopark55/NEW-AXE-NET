@@ -54,6 +54,17 @@ const initialState = {
     summary: null,
     statusItems: [],
     recentLedger: [],
+
+    admin: {
+      open: false,
+      tab: 'exemptions',
+      loading: false,
+      saving: false,
+      error: null,
+      message: null,
+      exemptions: [],
+      feeRules: [],
+    },
   },
 
   ui: {
