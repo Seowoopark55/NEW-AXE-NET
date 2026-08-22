@@ -30,6 +30,12 @@ const initialState = {
     saving: false,
     saveError: null,
     saveSuccess: null,
+    audit: {
+      memberKey: null,
+      items: [],
+      loading: false,
+      error: null,
+    },
   },
 
   ui: {

@@ -36,3 +36,23 @@ export async function updateMember(memberKey, values) {
     member_key: memberKey,
   });
 }
+
+export async function fetchMemberAudit(memberKey) {
+  return api.select('member_audit_log', {
+    columns: [
+      'id',
+      'member_key',
+      'changed_by_nickname',
+      'changed_fields',
+      'old_data',
+      'new_data',
+      'changed_at',
+    ].join(','),
+    filters: {
+      member_key: memberKey,
+    },
+    orderBy: 'changed_at',
+    ascending: false,
+    limit: 20,
+  });
+}

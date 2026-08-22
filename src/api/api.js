@@ -17,9 +17,14 @@ async function select(table, options = {}) {
     orderBy,
     ascending = true,
     limit,
+    filters = {},
   } = options;
 
   let query = client.from(table).select(columns);
+
+  for (const [column, value] of Object.entries(filters)) {
+    query = query.eq(column, value);
+  }
 
   if (orderBy) {
     query = query.order(orderBy, { ascending });

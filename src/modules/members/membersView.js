@@ -296,6 +296,8 @@ function renderMemberReadOnly(item, auth, membersState) {
             관리자 <strong>${escapeHtml(auth.admin.nickname)}</strong>으로 인증되었습니다.
             수정 내용은 Supabase에 즉시 반영됩니다.
           </div>
+
+          ${renderMemberAudit(membersState.audit, item.member_key)}
         `
         : `
           <div class="member-detail__note">
@@ -304,6 +306,134 @@ function renderMemberReadOnly(item, auth, membersState) {
         `
     }
   `;
+}
+
+function renderMemberAudit(audit, memberKey) {
+  if (audit.memberKey !== memberKey) {
+    return '';
+  }
+
+  if (audit.loading) {
+    return `
+      <section class="member-audit">
+        <div class="member-audit__heading">
+          <span>최근 변경 이력</span>
+          <small>최대 20건</small>
+        </div>
+        <div class="member-audit__empty">변경 이력을 불러오는 중입니다.</div>
+      </section>
+    `;
+  }
+
+  if (audit.error) {
+    return `
+      <section class="member-audit">
+        <div class="member-audit__heading">
+          <span>최근 변경 이력</span>
+          <small>관리자 전용</small>
+        </div>
+        <div class="member-audit__error">${escapeHtml(audit.error)}</div>
+      </section>
+    `;
+  }
+
+  return `
+    <section class="member-audit">
+      <div class="member-audit__heading">
+        <span>최근 변경 이력</span>
+        <small>최대 20건</small>
+      </div>
+
+      ${
+        audit.items.length
+          ? `<div class="member-audit__list">${audit.items.map(renderAuditItem).join('')}</div>`
+          : '<div class="member-audit__empty">아직 기록된 변경이 없습니다.</div>'
+      }
+    </section>
+  `;
+}
+
+function renderAuditItem(item) {
+  const fields = Array.isArray(item.changed_fields)
+    ? item.changed_fields
+    : [];
+
+  return `
+    <article class="member-audit__item">
+      <div class="member-audit__meta">
+        <strong>${escapeHtml(item.changed_by_nickname || '관리자')}</strong>
+        <span>${formatDateTime(item.changed_at)}</span>
+      </div>
+
+      <div class="member-audit__changes">
+        ${
+          fields.length
+            ? fields.map((field) => renderAuditChange(field, item.old_data, item.new_data)).join('')
+            : '<span class="member-audit__unknown">변경 항목 정보 없음</span>'
+        }
+      </div>
+    </article>
+  `;
+}
+
+function renderAuditChange(field, oldData, newData) {
+  const labels = {
+    nickname: '닉네임',
+    role: '권한',
+    status: '상태',
+    badge: '배지',
+    points: '포인트',
+    resigned_at: '퇴사일',
+  };
+
+  return `
+    <div class="member-audit__change">
+      <span>${labels[field] ?? escapeHtml(field)}</span>
+      <div>
+        <del>${escapeHtml(formatAuditValue(field, oldData?.[field]))}</del>
+        <b>→</b>
+        <ins>${escapeHtml(formatAuditValue(field, newData?.[field]))}</ins>
+      </div>
+    </div>
+  `;
+}
+
+function formatAuditValue(field, value) {
+  if (value === null || value === undefined || value === '') {
+    return '—';
+  }
+
+  if (field === 'status') {
+    return {
+      active: '활동',
+      inactive: '비활성',
+      resigned: '퇴사',
+    }[value] ?? String(value);
+  }
+
+  if (field === 'points') {
+    return formatNumber(value);
+  }
+
+  return String(value);
+}
+
+function formatDateTime(value) {
+  if (!value) return '—';
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return escapeHtml(value);
+  }
+
+  return date.toLocaleString('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }
 
 function renderMemberEditForm(item, membersState) {

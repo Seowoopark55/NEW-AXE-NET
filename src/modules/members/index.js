@@ -1,5 +1,9 @@
 import { store } from '../../state/store.js';
-import { fetchMembers, updateMember } from './membersService.js';
+import {
+  fetchMemberAudit,
+  fetchMembers,
+  updateMember,
+} from './membersService.js';
 import { renderMembersView } from './membersView.js';
 
 export async function initMembersModule() {
@@ -40,8 +44,18 @@ export async function initMembersModule() {
             editingMemberKey: null,
             saveError: null,
             saveSuccess: null,
+            audit: {
+              memberKey,
+              items: [],
+              loading: false,
+              error: null,
+            },
           },
         }));
+
+        if (store.getState().auth.admin) {
+          void loadMemberAudit(memberKey);
+        }
       },
 
       onCloseDetail() {
@@ -53,6 +67,12 @@ export async function initMembersModule() {
             editingMemberKey: null,
             saveError: null,
             saveSuccess: null,
+            audit: {
+              memberKey: null,
+              items: [],
+              loading: false,
+              error: null,
+            },
           },
         }));
       },
@@ -112,6 +132,8 @@ export async function initMembersModule() {
               saveSuccess: '저장되었습니다.',
             },
           }));
+
+          await loadMemberAudit(memberKey);
         } catch (error) {
           console.error('[NEW AXE NET] member update failed:', error);
 
@@ -162,6 +184,63 @@ export async function initMembersModule() {
         ...state.members,
         loading: false,
         error: error?.message ?? String(error),
+      },
+    }));
+  }
+}
+
+async function loadMemberAudit(memberKey) {
+  if (!store.getState().auth.admin) return;
+
+  store.updateState((state) => ({
+    ...state,
+    members: {
+      ...state.members,
+      audit: {
+        memberKey,
+        items: [],
+        loading: true,
+        error: null,
+      },
+    },
+  }));
+
+  try {
+    const items = await fetchMemberAudit(memberKey);
+
+    if (store.getState().members.selectedMemberKey !== memberKey) {
+      return;
+    }
+
+    store.updateState((state) => ({
+      ...state,
+      members: {
+        ...state.members,
+        audit: {
+          memberKey,
+          items,
+          loading: false,
+          error: null,
+        },
+      },
+    }));
+  } catch (error) {
+    console.error('[NEW AXE NET] member audit load failed:', error);
+
+    if (store.getState().members.selectedMemberKey !== memberKey) {
+      return;
+    }
+
+    store.updateState((state) => ({
+      ...state,
+      members: {
+        ...state.members,
+        audit: {
+          memberKey,
+          items: [],
+          loading: false,
+          error: error?.message ?? String(error),
+        },
       },
     }));
   }
