@@ -97,6 +97,63 @@ export async function fetchFundAdminLedger(limit = 50) {
   });
 }
 
+export async function fetchFundRequests(limit = 100) {
+  return api.select('fund_requests', {
+    columns: [
+      'id',
+      'discord_user_id',
+      'discord_name',
+      'member_key',
+      'nickname',
+      'year',
+      'month',
+      'week',
+      'amount',
+      'status',
+      'evidence_url',
+      'memo',
+      'review_note',
+      'reviewer_discord_name',
+      'reviewed_at',
+      'payment_mode',
+      'submitted_via',
+      'created_at',
+      'updated_at',
+    ].join(','),
+    orderBy: 'created_at',
+    ascending: false,
+    limit,
+  });
+}
+
+export async function submitFundRequest(values) {
+  return api.rpc('submit_fund_request', {
+    p_member_key: values.member_key,
+    p_discord_user_id: values.discord_user_id,
+    p_year: values.year,
+    p_month: values.month,
+    p_week: values.week,
+    p_amount: values.amount,
+    p_payment_mode: values.payment_mode,
+    p_evidence_url: values.evidence_url || null,
+    p_memo: values.memo || null,
+  });
+}
+
+export async function approveFundRequest(requestId, reviewNote) {
+  return api.rpc('approve_fund_request', {
+    p_request_id: requestId,
+    p_review_note: reviewNote || null,
+  });
+}
+
+export async function rejectFundRequest(requestId, reviewNote) {
+  return api.rpc('reject_fund_request', {
+    p_request_id: requestId,
+    p_review_note: reviewNote || null,
+  });
+}
+
 export async function createFundExemption(values) {
   return api.rpc('create_fund_exemption', {
     p_member_key: values.member_key,

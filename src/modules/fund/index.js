@@ -1,5 +1,6 @@
 import { store } from '../../state/store.js';
 import {
+  approveFundRequest,
   cancelFundLedgerEntry,
   createFundExemption,
   createFundFeeRule,
@@ -12,8 +13,11 @@ import {
   fetchFundPeriods,
   fetchFundPeriodStatus,
   fetchFundRecentLedger,
+  fetchFundRequests,
   fetchFundSummary,
+  rejectFundRequest,
   setFundFeeRuleEnabled,
+  submitFundRequest,
 } from './fundService.js';
 import { renderFundView } from './fundView.js';
 
@@ -35,6 +39,87 @@ export async function initFundModule() {
 
         if (store.getState().fund.admin.open && store.getState().auth.admin) {
           await loadFundAdminData(period);
+        }
+      },
+
+      onOpenRequest() {
+        store.updateState((state) => ({
+          ...state,
+          fund: {
+            ...state.fund,
+            request: {
+              open: true,
+              submitting: false,
+              error: null,
+              success: null,
+            },
+          },
+        }));
+      },
+
+      onCloseRequest() {
+        store.updateState((state) => ({
+          ...state,
+          fund: {
+            ...state.fund,
+            request: {
+              ...state.fund.request,
+              open: false,
+              error: null,
+            },
+          },
+        }));
+      },
+
+      async onSubmitRequest(values) {
+        store.updateState((state) => ({
+          ...state,
+          fund: {
+            ...state.fund,
+            request: {
+              ...state.fund.request,
+              submitting: true,
+              error: null,
+              success: null,
+            },
+          },
+        }));
+
+        try {
+          validateSubmitRequest(values);
+          const requestId = await submitFundRequest(values);
+
+          store.updateState((state) => ({
+            ...state,
+            fund: {
+              ...state.fund,
+              request: {
+                open: true,
+                submitting: false,
+                error: null,
+                success: `신청 #${requestId}이 접수되었습니다. 관리자 승인 후 납부 완료로 반영됩니다.`,
+              },
+            },
+          }));
+
+          if (store.getState().auth.admin && store.getState().fund.admin.open) {
+            await loadFundAdminData(store.getState().fund.selectedPeriod);
+          }
+        } catch (error) {
+          console.error('[NEW AXE NET] fund request submit failed:', error);
+
+          store.updateState((state) => ({
+            ...state,
+            fund: {
+              ...state.fund,
+              request: {
+                ...state.fund.request,
+                submitting: false,
+                error: formatFundRequestError(error),
+                success: null,
+              },
+            },
+          }));
         }
       },
 
@@ -85,6 +170,24 @@ export async function initFundModule() {
             },
           },
         }));
+      },
+
+      async onApproveRequest(requestId, reviewNote) {
+        if (!store.getState().auth.admin) return;
+
+        await runAdminMutation(async () => {
+          await approveFundRequest(requestId, reviewNote);
+          return '신청을 승인하고 원장에 납부를 등록했습니다.';
+        });
+      },
+
+      async onRejectRequest(requestId, reviewNote) {
+        if (!store.getState().auth.admin) return;
+
+        await runAdminMutation(async () => {
+          await rejectFundRequest(requestId, reviewNote);
+          return '신청을 거절했습니다.';
+        });
       },
 
       async onCreateExemption(values) {
@@ -228,7 +331,7 @@ async function runAdminMutation(mutation) {
         admin: {
           ...state.fund.admin,
           saving: false,
-          error: formatFundAdminError(error),
+          error: formatFundRequestError(error),
           message: null,
         },
       },
@@ -247,6 +350,7 @@ async function refreshFundAfterAdminChange(message) {
     feeRules,
     exemptions,
     ledgerItems,
+    requests,
   ] = await Promise.all([
     fetchFundPeriods(),
     fetchFundSummary(period),
@@ -255,6 +359,7 @@ async function refreshFundAfterAdminChange(message) {
     fetchFundFeeRules(),
     fetchFundExemptions(period),
     fetchFundAdminLedger(50),
+    fetchFundRequests(100),
   ]);
 
   store.updateState((state) => ({
@@ -274,6 +379,7 @@ async function refreshFundAfterAdminChange(message) {
         feeRules: feeRules ?? [],
         exemptions: exemptions ?? [],
         ledgerItems: ledgerItems ?? [],
+        requests: requests ?? [],
       },
     },
   }));
@@ -295,10 +401,11 @@ async function loadFundAdminData(period) {
   }));
 
   try {
-    const [feeRules, exemptions, ledgerItems] = await Promise.all([
+    const [feeRules, exemptions, ledgerItems, requests] = await Promise.all([
       fetchFundFeeRules(),
       fetchFundExemptions(period),
       fetchFundAdminLedger(50),
+      fetchFundRequests(100),
     ]);
 
     store.updateState((state) => ({
@@ -312,6 +419,7 @@ async function loadFundAdminData(period) {
           feeRules: feeRules ?? [],
           exemptions: exemptions ?? [],
           ledgerItems: ledgerItems ?? [],
+          requests: requests ?? [],
         },
       },
     }));
@@ -325,7 +433,7 @@ async function loadFundAdminData(period) {
         admin: {
           ...state.fund.admin,
           loading: false,
-          error: formatFundAdminError(error),
+          error: formatFundRequestError(error),
         },
       },
     }));
@@ -374,6 +482,20 @@ async function loadFundPeriod(period) {
   }
 }
 
+function validateSubmitRequest(values) {
+  if (!values.member_key) {
+    throw new Error('멤버를 선택하세요.');
+  }
+
+  if (!/^\d+$/.test(values.discord_user_id)) {
+    throw new Error('Discord 사용자 ID는 숫자만 입력하세요.');
+  }
+
+  if (!Number.isInteger(values.amount) || values.amount <= 0) {
+    throw new Error('신청 금액은 0원보다 큰 정수로 입력하세요.');
+  }
+}
+
 function validatePayment(values) {
   const amount = Number(values.amount);
 
@@ -406,19 +528,27 @@ function validateTransaction(values) {
   }
 }
 
-function formatFundAdminError(error) {
+function formatFundRequestError(error) {
   const message = error?.message ?? String(error);
 
-  if (message.includes('fund_ledger_one_active_payment_idx')) {
-    return '이미 해당 멤버의 주차 납부 기록이 있습니다.';
+  if (message.includes('Discord 사용자 ID')) {
+    return message;
   }
 
-  if (message.includes('활성 납부 기록')) {
-    return '이미 해당 멤버의 주차 납부 기록이 있습니다.';
+  if (message.includes('pending') || message.includes('검토 대기')) {
+    return '이미 해당 주차에 검토 대기 중인 신청이 있습니다.';
+  }
+
+  if (
+    message.includes('fund_ledger_one_active_payment_idx') ||
+    message.includes('활성 납부 기록') ||
+    message.includes('납부가 완료')
+  ) {
+    return '이미 해당 멤버의 주차 납부가 완료되어 있습니다.';
   }
 
   if (message.includes('duplicate key value')) {
-    return '이미 같은 조건의 활성 데이터가 존재합니다.';
+    return '이미 같은 조건의 데이터가 존재합니다.';
   }
 
   if (message.includes('관리자 권한')) {

@@ -62,10 +62,14 @@ export function renderFundView(root, state, actions = {}) {
       <div class="panel__header fund-header">
         <div>
           <h2>공금</h2>
-          <p>원장 · 주간 현황 · 면제/회비 규칙 · 실시간 계산</p>
+          <p>원장 · 주간 현황 · 신청/승인 · 면제/회비 규칙</p>
         </div>
 
         <div class="fund-header-actions">
+          <button class="fund-request-button" type="button" data-open-fund-request>
+            납부 신청
+          </button>
+
           ${
             auth.admin
               ? `
@@ -165,11 +169,16 @@ export function renderFundView(root, state, actions = {}) {
 
         <div class="fund-live-note">
           <strong>LIVE ENGINE</strong>
-          주간 상태는 현재 members + fund_fee_rules + fund_exemptions + fund_ledger를 기준으로 실시간 계산됩니다.
-          fund_status_snapshot은 이전 검증 자료로만 보존됩니다.
+          승인된 납부는 fund_ledger에 즉시 생성되고 주간 상태와 잔액에 바로 반영됩니다.
         </div>
       </div>
     </section>
+
+    ${
+      fund.request.open
+        ? renderFundRequestModal(fund, members.items)
+        : ''
+    }
 
     ${
       fund.admin.open && auth.admin
@@ -181,6 +190,38 @@ export function renderFundView(root, state, actions = {}) {
   root.querySelector('[data-fund-period]')?.addEventListener('change', (event) => {
     const [year, month, week] = event.target.value.split('-').map(Number);
     actions.onPeriodChange?.({ year, month, week });
+  });
+
+  root.querySelector('[data-open-fund-request]')?.addEventListener('click', () => {
+    actions.onOpenRequest?.();
+  });
+
+  root.querySelectorAll('[data-close-fund-request]').forEach((element) => {
+    element.addEventListener('click', () => {
+      actions.onCloseRequest?.();
+    });
+  });
+
+  const requestForm = root.querySelector('[data-fund-request-form]');
+  requestForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(requestForm);
+    const selectedPeriod = fund.selectedPeriod;
+
+    if (!selectedPeriod) return;
+
+    actions.onSubmitRequest?.({
+      member_key: String(formData.get('member_key') ?? ''),
+      discord_user_id: String(formData.get('discord_user_id') ?? '').trim(),
+      year: selectedPeriod.year,
+      month: selectedPeriod.month,
+      week: selectedPeriod.week,
+      amount: Number(formData.get('amount')),
+      payment_mode: String(formData.get('payment_mode') ?? ''),
+      evidence_url: String(formData.get('evidence_url') ?? '').trim(),
+      memo: String(formData.get('memo') ?? '').trim(),
+    });
   });
 
   root.querySelector('[data-open-fund-admin]')?.addEventListener('click', () => {
@@ -196,6 +237,32 @@ export function renderFundView(root, state, actions = {}) {
   root.querySelectorAll('[data-fund-admin-tab]').forEach((button) => {
     button.addEventListener('click', () => {
       actions.onAdminTabChange?.(button.dataset.fundAdminTab);
+    });
+  });
+
+  root.querySelectorAll('[data-approve-request]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const note = window.prompt('승인 메모가 있으면 입력하세요.', '');
+
+      if (note === null) return;
+
+      actions.onApproveRequest?.(
+        Number(button.dataset.approveRequest),
+        note.trim(),
+      );
+    });
+  });
+
+  root.querySelectorAll('[data-reject-request]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const note = window.prompt('거절 사유를 입력하세요.', '');
+
+      if (note === null) return;
+
+      actions.onRejectRequest?.(
+        Number(button.dataset.rejectRequest),
+        note.trim(),
+      );
     });
   });
 
@@ -302,6 +369,137 @@ export function renderFundView(root, state, actions = {}) {
   });
 }
 
+function renderFundRequestModal(fund, memberItems) {
+  const period = fund.selectedPeriod;
+  const weeklyFee = Number(fund.summary?.fee ?? 0);
+  const activeMembers = memberItems.filter((member) => member.status === 'active');
+
+  return `
+    <div class="fund-request-backdrop" data-close-fund-request></div>
+
+    <section class="fund-request-modal" role="dialog" aria-modal="true" aria-label="공금 납부 신청">
+      <div class="fund-request-modal__header">
+        <div>
+          <span>PAYMENT REQUEST</span>
+          <h3>공금 납부 신청</h3>
+          <p>${formatPeriodLabel(period)} · 관리자 승인 후 완료 처리</p>
+        </div>
+
+        <button
+          class="fund-request-modal__close"
+          type="button"
+          aria-label="닫기"
+          data-close-fund-request
+        >
+          ×
+        </button>
+      </div>
+
+      <div class="fund-request-modal__body">
+        ${
+          fund.request.success
+            ? `
+              <div class="fund-request-result fund-request-result--success">
+                <strong>신청 완료</strong>
+                <span>${escapeHtml(fund.request.success)}</span>
+              </div>
+              <button class="fund-request-close-wide" type="button" data-close-fund-request>
+                닫기
+              </button>
+            `
+            : `
+              ${
+                fund.request.error
+                  ? `<div class="fund-request-result fund-request-result--error">${escapeHtml(fund.request.error)}</div>`
+                  : ''
+              }
+
+              <form class="fund-request-form" data-fund-request-form>
+                <label class="member-edit-field">
+                  <span>멤버 *</span>
+                  <select name="member_key" required>
+                    <option value="">선택</option>
+                    ${activeMembers.map((member) => `
+                      <option value="${escapeAttribute(member.member_key)}">
+                        ${escapeHtml(member.nickname)}
+                      </option>
+                    `).join('')}
+                  </select>
+                </label>
+
+                <label class="member-edit-field">
+                  <span>Discord 사용자 ID *</span>
+                  <input
+                    type="text"
+                    name="discord_user_id"
+                    inputmode="numeric"
+                    placeholder="본인의 Discord 숫자 ID"
+                    required
+                  />
+                </label>
+
+                <div class="fund-request-grid">
+                  <label class="member-edit-field">
+                    <span>신청 금액 *</span>
+                    <input
+                      type="number"
+                      name="amount"
+                      min="1"
+                      step="1000"
+                      value="${weeklyFee}"
+                      required
+                    />
+                  </label>
+
+                  <label class="member-edit-field">
+                    <span>입금 계좌</span>
+                    <select name="payment_mode">
+                      <option value="공용계좌" selected>공용계좌</option>
+                      <option value="회사잔고">회사잔고</option>
+                    </select>
+                  </label>
+                </div>
+
+                <label class="member-edit-field">
+                  <span>증빙 URL</span>
+                  <input
+                    type="url"
+                    name="evidence_url"
+                    maxlength="500"
+                    placeholder="선택 · 이미지/증빙 링크"
+                  />
+                </label>
+
+                <label class="member-edit-field">
+                  <span>메모</span>
+                  <input
+                    type="text"
+                    name="memo"
+                    maxlength="300"
+                    placeholder="선택"
+                  />
+                </label>
+
+                <div class="fund-request-help">
+                  선택한 멤버에 등록된 Discord ID와 입력한 ID가 일치해야 신청됩니다.
+                  신청만으로 공금 완료가 되지는 않으며, 관리자 승인 시 원장에 자동 등록됩니다.
+                </div>
+
+                <button
+                  class="fund-request-submit"
+                  type="submit"
+                  ${fund.request.submitting ? 'disabled' : ''}
+                >
+                  ${fund.request.submitting ? '신청 중...' : '납부 신청'}
+                </button>
+              </form>
+            `
+        }
+      </div>
+    </section>
+  `;
+}
+
 function renderFundAdminModal(fund, memberItems) {
   const admin = fund.admin;
   const period = fund.selectedPeriod;
@@ -315,7 +513,7 @@ function renderFundAdminModal(fund, memberItems) {
         <div>
           <span>FUND ADMIN</span>
           <h3>공금 관리</h3>
-          <p>납부 · 수입/지출/조정 · 면제 · 회비 규칙을 관리합니다.</p>
+          <p>신청 · 원장 · 면제 · 회비 규칙을 관리합니다.</p>
         </div>
 
         <button
@@ -329,6 +527,7 @@ function renderFundAdminModal(fund, memberItems) {
       </div>
 
       <div class="fund-admin-tabs">
+        ${renderAdminTab('requests', '요청', admin.tab, countPending(admin.requests))}
         ${renderAdminTab('ledger', '원장', admin.tab)}
         ${renderAdminTab('exemptions', '면제', admin.tab)}
         ${renderAdminTab('feeRules', '회비 규칙', admin.tab)}
@@ -354,15 +553,141 @@ function renderFundAdminModal(fund, memberItems) {
         }
 
         ${
-          admin.tab === 'ledger'
-            ? renderLedgerAdmin(admin, fund, activeMembers, memberItems)
-            : admin.tab === 'feeRules'
-              ? renderFeeRulesAdmin(admin, period)
-              : renderExemptionsAdmin(admin, period, activeMembers)
+          admin.tab === 'requests'
+            ? renderRequestsAdmin(admin)
+            : admin.tab === 'ledger'
+              ? renderLedgerAdmin(admin, fund, activeMembers, memberItems)
+              : admin.tab === 'feeRules'
+                ? renderFeeRulesAdmin(admin, period)
+                : renderExemptionsAdmin(admin, period, activeMembers)
         }
       </div>
     </section>
   `;
+}
+
+function renderRequestsAdmin(admin) {
+  const sorted = [...admin.requests].sort((a, b) => {
+    if (a.status === 'pending' && b.status !== 'pending') return -1;
+    if (a.status !== 'pending' && b.status === 'pending') return 1;
+
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+
+  return `
+    <div class="fund-admin-section-head">
+      <div>
+        <h4>공금 요청함</h4>
+        <p>pending 요청을 승인하면 fund_ledger에 납부가 자동 생성됩니다.</p>
+      </div>
+      <span>대기 ${countPending(admin.requests)}건</span>
+    </div>
+
+    <div class="fund-request-admin-list">
+      ${
+        sorted.length
+          ? sorted.map(renderRequestAdminItem).join('')
+          : '<div class="fund-admin-empty">공금 신청 내역이 없습니다.</div>'
+      }
+    </div>
+  `;
+}
+
+function renderRequestAdminItem(item) {
+  const pending = item.status === 'pending';
+
+  return `
+    <article class="fund-request-admin-item ${pending ? 'fund-request-admin-item--pending' : ''}">
+      <div class="fund-request-admin-item__top">
+        <div>
+          <div class="fund-request-admin-item__title">
+            <strong>${escapeHtml(item.nickname || '멤버')}</strong>
+            ${renderRequestStatus(item.status)}
+          </div>
+          <span>
+            ${item.year}년 ${item.month}월 ${item.week}주차
+            · ${escapeHtml(item.payment_mode || '공용계좌')}
+          </span>
+        </div>
+
+        <b>${formatMoney(item.amount)}</b>
+      </div>
+
+      <div class="fund-request-admin-item__meta">
+        <span>Discord ${escapeHtml(item.discord_name || item.discord_user_id || '—')}</span>
+        <span>${formatDateTime(item.created_at)}</span>
+        <span>${escapeHtml(item.submitted_via || 'legacy')}</span>
+      </div>
+
+      ${
+        item.memo
+          ? `<p class="fund-request-admin-item__memo">메모 · ${escapeHtml(item.memo)}</p>`
+          : ''
+      }
+
+      ${
+        item.evidence_url
+          ? `
+            <p class="fund-request-admin-item__memo">
+              증빙 ·
+              <a href="${escapeAttribute(item.evidence_url)}" target="_blank" rel="noopener noreferrer">
+                링크 열기
+              </a>
+            </p>
+          `
+          : ''
+      }
+
+      ${
+        item.review_note
+          ? `<p class="fund-request-admin-item__review">검토 · ${escapeHtml(item.review_note)}</p>`
+          : ''
+      }
+
+      ${
+        pending
+          ? `
+            <div class="fund-request-admin-item__actions">
+              <button
+                class="fund-admin-danger"
+                type="button"
+                data-reject-request="${item.id}"
+              >
+                거절
+              </button>
+
+              <button
+                class="fund-admin-primary"
+                type="button"
+                data-approve-request="${item.id}"
+              >
+                승인 + 원장 등록
+              </button>
+            </div>
+          `
+          : ''
+      }
+    </article>
+  `;
+}
+
+function renderRequestStatus(status) {
+  const labels = {
+    pending: '검토 대기',
+    approved: '승인',
+    rejected: '거절',
+    deleted: '삭제됨',
+  };
+
+  return `
+    <span class="fund-request-status fund-request-status--${escapeAttribute(status)}">
+      ${labels[status] ?? escapeHtml(status)}
+    </span>
+  `;
+}
+
+function countPending(requests) {
+  return requests.filter((item) => item.status === 'pending').length;
 }
 
 function renderLedgerAdmin(admin, fund, activeMembers, allMembers) {
@@ -376,7 +701,7 @@ function renderLedgerAdmin(admin, fund, activeMembers, allMembers) {
         <div class="fund-admin-section-head">
           <div>
             <h4>주간 공금 납부 등록</h4>
-            <p>${formatPeriodLabel(period)} · LIVE ENGINE 즉시 반영</p>
+            <p>${formatPeriodLabel(period)} · 관리자 직접 등록</p>
           </div>
         </div>
 
@@ -428,10 +753,6 @@ function renderLedgerAdmin(admin, fund, activeMembers, allMembers) {
                 placeholder="선택"
               />
             </label>
-          </div>
-
-          <div class="fund-admin-warning">
-            기존 AXE NET과 동일하게 0원보다 큰 active 납부 기록이 하나라도 있으면 해당 주차는 완료로 계산됩니다.
           </div>
 
           <button
@@ -606,7 +927,7 @@ function renderAdminLedgerItem(item) {
   `;
 }
 
-function renderAdminTab(value, label, activeTab) {
+function renderAdminTab(value, label, activeTab, count = null) {
   return `
     <button
       class="fund-admin-tab ${value === activeTab ? 'fund-admin-tab--active' : ''}"
@@ -614,6 +935,7 @@ function renderAdminTab(value, label, activeTab) {
       data-fund-admin-tab="${value}"
     >
       ${label}
+      ${count !== null ? `<span class="fund-admin-tab__count">${count}</span>` : ''}
     </button>
   `;
 }

@@ -55,9 +55,16 @@ const initialState = {
     statusItems: [],
     recentLedger: [],
 
+    request: {
+      open: false,
+      submitting: false,
+      error: null,
+      success: null,
+    },
+
     admin: {
       open: false,
-      tab: 'ledger',
+      tab: 'requests',
       loading: false,
       saving: false,
       error: null,
@@ -65,6 +72,7 @@ const initialState = {
       exemptions: [],
       feeRules: [],
       ledgerItems: [],
+      requests: [],
     },
   },
 
