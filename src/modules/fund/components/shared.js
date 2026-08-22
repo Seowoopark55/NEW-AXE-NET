@@ -156,7 +156,7 @@ export function renderLedgerEditModal(admin, members) {
         </div>
 
         ${item.evidence_url ? `
-          <div class="fund-admin13-evidence-existing">
+          <div class="fund-admin-evidence-existing">
             <span>증빙</span>
             <button type="button" data-evidence-preview="${escapeAttribute(item.evidence_url)}" data-evidence-label="공금내역 #${item.id} 증빙">증빙 크게 보기</button>
           </div>
@@ -270,12 +270,12 @@ export function renderEntryCreatorModal(admin, fund, members) {
 function renderAdminEntryEvidence(entryCreator) {
   const preview = entryCreator?.evidencePreview || '';
   return `
-    <div class="fund-admin13-upload" data-admin-entry-evidence-drop tabindex="0" role="button">
+    <div class="fund-admin-upload" data-admin-entry-evidence-drop tabindex="0" role="button">
       ${preview
-        ? `<div class="fund-admin13-upload__preview"><img src="${escapeAttribute(preview)}" alt="등록 증빙 미리보기" /></div>`
-        : `<div class="fund-admin13-upload__empty"><b>증빙 스크린샷</b><span>이 영역을 클릭하거나 Ctrl+V / 드래그앤드롭</span></div>`}
+        ? `<div class="fund-admin-upload__preview"><img src="${escapeAttribute(preview)}" alt="등록 증빙 미리보기" /></div>`
+        : `<div class="fund-admin-upload__empty"><b>증빙 스크린샷</b><span>이 영역을 클릭하거나 Ctrl+V / 드래그앤드롭</span></div>`}
     </div>
-    <div class="fund-admin13-upload__actions">
+    <div class="fund-admin-upload__actions">
       <input type="file" accept="image/*" data-admin-entry-evidence-file hidden />
       <button type="button" class="fund-secondary-button fund-secondary-button--small" data-admin-entry-evidence-browse>파일첨부</button>
       ${preview ? '<button type="button" class="fund-secondary-button fund-secondary-button--small" data-admin-entry-evidence-clear>첨부 제거</button>' : ''}

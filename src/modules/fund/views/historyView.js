@@ -13,12 +13,13 @@ export function renderHistoryView(state) {
   const filtered = filterLedger(admin.ledgerItems, filters);
   const months = getMonths(admin.ledgerItems);
   const summary = summarizeLedger(filtered);
+  const publicBalance = Number(state.fund.summary?.balance?.public ?? 0);
 
   return `
-    <div class="fund-admin13-page">
+    <div class="fund-admin">
       ${renderPageHeader(
         '공금내역',
-        '납부·수입·지출·조정 기록을 기존 AXE NET 운영 흐름처럼 한 화면에서 관리합니다.',
+        '공용계좌를 중심으로 납부·수입·지출·조정 기록을 빠르게 확인하고 관리합니다.',
         `
           <div class="fund-page-actions">
             <button class="fund-secondary-button" type="button" data-open-entry-creator="payment">납부 직접등록</button>
@@ -29,18 +30,17 @@ export function renderHistoryView(state) {
       ${admin.message ? `<div class="fund-inline-success">${escapeHtml(admin.message)}</div>` : ''}
       ${admin.error ? `<div class="fund-inline-error">${escapeHtml(admin.error)}</div>` : ''}
 
-      <div class="fund-admin13-stat-grid">
-        ${statCard('표시 내역', `${filtered.length}건`, `전체 ${admin.ledgerItems.length}건`)}
-        ${statCard('공용계좌 변화', signedMoney(summary.public), '현재 필터 기준')}
-        ${statCard('회사잔고 변화', signedMoney(summary.company), '현재 필터 기준')}
-        ${statCard('합계 변화', signedMoney(summary.public + summary.company), '수입 - 지출 ± 조정', true)}
+      <div class="fund-admin-metrics fund-admin-metrics--history">
+        ${metric('공용계좌', formatMoney(publicBalance), '현재 계산 잔액', 'primary')}
+        ${metric('현재 필터 변동', signedMoney(summary.public), '공용계좌 기준', summary.public < 0 ? 'warning' : '')}
+        ${metric('표시 내역', `${filtered.length}건`, `전체 ${admin.ledgerItems.length}건`)}
       </div>
 
-      <section class="fund-admin13-panel">
-        <div class="fund-admin13-toolbar">
-          <label class="fund-admin13-search">
+      <section class="fund-admin-panel">
+        <div class="fund-admin-toolbar">
+          <label class="fund-admin-search">
             <span>⌕</span>
-            <input data-history-filter="search" value="${escapeHtml(filters.search)}" placeholder="닉네임 · 분류 · 메모 검색" />
+            <input data-history-filter="search" value="${escapeHtml(filters.search)}" placeholder="닉네임 · 분류 · 메모" />
           </label>
           <select data-history-filter="type">
             ${option('all', '전체 유형', filters.type)}
@@ -57,7 +57,7 @@ export function renderHistoryView(state) {
           </select>
           <select data-history-filter="status">
             ${option('active', '정상 내역', filters.status)}
-            ${option('cancelled', '삭제된 내역', filters.status)}
+            ${option('cancelled', '삭제됨', filters.status)}
             ${option('all', '전체 상태', filters.status)}
           </select>
           <select data-history-filter="month">
@@ -66,11 +66,13 @@ export function renderHistoryView(state) {
           </select>
         </div>
 
-        <div class="fund-admin13-ledger-head">
-          <span>일자</span><span>내역</span><span>계좌 · 유형</span><span>금액</span><span>증빙</span><span></span>
-        </div>
-        <div class="fund-admin13-ledger-list">
-          ${filtered.length ? filtered.map(renderLedger).join('') : '<div class="fund-empty-state fund-empty-state--large">조건에 맞는 공금내역이 없습니다.</div>'}
+        <div class="fund-admin-table fund-admin-table--ledger">
+          <div class="fund-admin-table__head">
+            <span>일자</span><span>내역</span><span>계좌</span><span>금액</span><span>증빙</span><span></span>
+          </div>
+          <div class="fund-admin-table__body">
+            ${filtered.length ? filtered.map(renderLedger).join('') : '<div class="fund-empty-state fund-empty-state--large">조건에 맞는 공금내역이 없습니다.</div>'}
+          </div>
         </div>
       </section>
     </div>
@@ -80,27 +82,27 @@ export function renderHistoryView(state) {
 function renderLedger(item) {
   const deleted = item.status === 'cancelled';
   const evidence = item.evidence_url
-    ? `<button class="fund-admin13-evidence-button" type="button" data-evidence-preview="${escapeHtml(item.evidence_url)}" data-evidence-label="${escapeHtml(item.category || '공금')} 증빙">보기</button>`
-    : '<span class="fund-admin13-muted">—</span>';
+    ? `<button class="fund-admin-evidence" type="button" data-evidence-preview="${escapeHtml(item.evidence_url)}" data-evidence-label="${escapeHtml(item.category || '공금')} 증빙">보기</button>`
+    : '<span class="fund-admin-muted">—</span>';
   const detail = [item.nickname || '공용', item.year && item.week ? `${item.month}월 ${item.week}주차` : '', item.memo || '']
     .filter(Boolean)
     .map(escapeHtml)
     .join(' · ');
 
   return `
-    <article class="fund-admin13-ledger-row ${deleted ? 'is-deleted' : ''}">
+    <article class="fund-admin-table__row ${deleted ? 'is-deleted' : ''}">
       <time>${formatDate(item.ledger_date)}</time>
-      <div class="fund-admin13-ledger-main">
+      <div class="fund-admin-ledger-main">
         <strong>${escapeHtml(item.category || item.ledger_type || '공금')}</strong>
         <span>${detail || '—'}</span>
       </div>
-      <div class="fund-admin13-ledger-meta">
-        <b>${escapeHtml(item.account || '—')}</b>
-        <span>${typeLabel(item)}${deleted ? ' · 삭제됨' : ''}</span>
+      <div class="fund-admin-ledger-account">
+        <b>${shortAccount(item.account)}</b>
+        <span>${typeLabel(item)}${deleted ? ' · 삭제' : ''}</span>
       </div>
-      <b class="fund-admin13-ledger-amount fund-money--${ledgerAmountType(item)}">${ledgerSign(item)}${formatMoney(Math.abs(Number(item.amount ?? 0)))}</b>
+      <b class="fund-admin-ledger-amount fund-money--${ledgerAmountType(item)}">${ledgerSign(item)}${formatMoney(Math.abs(Number(item.amount ?? 0)))}</b>
       <div>${evidence}</div>
-      <div class="fund-admin13-ledger-action">
+      <div class="fund-admin-ledger-action">
         ${deleted
           ? `<button class="fund-secondary-button fund-secondary-button--small" type="button" data-restore-ledger="${item.id}">복구</button>`
           : `<button class="fund-secondary-button fund-secondary-button--small" type="button" data-edit-ledger="${item.id}">상세</button>`}
@@ -119,8 +121,8 @@ function summarizeLedger(items) {
   }, { public: 0, company: 0 });
 }
 
-function statCard(label, value, note, accent = false) {
-  return `<div class="fund-admin13-stat ${accent ? 'is-accent' : ''}"><span>${label}</span><strong>${value}</strong><small>${note}</small></div>`;
+function metric(label, value, note, tone = '') {
+  return `<div class="fund-admin-metric ${tone ? `is-${tone}` : ''}"><span>${label}</span><strong>${value}</strong><small>${note}</small></div>`;
 }
 
 function signedMoney(value) {
@@ -141,9 +143,7 @@ function filterLedger(items, filters) {
     }
     if (search) {
       const haystack = [item.nickname, item.category, item.memo, item.account, item.ledger_type]
-        .filter(Boolean)
-        .join(' ')
-        .toLowerCase();
+        .filter(Boolean).join(' ').toLowerCase();
       if (!haystack.includes(search)) return false;
     }
     return true;
@@ -159,10 +159,17 @@ function getMonths(items) {
 }
 
 function typeLabel(item) {
-  if (item.entry_type === 'payment') return '공금납부';
+  if (item.entry_type === 'payment') return '공금';
   if (item.direction === '수입') return '수입';
   if (item.direction === '지출') return '지출';
   return '조정';
+}
+
+function shortAccount(account) {
+  if (account === '공용계좌') return '공용';
+  if (account === '회사잔고') return '잔고';
+  if (account === '분할납부') return '분할';
+  return account || '—';
 }
 
 function option(value, label, selected) {
