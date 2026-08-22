@@ -105,3 +105,25 @@
 - 멤버관리/잔액점검/면제관리 패널 최대폭 제한
 - 카드가 화면 폭을 억지로 채우지 않도록 metric 폭 고정
 - 추가 SQL 없음 / CSV 없음
+
+
+## v1.16.0 — AXE UI SYSTEM 1.0
+
+기존 AXE NET을 UI/UX 기준서로 삼아 NEW AXE NET의 공통 디자인 수치를 코드화했습니다.
+
+- `src/styles/axe-ui-system.css`: 전역 UI 토큰
+- `docs/AXE_UI_SYSTEM_1.0.md`: UI 기준 문서
+- 공금 관리자 `admin.css`: 전면 재작성
+- 월별현황 `overview.css`: AXE NET 밀도 기준으로 전면 재작성
+- 공금 공통 폰트/버튼/입력/탭 크기를 AXE NET 기준으로 보정
+- 작은 글씨로 억지로 압축하지 않고 열 폭과 간격으로 컴팩트함을 확보
+
+### DB
+추가 SQL 없음.
+
+### 적용
+기존 NEW-AXE-NET 폴더에 전체 덮어쓰기 후 Commit → Push → Vercel 자동배포.
+
+
+### AXE UI SYSTEM 1.0
+공금 UI는 기존 AXE NET의 실제 글자/컨트롤/표 밀도를 기준으로 재설계했습니다. 컴팩트함을 위해 8~9px 글씨를 사용하는 방식은 제거하고, 열 폭·gap·padding으로 밀도를 관리합니다.

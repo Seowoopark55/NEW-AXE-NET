@@ -1,4 +1,5 @@
 import './styles/main.css';
+import './styles/axe-ui-system.css';
 import { store } from './state/store.js';
 import { renderAppShell } from './components/AppShell.js';
 import { initAuthModule } from './modules/auth/index.js';

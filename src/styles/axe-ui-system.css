@@ -1,0 +1,108 @@
+/* AXE UI SYSTEM 1.0
+   ------------------------------------------------------------------
+   UI/UX source of truth for NEW AXE NET.
+   Baseline is the existing AXE NET operational UI, not an arbitrary
+   new dashboard scale. Feature CSS should consume these tokens instead
+   of inventing per-screen font sizes / row heights / control sizes.
+*/
+
+:root {
+  /* Layout */
+  --axe-ui-content-max: 1280px;
+  --axe-ui-content-pad-x: 18px;
+  --axe-ui-section-gap: 14px;
+  --axe-ui-block-gap: 12px;
+  --axe-ui-compact-gap: 8px;
+
+  /* Typography — AXE NET baseline */
+  --axe-ui-font-page: 25px;
+  --axe-ui-font-section: 16px;
+  --axe-ui-font-card-title: 15px;
+  --axe-ui-font-body: 12.5px;
+  --axe-ui-font-control: 13px;
+  --axe-ui-font-label: 12px;
+  --axe-ui-font-meta: 11.5px;
+  --axe-ui-font-caption: 10.5px;
+  --axe-ui-font-kicker: 10px;
+
+  /* Weight */
+  --axe-ui-weight-strong: 950;
+  --axe-ui-weight-label: 850;
+
+  /* Controls */
+  --axe-ui-control-height: 38px;
+  --axe-ui-button-height: 36px;
+  --axe-ui-button-small-height: 32px;
+  --axe-ui-chip-height: 24px;
+  --axe-ui-chip-min-width: 44px;
+
+  /* Tables / lists */
+  --axe-ui-table-cell-y: 9px;
+  --axe-ui-table-cell-x: 8px;
+  --axe-ui-table-head: 11.5px;
+  --axe-ui-table-body: 12.5px;
+  --axe-ui-row-min: 44px;
+
+  /* Surfaces */
+  --axe-ui-radius-control: 11px;
+  --axe-ui-radius-button: 10px;
+  --axe-ui-radius-card: 13px;
+  --axe-ui-radius-panel: 15px;
+  --axe-ui-radius-section: 16px;
+
+  --axe-ui-bg-field: #151515;
+  --axe-ui-bg-card: rgba(0,0,0,.22);
+  --axe-ui-bg-panel: #101216;
+  --axe-ui-border: rgba(255,255,255,.08);
+  --axe-ui-border-soft: rgba(255,255,255,.06);
+  --axe-ui-muted: #888;
+  --axe-ui-copy: #ddd;
+  --axe-ui-gold: #ffb52e;
+  --axe-ui-gold-soft: #ffcf75;
+  --axe-ui-plus: #6ee7a8;
+  --axe-ui-minus: #ff7a7a;
+}
+
+/* Shared typography helpers for current and future modules. */
+.axe-ui-page-title {
+  margin: 0;
+  font-size: var(--axe-ui-font-page);
+  font-weight: var(--axe-ui-weight-strong);
+  line-height: 1.15;
+}
+.axe-ui-section-title {
+  margin: 0;
+  font-size: var(--axe-ui-font-section);
+  font-weight: var(--axe-ui-weight-strong);
+}
+.axe-ui-meta {
+  color: var(--axe-ui-muted);
+  font-size: var(--axe-ui-font-meta);
+  line-height: 1.45;
+}
+
+/* New modules can use these generic building blocks directly. */
+.axe-ui-control {
+  min-height: var(--axe-ui-control-height);
+  padding: 0 10px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: var(--axe-ui-radius-control);
+  color: #fff;
+  background: var(--axe-ui-bg-field);
+  font-size: var(--axe-ui-font-control);
+}
+.axe-ui-button {
+  min-height: var(--axe-ui-button-height);
+  padding: 0 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: var(--axe-ui-radius-button);
+  color: #bbb;
+  background: rgba(20,20,20,.92);
+  font-size: var(--axe-ui-font-control);
+  font-weight: var(--axe-ui-weight-strong);
+}
+.axe-ui-card {
+  border: 1px solid var(--axe-ui-border);
+  border-radius: var(--axe-ui-radius-card);
+  background: var(--axe-ui-bg-card);
+}
