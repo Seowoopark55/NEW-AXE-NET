@@ -6,8 +6,11 @@ import { renderSubmissionsView } from './views/submissionsView.js';
 import { renderReviewView } from './views/reviewView.js';
 import { renderHistoryView } from './views/historyView.js';
 import { renderBalanceView } from './views/balanceView.js';
-import { renderSettingsView } from './views/settingsView.js';
-import { escapeHtml } from './fundUtils.js';
+import { renderFeeRulesView } from './views/feeRulesView.js';
+import { renderExemptionsView } from './views/exemptionsView.js';
+import { renderIntegrityView } from './views/integrityView.js';
+import { renderFundMembersView } from './views/fundMembersView.js';
+import { escapeHtml, formatMoney } from './fundUtils.js';
 
 export function renderFundView(root, state, actions = {}) {
   const { fund, system, auth } = state;
@@ -32,14 +35,16 @@ export function renderFundView(root, state, actions = {}) {
   const pendingCount = fund.admin.requests.filter((item) => item.status === 'pending').length;
 
   root.innerHTML = `
-    <section class="fund-workspace">
-      <div class="fund-workspace__heading">
+    <section class="fund-workspace fund-workspace--axe">
+      <div class="fund-page-head fund-page-head--legacy">
         <div>
-          <span>FUND</span>
-          <h1>공금</h1>
-          <p>월별 현황부터 납부·검수·내역까지 실제 운영 순서대로 관리합니다.</p>
+          <h1>공금관리</h1>
+          <p>증빙 제출, 검수, 기간 면제, 공금내역과 잔액 정합성을 통합 관리합니다.</p>
         </div>
+        <button class="fund-refresh-button" type="button" data-fund-refresh>새로고침</button>
       </div>
+
+      ${renderLegacySummary(state, pendingCount)}
 
       ${renderFundNav(safeSection, isAdmin, pendingCount)}
 
@@ -55,6 +60,42 @@ export function renderFundView(root, state, actions = {}) {
   bindFundEvents(root, state, actions);
 }
 
+function renderLegacySummary(state, pendingCount) {
+  const fund = state.fund;
+  const balance = fund.summary?.balance ?? {};
+  const selectedMonth = fund.selectedMonth;
+  const requests = fund.admin.requests ?? [];
+  const approvedCount = selectedMonth
+    ? requests.filter((item) =>
+        item.status === 'approved'
+        && Number(item.year) === Number(selectedMonth.year)
+        && Number(item.month) === Number(selectedMonth.month)
+      ).length
+    : 0;
+  const exemptionCount = Number(fund.monthOverview?.totals?.exempt ?? 0);
+
+  return `
+    <div class="fund-summary-grid fund-summary-grid-premium">
+      <div class="fund-summary-card">
+        <div class="fund-summary-value gold">${formatMoney(balance.public)}</div>
+        <div class="fund-summary-label">공용계좌 계산 잔액</div>
+      </div>
+      <div class="fund-summary-card">
+        <div class="fund-summary-value ${pendingCount ? 'warn' : ''}">${pendingCount}</div>
+        <div class="fund-summary-label">전체 검수대기</div>
+      </div>
+      <div class="fund-summary-card">
+        <div class="fund-summary-value">${approvedCount}</div>
+        <div class="fund-summary-label">선택월 승인 건</div>
+      </div>
+      <div class="fund-summary-card">
+        <div class="fund-summary-value">${exemptionCount}</div>
+        <div class="fund-summary-label">선택월 면제</div>
+      </div>
+    </div>
+  `;
+}
+
 function renderSection(section, state) {
   switch (section) {
     case 'payment': return renderPaymentView(state);
@@ -62,7 +103,10 @@ function renderSection(section, state) {
     case 'review': return renderReviewView(state);
     case 'history': return renderHistoryView(state);
     case 'balance': return renderBalanceView(state);
-    case 'settings': return renderSettingsView(state);
+    case 'feeRules': return renderFeeRulesView(state);
+    case 'exemptions': return renderExemptionsView(state);
+    case 'integrity': return renderIntegrityView(state);
+    case 'fundMembers': return renderFundMembersView(state);
     case 'overview':
     default: return renderOverviewView(state);
   }
@@ -70,13 +114,17 @@ function renderSection(section, state) {
 
 function normalizeSection(section, isAdmin) {
   const publicSections = ['overview', 'payment', 'submissions'];
-  const adminSections = ['review', 'history', 'balance', 'settings'];
+  const adminSections = ['review', 'history', 'balance', 'feeRules', 'exemptions', 'integrity', 'fundMembers'];
   if (publicSections.includes(section)) return section;
   if (isAdmin && adminSections.includes(section)) return section;
   return 'overview';
 }
 
 function bindFundEvents(root, state, actions) {
+  root.querySelectorAll('[data-fund-refresh]').forEach((button) => {
+    button.addEventListener('click', () => actions.onRefresh?.());
+  });
+
   root.querySelectorAll('[data-fund-section]').forEach((button) => {
     button.addEventListener('click', () => actions.onSectionChange?.(button.dataset.fundSection));
   });

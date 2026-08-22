@@ -11,6 +11,13 @@ export async function fetchFundMonthOverview(year, month) {
   });
 }
 
+export async function fetchFundMonthMatrix(year, month) {
+  return api.rpc('get_fund_month_matrix', {
+    p_year: year,
+    p_month: month,
+  });
+}
+
 export async function fetchFundSummary(period = null) {
   return api.rpc('get_fund_summary', {
     p_year: period?.year ?? null,

@@ -14,6 +14,7 @@ import {
   fetchFundExemptions,
   fetchFundFeeRules,
   fetchFundMonthOverview,
+  fetchFundMonthMatrix,
   fetchFundPeriodStatus,
   fetchFundPeriods,
   fetchFundRecentLedger,
@@ -28,7 +29,7 @@ import {
 } from './fundService.js';
 import { renderFundView } from './fundView.js';
 
-const ADMIN_SECTIONS = new Set(['review', 'history', 'balance', 'settings']);
+const ADMIN_SECTIONS = new Set(['review', 'history', 'balance', 'feeRules', 'exemptions', 'integrity', 'fundMembers']);
 
 export async function initFundModule() {
   const root = document.querySelector('#module-root');
@@ -46,6 +47,10 @@ export async function initFundModule() {
 
 function buildActions() {
   return {
+    async onRefresh() {
+      await refreshCurrentWorkspace();
+    },
+
     async onSectionChange(section) {
       const state = store.getState();
       if (ADMIN_SECTIONS.has(section) && !state.auth.admin) return;
@@ -316,8 +321,9 @@ async function loadFundBase() {
       ? { year: selectedPeriod.year, month: selectedPeriod.month }
       : currentMonth();
 
-    const [monthOverview, statusItems] = await Promise.all([
+    const [monthOverview, monthMatrix, statusItems] = await Promise.all([
       fetchFundMonthOverview(selectedMonth.year, selectedMonth.month),
+      fetchFundMonthMatrix(selectedMonth.year, selectedMonth.month),
       selectedPeriod ? fetchFundPeriodStatus(selectedPeriod) : Promise.resolve([]),
     ]);
 
@@ -332,6 +338,7 @@ async function loadFundBase() {
         selectedPeriod,
         selectedMonth,
         monthOverview,
+        monthMatrix,
         summary,
         statusItems: statusItems ?? [],
         recentLedger: recentLedger ?? [],
@@ -358,7 +365,10 @@ async function loadFundBase() {
 async function loadMonth(month) {
   setFundBusy(true);
   try {
-    const overview = await fetchFundMonthOverview(month.year, month.month);
+    const [overview, monthMatrix] = await Promise.all([
+      fetchFundMonthOverview(month.year, month.month),
+      fetchFundMonthMatrix(month.year, month.month),
+    ]);
     const weeks = overview?.weeks ?? [];
     const today = new Date();
     let target = weeks.find((item) => {
@@ -383,6 +393,7 @@ async function loadMonth(month) {
           selectedMonth: month,
           selectedPeriod: period,
           monthOverview: overview,
+          monthMatrix,
           summary,
           statusItems: statusItems ?? [],
         },
@@ -395,6 +406,7 @@ async function loadMonth(month) {
           loading: false,
           selectedMonth: month,
           monthOverview: overview,
+          monthMatrix,
           statusItems: [],
         },
       }));
@@ -422,7 +434,7 @@ async function loadPeriod(period) {
       },
     }));
 
-    if (store.getState().auth.admin && store.getState().fund.section === 'settings') {
+    if (store.getState().auth.admin && store.getState().fund.section === 'exemptions') {
       await refreshExemptionsOnly();
     }
   } catch (error) {
@@ -666,11 +678,12 @@ async function refreshAllAfterMutation(message) {
   const period = state.fund.selectedPeriod;
   const month = state.fund.selectedMonth;
 
-  const [summary, statusItems, recentLedger, monthOverview] = await Promise.all([
+  const [summary, statusItems, recentLedger, monthOverview, monthMatrix] = await Promise.all([
     fetchFundSummary(period),
     fetchFundPeriodStatus(period),
     fetchFundRecentLedger(12),
     fetchFundMonthOverview(month.year, month.month),
+    fetchFundMonthMatrix(month.year, month.month),
   ]);
 
   store.updateState((current) => ({
@@ -681,6 +694,7 @@ async function refreshAllAfterMutation(message) {
       statusItems,
       recentLedger,
       monthOverview,
+      monthMatrix,
       admin: { ...current.fund.admin, saving: false },
     },
   }));
@@ -701,6 +715,47 @@ async function refreshAllAfterMutation(message) {
     } catch {
       // 관리자 조작 후 본인 조회 갱신 실패는 관리자 작업 자체를 실패시키지 않습니다.
     }
+  }
+}
+
+
+async function refreshCurrentWorkspace() {
+  const state = store.getState();
+  const month = state.fund.selectedMonth;
+  const period = state.fund.selectedPeriod;
+
+  setFundBusy(true);
+
+  try {
+    const [periods, summary, statusItems, recentLedger, monthOverview, monthMatrix] = await Promise.all([
+      fetchFundPeriods(),
+      fetchFundSummary(period),
+      period ? fetchFundPeriodStatus(period) : Promise.resolve([]),
+      fetchFundRecentLedger(12),
+      fetchFundMonthOverview(month.year, month.month),
+      fetchFundMonthMatrix(month.year, month.month),
+    ]);
+
+    store.updateState((current) => ({
+      ...current,
+      fund: {
+        ...current.fund,
+        loading: false,
+        error: null,
+        periods: periods ?? [],
+        summary,
+        statusItems: statusItems ?? [],
+        recentLedger: recentLedger ?? [],
+        monthOverview,
+        monthMatrix,
+      },
+    }));
+
+    if (store.getState().auth.admin) {
+      await refreshAdminWorkspace();
+    }
+  } catch (error) {
+    setFundError(error);
   }
 }
 

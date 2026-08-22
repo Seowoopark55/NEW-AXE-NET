@@ -10,32 +10,26 @@ const ADMIN_ITEMS = [
   ['review', '검수대기'],
   ['history', '공금내역'],
   ['balance', '잔액점검'],
-  ['settings', '공금설정'],
+  ['feeRules', '요율관리'],
+  ['exemptions', '면제관리'],
+  ['integrity', '정합성점검'],
+  ['fundMembers', '멤버관리'],
 ];
 
 export function renderFundNav(section, isAdmin, pendingCount = 0) {
-  return `
-    <div class="fund-workspace-nav" aria-label="공금 메뉴">
-      <div class="fund-workspace-nav__group">
-        ${PUBLIC_ITEMS.map(([value, label]) => renderItem(value, label, section)).join('')}
-      </div>
+  const items = [
+    ...PUBLIC_ITEMS,
+    ...(isAdmin ? ADMIN_ITEMS : []),
+  ];
 
-      ${
-        isAdmin
-          ? `
-            <div class="fund-workspace-nav__divider"></div>
-            <div class="fund-workspace-nav__group fund-workspace-nav__group--admin">
-              <span class="fund-workspace-nav__admin-label">관리자</span>
-              ${ADMIN_ITEMS.map(([value, label]) => renderItem(
-                value,
-                label,
-                section,
-                value === 'review' && pendingCount > 0 ? pendingCount : null,
-              )).join('')}
-            </div>
-          `
-          : ''
-      }
+  return `
+    <div class="fund-tabs" aria-label="공금 메뉴">
+      ${items.map(([value, label]) => renderItem(
+        value,
+        label,
+        section,
+        value === 'review' && pendingCount > 0 ? pendingCount : null,
+      )).join('')}
     </div>
   `;
 }
@@ -43,12 +37,12 @@ export function renderFundNav(section, isAdmin, pendingCount = 0) {
 function renderItem(value, label, section, count = null) {
   return `
     <button
-      class="fund-workspace-nav__item ${section === value ? 'fund-workspace-nav__item--active' : ''}"
+      class="${section === value ? 'active' : ''}"
       type="button"
       data-fund-section="${escapeHtml(value)}"
     >
       <span>${escapeHtml(label)}</span>
-      ${count !== null ? `<b>${count}</b>` : ''}
+      ${count !== null ? `<b class="fund-tab-count">${count}</b>` : ''}
     </button>
   `;
 }

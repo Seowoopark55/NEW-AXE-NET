@@ -55,6 +55,7 @@ const initialState = {
     selectedPeriod: null,
     selectedMonth: null,
     monthOverview: null,
+    monthMatrix: null,
     summary: null,
     statusItems: [],
     recentLedger: [],

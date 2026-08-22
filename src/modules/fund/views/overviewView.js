@@ -1,101 +1,109 @@
 import {
   escapeHtml,
+  formatDate,
   formatMoney,
   formatMonthLabel,
-  formatPeriodLabel,
-  renderStatusBadge,
 } from '../fundUtils.js';
-import { renderCompactLedger, renderPageHeader } from '../components/shared.js';
+import { renderPageHeader } from '../components/shared.js';
 
 export function renderOverviewView(state) {
   const fund = state.fund;
-  const overview = fund.monthOverview ?? { weeks: [], totals: {} };
-  const summary = fund.summary ?? {};
-  const balance = summary.balance ?? {};
-  const totals = overview.totals ?? {};
-  const period = fund.selectedPeriod;
+  const matrix = fund.monthMatrix ?? { weeks: [], members: [] };
+  const weeks = matrix.weeks ?? [];
+  const members = matrix.members ?? [];
 
   return `
     ${renderPageHeader(
       '월별현황',
-      '한 달의 납부 흐름을 주차별로 확인하고 필요한 주차를 바로 점검합니다.',
+      '월별 공금표에서 멤버별 납부·검수·면제 상태를 한 번에 확인합니다.',
       renderMonthPicker(fund.selectedMonth),
     )}
 
-    <div class="fund-overview-kpis">
-      ${renderKpi('납부완료', totals.completed, '건')}
-      ${renderKpi('미납', totals.unpaid, '건', 'danger')}
-      ${renderKpi('면제', totals.exempt, '건')}
-      ${renderKpi('검수대기', totals.pending, '건', Number(totals.pending) > 0 ? 'warn' : '')}
-    </div>
-
-    <div class="fund-balance-row">
-      ${renderBalance('공용계좌', balance.public)}
-      ${renderBalance('회사잔고', balance.company)}
-      ${renderBalance('총 잔액', balance.total, true)}
-    </div>
-
-    <section class="fund-section-card">
-      <div class="fund-section-card__header">
+    <section class="fund-legacy-panel">
+      <div class="fund-legacy-panel__head">
         <div>
-          <span>WEEKLY FLOW</span>
-          <h3>${formatMonthLabel(fund.selectedMonth)}</h3>
+          <h3>${formatMonthLabel(fund.selectedMonth)} 공금 현황</h3>
+          <p>회차는 일요일~토요일 기준이며 토요일이 속한 달을 표시 월로 사용합니다.</p>
         </div>
-        <p>주차를 누르면 아래 멤버 현황이 바뀝니다.</p>
+        <div class="fund-status-legend">
+          <span><i class="done"></i>완료</span>
+          <span><i class="pending"></i>검수대기</span>
+          <span><i class="unpaid"></i>미납</span>
+          <span><i class="exempt"></i>면제</span>
+        </div>
       </div>
 
-      <div class="fund-week-grid">
-        ${(overview.weeks ?? []).map((week) => renderWeekCard(week, period)).join('')}
+      <div class="fund-matrix-wrap">
+        <table class="fund-matrix">
+          <thead>
+            <tr>
+              <th class="left">멤버</th>
+              ${weeks.map((week) => `
+                <th>
+                  <strong>${week.week}주차</strong>
+                  <small>${shortRange(week.period_start, week.period_end)}</small>
+                </th>
+              `).join('')}
+              <th>미납</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${members.length
+              ? members.map((member) => renderMemberRow(member, weeks)).join('')
+              : `<tr><td colspan="${weeks.length + 2}" class="fund-empty-state">공금 대상 멤버가 없습니다.</td></tr>`}
+          </tbody>
+        </table>
       </div>
     </section>
-
-    <div class="fund-two-column">
-      <section class="fund-section-card">
-        <div class="fund-section-card__header">
-          <div>
-            <span>MEMBERS</span>
-            <h3>${formatPeriodLabel(period)}</h3>
-          </div>
-          <p>${fund.statusItems.length}명</p>
-        </div>
-
-        <div class="fund-member-status-list">
-          ${fund.statusItems.length
-            ? fund.statusItems.map((item, index) => `
-                <div class="fund-member-status-row">
-                  <span class="fund-member-status-row__order">${index + 1}</span>
-                  <strong>${escapeHtml(item.nickname)}</strong>
-                  ${renderStatusBadge(item.status)}
-                  <b>${formatMoney(item.amount)}</b>
-                </div>
-              `).join('')
-            : '<div class="fund-empty-state">표시할 멤버가 없습니다.</div>'}
-        </div>
-      </section>
-
-      <section class="fund-section-card">
-        <div class="fund-section-card__header">
-          <div>
-            <span>RECENT</span>
-            <h3>최근 공금내역</h3>
-          </div>
-          ${state.auth.admin ? '<button class="fund-text-button" type="button" data-fund-section="history">전체보기</button>' : ''}
-        </div>
-
-        <div class="fund-compact-ledger-list">
-          ${fund.recentLedger.length
-            ? fund.recentLedger.slice(0, 8).map(renderCompactLedger).join('')
-            : '<div class="fund-empty-state">최근 내역이 없습니다.</div>'}
-        </div>
-      </section>
-    </div>
   `;
+}
+
+function renderMemberRow(member, weeks) {
+  const cellMap = new Map((member.cells ?? []).map((cell) => [Number(cell.week), cell]));
+  return `
+    <tr>
+      <td class="left">
+        <strong>${escapeHtml(member.nickname)}</strong>
+        <small>${member.join_date ? `가입 ${formatDate(member.join_date)}` : ''}</small>
+      </td>
+      ${weeks.map((week) => {
+        const cell = cellMap.get(Number(week.week));
+        return `<td>${renderMatrixStatus(cell)}</td>`;
+      }).join('')}
+      <td class="fund-matrix__unpaid">
+        <strong>${Number(member.unpaid_count ?? 0)}</strong>
+      </td>
+    </tr>
+  `;
+}
+
+function renderMatrixStatus(cell) {
+  if (!cell) return '<span class="fund-matrix-status muted">—</span>';
+  const cls = statusClass(cell.status);
+  const amount = ['미납', '검수대기'].includes(cell.status)
+    ? `<small>${formatMoney(cell.weekly_fee ?? cell.amount)}</small>`
+    : '';
+  return `
+    <span class="fund-matrix-status ${cls}">
+      <b>${escapeHtml(cell.status)}</b>
+      ${amount}
+    </span>
+  `;
+}
+
+function statusClass(status) {
+  if (status === '완료') return 'done';
+  if (status === '검수대기') return 'pending';
+  if (status === '미납') return 'unpaid';
+  if (status === '면제') return 'exempt';
+  if (status === '예정') return 'future';
+  return 'muted';
 }
 
 function renderMonthPicker(month) {
   if (!month) return '';
   return `
-    <div class="fund-month-picker">
+    <div class="fund-month-toolbar">
       <button type="button" data-fund-month-shift="-1">‹</button>
       <strong>${month.year}년 ${month.month}월</strong>
       <button type="button" data-fund-month-shift="1">›</button>
@@ -103,47 +111,7 @@ function renderMonthPicker(month) {
   `;
 }
 
-function renderKpi(label, value, suffix, tone = '') {
-  return `
-    <div class="fund-overview-kpi ${tone ? `fund-overview-kpi--${tone}` : ''}">
-      <span>${label}</span>
-      <strong>${Number(value ?? 0).toLocaleString('ko-KR')}<small>${suffix}</small></strong>
-    </div>
-  `;
-}
-
-function renderBalance(label, value, strong = false) {
-  return `
-    <div class="fund-balance-card ${strong ? 'fund-balance-card--strong' : ''}">
-      <span>${label}</span>
-      <strong>${formatMoney(value)}</strong>
-    </div>
-  `;
-}
-
-function renderWeekCard(week, selectedPeriod) {
-  const selected = selectedPeriod && Number(selectedPeriod.week) === Number(week.week)
-    && Number(selectedPeriod.year) === Number(week.year)
-    && Number(selectedPeriod.month) === Number(week.month);
-
-  return `
-    <button
-      class="fund-week-card ${selected ? 'fund-week-card--active' : ''}"
-      type="button"
-      data-fund-week="${week.week}"
-      data-year="${week.year}"
-      data-month="${week.month}"
-    >
-      <div class="fund-week-card__top">
-        <strong>${week.week}주차</strong>
-        <span>${formatMoney(week.weekly_fee)}</span>
-      </div>
-      <div class="fund-week-card__stats">
-        <span>완료 <b>${week.completed}</b></span>
-        <span class="is-danger">미납 <b>${week.unpaid}</b></span>
-        <span>면제 <b>${week.exempt}</b></span>
-        ${Number(week.pending) > 0 ? `<span class="is-warn">검수 <b>${week.pending}</b></span>` : ''}
-      </div>
-    </button>
-  `;
+function shortRange(start, end) {
+  if (!start || !end) return '';
+  return `${String(start).slice(5).replace('-', '.')}~${String(end).slice(5).replace('-', '.')}`;
 }
