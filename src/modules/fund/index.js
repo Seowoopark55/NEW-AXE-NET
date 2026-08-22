@@ -82,6 +82,14 @@ function buildActions() {
       await loadMonth(next);
     },
 
+    async onMonthSelect(month) {
+      if (!month?.year || !month?.month) return;
+      await loadMonth({
+        year: Number(month.year),
+        month: Number(month.month),
+      });
+    },
+
     async onWeekSelect(period) {
       await loadPeriod(period);
     },

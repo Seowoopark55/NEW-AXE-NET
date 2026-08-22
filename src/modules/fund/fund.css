@@ -865,3 +865,246 @@
     justify-items: start;
   }
 }
+
+
+/* =========================================================
+   v1.8 · MONTHLY LEGACY DENSITY
+   기존 AXE NET 월별현황의 밀도/폭/상태표현을 기준으로 조정
+========================================================= */
+
+.fund-overview-legacy {
+  width: min(920px, 100%);
+}
+
+.fund-overview-legacy .fund-page-header {
+  margin-bottom: 10px;
+}
+
+.fund-overview-legacy .fund-page-header h2 {
+  font-size: 18px;
+}
+
+.fund-overview-legacy .fund-page-header p {
+  margin-top: 3px;
+  font-size: 9px;
+}
+
+.fund-month-select {
+  display: inline-flex;
+}
+
+.fund-month-select select {
+  width: auto;
+  min-width: 124px;
+  height: 38px;
+  padding: 0 34px 0 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  border-radius: 11px;
+  color: #f0f0f0;
+  background: #151515;
+  font-size: 11px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.fund-month-strip {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-height: 48px;
+  margin-bottom: 10px;
+  padding: 0 14px;
+  border: 1px solid rgba(255,181,46,.22);
+  border-radius: 13px;
+  background: rgba(255,181,46,.025);
+}
+
+.fund-month-strip strong {
+  flex: 0 0 auto;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 950;
+}
+
+.fund-month-strip span {
+  overflow: hidden;
+  color: #7d7d7d;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fund-legacy-panel--monthly {
+  width: min(920px, 100%);
+  border-radius: 14px;
+}
+
+.fund-legacy-panel--monthly .fund-matrix-wrap {
+  overflow-x: auto;
+}
+
+.fund-matrix--legacy {
+  width: 100%;
+  min-width: 760px;
+  table-layout: fixed;
+}
+
+.fund-matrix--legacy .fund-col-member {
+  width: 190px;
+}
+
+.fund-matrix--legacy .fund-col-week {
+  width: 132px;
+}
+
+.fund-matrix--legacy .fund-col-unpaid {
+  width: 54px;
+}
+
+.fund-matrix--legacy th,
+.fund-matrix--legacy td {
+  height: 50px;
+  padding: 7px 9px;
+}
+
+.fund-matrix--legacy thead th {
+  height: 48px;
+  color: #787878;
+  background: rgba(255,255,255,.012);
+}
+
+.fund-matrix--legacy thead th strong {
+  color: #d5d5d5;
+  font-size: 10px;
+  line-height: 1.1;
+}
+
+.fund-matrix--legacy thead th small {
+  margin-top: 2px;
+  color: #6d6d6d;
+  font-size: 7px;
+}
+
+.fund-matrix--legacy .fund-member-cell {
+  padding-left: 11px;
+}
+
+.fund-matrix--legacy .fund-member-cell strong {
+  color: #f1f1f1;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.fund-matrix--legacy .fund-member-cell small {
+  margin-top: 3px;
+  color: #686868;
+  font-size: 7.5px;
+  white-space: nowrap;
+}
+
+.fund-matrix--legacy .fund-matrix-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 50px;
+  min-height: 25px;
+  padding: 0 10px;
+  border-radius: 999px;
+}
+
+.fund-matrix--legacy .fund-matrix-status b {
+  font-size: 8px;
+  line-height: 1;
+}
+
+.fund-matrix--legacy .fund-matrix-status.public {
+  border-color: rgba(52,125,193,.58);
+  color: #7cc3ff;
+  background: rgba(31,99,162,.14);
+}
+
+.fund-matrix--legacy .fund-matrix-status.company {
+  border-color: rgba(209,144,30,.58);
+  color: #ffc257;
+  background: rgba(184,120,18,.12);
+}
+
+.fund-matrix--legacy .fund-matrix-status.done {
+  border-color: rgba(55,151,95,.55);
+  color: #75e5a2;
+  background: rgba(39,132,78,.12);
+}
+
+.fund-matrix--legacy .fund-matrix-status.pending {
+  border-color: rgba(185,157,58,.52);
+  color: #e5cc6b;
+  background: rgba(167,139,42,.10);
+}
+
+.fund-matrix--legacy .fund-matrix-status.unpaid {
+  border-color: rgba(108,108,108,.40);
+  color: #d4d4d4;
+  background: rgba(255,255,255,.035);
+}
+
+.fund-matrix--legacy .fund-matrix-status.exempt {
+  border-color: rgba(96,96,96,.45);
+  color: #b8b8b8;
+  background: rgba(255,255,255,.025);
+}
+
+.fund-matrix--legacy .fund-matrix-status.future,
+.fund-matrix--legacy .fund-matrix-status.muted {
+  border-color: rgba(75,75,75,.28);
+  color: #676767;
+  background: rgba(255,255,255,.012);
+}
+
+.fund-matrix--legacy .fund-matrix__unpaid strong {
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.fund-matrix--legacy th.is-current-week {
+  box-shadow: inset 0 2px 0 rgba(255,181,46,.62);
+  background: rgba(255,181,46,.026);
+}
+
+.fund-matrix--legacy td.is-current-week {
+  background: rgba(255,181,46,.009);
+}
+
+.fund-matrix--legacy tbody tr:hover {
+  background: rgba(255,255,255,.012);
+}
+
+.fund-matrix--legacy tbody tr:hover td.is-current-week {
+  background: rgba(255,181,46,.025);
+}
+
+/* v1.7에서 추가한 큰 선택월/현재회차 카드 제거 */
+.fund-overview-legacy .fund-status-overview {
+  display: none;
+}
+
+@media (max-width: 980px) {
+  .fund-overview-legacy,
+  .fund-legacy-panel--monthly {
+    width: 100%;
+  }
+}
+
+@media (max-width: 680px) {
+  .fund-month-strip {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 3px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .fund-month-strip span {
+    white-space: normal;
+  }
+}

@@ -44,7 +44,7 @@ export function renderFundView(root, state, actions = {}) {
         <button class="fund-refresh-button" type="button" data-fund-refresh>새로고침</button>
       </div>
 
-      ${renderLegacySummary(state, pendingCount)}
+      ${safeSection === 'overview' ? '' : renderLegacySummary(state, pendingCount)}
 
       ${renderFundNav(safeSection, isAdmin, pendingCount)}
 
@@ -131,6 +131,12 @@ function bindFundEvents(root, state, actions) {
 
   root.querySelectorAll('[data-fund-month-shift]').forEach((button) => {
     button.addEventListener('click', () => actions.onMonthShift?.(Number(button.dataset.fundMonthShift)));
+  });
+
+  root.querySelector('[data-fund-month-select]')?.addEventListener('change', (event) => {
+    const [year, month] = String(event.target.value).split('-').map(Number);
+    if (!year || !month) return;
+    actions.onMonthSelect?.({ year, month });
   });
 
   root.querySelectorAll('[data-fund-week]').forEach((button) => {
