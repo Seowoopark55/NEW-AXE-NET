@@ -10,8 +10,11 @@ export function renderAppShell(root) {
         </div>
 
         <nav class="nav">
-          <button class="nav__item nav__item--active" type="button">
+          <button class="nav__item" type="button" data-nav-module="members">
             멤버
+          </button>
+          <button class="nav__item" type="button" data-nav-module="fund">
+            공금
           </button>
         </nav>
       </aside>
@@ -34,10 +37,34 @@ export function renderAppShell(root) {
     </div>
   `;
 
+  root.querySelectorAll('[data-nav-module]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const moduleName = button.dataset.navModule;
+
+      store.updateState((state) => ({
+        ...state,
+        ui: {
+          ...state.ui,
+          activeModule: moduleName,
+        },
+      }));
+    });
+  });
+
   renderConnectionStatus(store.getState().system);
+  renderNavigation(store.getState().ui.activeModule);
 
   store.subscribe((state) => {
     renderConnectionStatus(state.system);
+    renderNavigation(state.ui.activeModule);
+  });
+}
+
+function renderNavigation(activeModule) {
+  document.querySelectorAll('[data-nav-module]').forEach((button) => {
+    const active = button.dataset.navModule === activeModule;
+    button.classList.toggle('nav__item--active', active);
+    button.setAttribute('aria-current', active ? 'page' : 'false');
   });
 }
 

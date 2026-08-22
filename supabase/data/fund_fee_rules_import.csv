@@ -1,0 +1,6 @@
+﻿legacy_id,source_id,start_year,start_month,start_week,weekly_fee,note,enabled,source_key,created_at,updated_at
+1,base_weekly_fee,1970,1,1,20000,기본 주간 공금 fallback,true,base_weekly_fee,2026-08-22 03:40:53.268+00,2026-08-22 03:40:53.269+00
+2,legacy_2,2026,1,1,20000,기존 공금설정 이력,true,fund_fee:공금설정:legacy_2,2026-08-22 03:40:53.269+00,2026-08-22 03:40:53.269+00
+3,legacy_3,2026,6,2,10000,기존 공금설정 이력,true,fund_fee:공금설정:legacy_3,2026-08-22 03:40:53.269+00,2026-08-22 03:40:53.269+00
+4,legacy_4,2026,7,1,10000,기존 공금설정 이력,true,fund_fee:공금설정:legacy_4,2026-08-22 03:40:53.269+00,2026-08-22 03:40:53.269+00
+5,legacy_5,2026,7,2,20000,기존 공금설정 이력,true,fund_fee:공금설정:legacy_5,2026-08-22 03:40:53.269+00,2026-08-22 03:40:53.269+00

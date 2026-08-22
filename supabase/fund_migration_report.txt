@@ -1,0 +1,43 @@
+NEW AXE NET 공금 데이터 이전 검증 보고서
+=====================================
+
+원본 행 수
+- fund_members: 18
+- fund_exemptions: 60
+- fund_fee_rules: 5
+- fund_ledger: 590
+- fund_status: 324
+- fund_requests: 250
+
+검증
+- fund_members 18명은 NEW members의 active 18명과 정확히 일치
+- 공금 관련 member_key 중 NEW members에 없는 키: 0건
+- fund_status 중 member/year/month/week 중복: 0건
+- fund_exemptions의 enabled=true 중 동일 member/year/month/week 중복: 0건
+- fund_requests source_key 중복: 0건
+- fund_ledger source_key 중복: 0건
+
+원장 상태
+- 전체 590건
+- active 332건
+- cancelled 258건
+
+active 원장 기준 현재 잔액
+- 공용계좌: 452,755원
+- 회사잔고: 70,000원
+- 합계: 522,755원
+
+현재 상태 스냅샷 기준 최근 진행 기간
+- 2026년 8월 4주차
+- 완료 13명
+- 미납 4명
+- 면제 1명
+- 주간 공금 20,000원
+
+NEW 구조에서의 결정
+- 기존 fund_members는 별도 테이블로 복제하지 않음
+  이유: 현재 18행이 NEW members의 active 멤버 18명과 완전히 동일하여 중복 상태가 됨
+- fund_status는 source of truth가 아니라 `fund_status_snapshot`으로 보존
+  v0.9 화면은 이 스냅샷을 이용해 기존 결과를 그대로 검증
+- 실제 금액 원본은 `fund_ledger`
+- 다음 단계에서 NEW AXE NET 자체 주간 상태 계산 엔진으로 교체 예정

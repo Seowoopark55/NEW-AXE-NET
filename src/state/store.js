@@ -45,6 +45,17 @@ const initialState = {
     },
   },
 
+  fund: {
+    initialized: false,
+    loading: false,
+    error: null,
+    periods: [],
+    selectedPeriod: null,
+    summary: null,
+    statusItems: [],
+    recentLedger: [],
+  },
+
   ui: {
     activeModule: 'members',
   },

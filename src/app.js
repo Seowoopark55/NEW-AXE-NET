@@ -3,6 +3,7 @@ import { store } from './state/store.js';
 import { renderAppShell } from './components/AppShell.js';
 import { initAuthModule } from './modules/auth/index.js';
 import { initMembersModule } from './modules/members/index.js';
+import { initFundModule } from './modules/fund/index.js';
 import { runSupabaseHealthCheck } from './modules/system/systemService.js';
 
 const app = document.querySelector('#app');
@@ -23,6 +24,7 @@ async function bootstrap() {
 
   await initAuthModule();
   await initMembersModule();
+  await initFundModule();
 
   store.updateState((state) => ({
     ...state,

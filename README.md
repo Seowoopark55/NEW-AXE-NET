@@ -1,32 +1,38 @@
-# NEW AXE NET v0.8
+# NEW AXE NET v0.9
 
-멤버 관리 모듈에 안전한 신규 멤버 등록 기능을 추가한 버전입니다.
+공금 모듈 1차 이전 버전입니다.
 
-## v0.8 기능
-- 관리자에게만 `+ 멤버 추가` 버튼 표시
-- 신규 멤버 입력:
-  - 닉네임
-  - Discord 사용자 ID
-  - Discord 표시명
-  - 권한
-  - 상태
-  - 가입일
-  - 배지
-  - 초기 포인트
-- member_key 자동 생성
-- 전체 정렬 순서 마지막에 자동 배치
-- 등록 후 새 멤버 상세 패널 자동 열기
-- 등록 행위도 기존 member_audit_log에 기록
-- 일반 authenticated 사용자에게 members INSERT 권한을 직접 열지 않음
-- `create_member()` RPC 내부에서 `is_admin()`을 다시 검사
+## v0.9
+- 좌측 메뉴에 `공금` 모듈 추가
+- 기존 공금 데이터를 NEW schema로 분리 이전
+- 전체/공용계좌/회사잔고 잔액 표시
+- 주차 선택
+- 주차별 완료/미납/면제/예정 현황
+- 멤버별 주간 상태
+- 최근 active 원장 12건
+- 원본 공금 테이블은 브라우저에 직접 노출하지 않고 공개 RPC만 사용
+
+## 데이터 이전
+SQL 실행 후 `supabase/data` 폴더의 CSV 5개를 각 NEW 테이블에 Import합니다.
+
+1. fund_fee_rules_import.csv → new_axe_net.fund_fee_rules
+2. fund_exemptions_import.csv → new_axe_net.fund_exemptions
+3. fund_status_snapshot_import.csv → new_axe_net.fund_status_snapshot
+4. fund_requests_import.csv → new_axe_net.fund_requests
+5. fund_ledger_import.csv → new_axe_net.fund_ledger
+
+기존 fund_members CSV는 import하지 않습니다.
+현재 18행이 NEW members의 active 18명과 정확히 같아 중복 상태이므로 members를 기준으로 사용합니다.
 
 ## 적용 순서
-1. Supabase SQL Editor에서 `supabase/006_member_create.sql` 전체 실행
-2. ZIP 내용을 기존 NEW-AXE-NET 폴더에 덮어쓰기
-3. GitHub Desktop → Commit → Push
-4. Vercel 자동 배포
-5. 관리자 로그인 → `+ 멤버 추가` 테스트
+1. `supabase/007_fund_base.sql` 실행
+2. 위 CSV 5개 Import
+3. ZIP을 NEW-AXE-NET 폴더에 덮어쓰기
+4. GitHub Desktop → Commit → Push
+5. Vercel 자동 배포
+6. 좌측 `공금` 메뉴 확인
 
-## 관리자 role과 로그인 권한
-members.role이 `admin`이어도 NEW AXE NET 로그인 관리자 권한이 자동 생기지는 않습니다.
-로그인 관리 권한은 `new_axe_net.admin_accounts`로 별도 관리합니다.
+## 현재 단계
+v0.9의 주간 상태는 기존 Supabase 계산 결과를 snapshot으로 보존해 표시합니다.
+다음 단계에서 fund_ledger + fund_fee_rules + fund_exemptions + members를 기준으로
+NEW AXE NET 자체 계산 엔진을 만들 예정입니다.

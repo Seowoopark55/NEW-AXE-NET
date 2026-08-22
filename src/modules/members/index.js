@@ -15,6 +15,10 @@ export async function initMembersModule() {
   }
 
   const rerender = () => {
+    if (store.getState().ui.activeModule !== 'members') {
+      return;
+    }
+
     renderMembersView(root, store.getState(), {
       onFilterChange(filter) {
         store.updateState((state) => ({
