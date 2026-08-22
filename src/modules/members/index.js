@@ -20,6 +20,36 @@ export async function initMembersModule() {
           },
         }));
       },
+
+      onSearchChange(search) {
+        store.updateState((state) => ({
+          ...state,
+          members: {
+            ...state.members,
+            search,
+          },
+        }));
+      },
+
+      onSelectMember(memberKey) {
+        store.updateState((state) => ({
+          ...state,
+          members: {
+            ...state.members,
+            selectedMemberKey: memberKey,
+          },
+        }));
+      },
+
+      onCloseDetail() {
+        store.updateState((state) => ({
+          ...state,
+          members: {
+            ...state.members,
+            selectedMemberKey: null,
+          },
+        }));
+      },
     });
   };
 

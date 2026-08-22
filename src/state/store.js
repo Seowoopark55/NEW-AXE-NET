@@ -17,6 +17,8 @@ const initialState = {
     loading: false,
     error: null,
     filter: 'all',
+    search: '',
+    selectedMemberKey: null,
   },
 
   ui: {
@@ -42,6 +44,7 @@ function setState(patch) {
 function updateState(updater) {
   const nextState = updater(state);
   if (!nextState) return;
+
   state = nextState;
   notify();
 }

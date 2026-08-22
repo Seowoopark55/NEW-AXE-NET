@@ -13,10 +13,30 @@ export function renderMembersView(root, state, actions = {}) {
     resigned: members.items.filter((item) => item.status === 'resigned').length,
   };
 
-  const visibleItems =
-    members.filter === 'all'
-      ? members.items
-      : members.items.filter((item) => item.status === members.filter);
+  const search = members.search.trim().toLowerCase();
+
+  const visibleItems = members.items.filter((item) => {
+    const matchesFilter =
+      members.filter === 'all' || item.status === members.filter;
+
+    if (!matchesFilter) return false;
+    if (!search) return true;
+
+    return [
+      item.nickname,
+      item.discord_name,
+      item.role,
+      item.status,
+      item.badge,
+    ]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(search));
+  });
+
+  const selectedMember =
+    members.items.find(
+      (item) => item.member_key === members.selectedMemberKey,
+    ) ?? null;
 
   root.innerHTML = `
     <section class="panel">
@@ -32,12 +52,31 @@ export function renderMembersView(root, state, actions = {}) {
         ${renderMembersState(members, counts, visibleItems)}
       </div>
     </section>
+
+    ${selectedMember ? renderMemberDetail(selectedMember) : ''}
   `;
+
+  const searchInput = root.querySelector('[data-member-search]');
+  if (searchInput) {
+    searchInput.addEventListener('input', (event) => {
+      actions.onSearchChange?.(event.target.value);
+    });
+  }
 
   root.querySelectorAll('[data-member-filter]').forEach((button) => {
     button.addEventListener('click', () => {
       actions.onFilterChange?.(button.dataset.memberFilter);
     });
+  });
+
+  root.querySelectorAll('[data-member-key]').forEach((row) => {
+    row.addEventListener('click', () => {
+      actions.onSelectMember?.(row.dataset.memberKey);
+    });
+  });
+
+  root.querySelector('[data-close-member-detail]')?.addEventListener('click', () => {
+    actions.onCloseDetail?.();
   });
 }
 
@@ -85,11 +124,28 @@ function renderMembersState(members, counts, visibleItems) {
       ${renderStat('퇴사', counts.resigned)}
     </div>
 
-    <div class="member-toolbar">
-      ${renderFilterButton('all', '전체', members.filter)}
-      ${renderFilterButton('active', '활동', members.filter)}
-      ${renderFilterButton('inactive', '비활성', members.filter)}
-      ${renderFilterButton('resigned', '퇴사', members.filter)}
+    <div class="member-toolbar member-toolbar--split">
+      <div class="member-toolbar__filters">
+        ${renderFilterButton('all', '전체', members.filter)}
+        ${renderFilterButton('active', '활동', members.filter)}
+        ${renderFilterButton('inactive', '비활성', members.filter)}
+        ${renderFilterButton('resigned', '퇴사', members.filter)}
+      </div>
+
+      <label class="member-search">
+        <span class="member-search__icon">⌕</span>
+        <input
+          type="search"
+          placeholder="닉네임 · Discord · 권한 · 배지 검색"
+          value="${escapeAttribute(members.search)}"
+          data-member-search
+        />
+      </label>
+    </div>
+
+    <div class="member-result-meta">
+      <span>표시 ${visibleItems.length}명</span>
+      <span>행을 클릭하면 상세정보를 볼 수 있습니다.</span>
     </div>
 
     <div class="member-table-wrap">
@@ -110,10 +166,59 @@ function renderMembersState(members, counts, visibleItems) {
           ${
             visibleItems.length
               ? visibleItems.map(renderMemberRow).join('')
-              : '<tr><td colspan="8" class="member-table__empty">표시할 멤버가 없습니다.</td></tr>'
+              : '<tr><td colspan="8" class="member-table__empty">조건에 맞는 멤버가 없습니다.</td></tr>'
           }
         </tbody>
       </table>
+    </div>
+  `;
+}
+
+function renderMemberDetail(item) {
+  return `
+    <div class="member-detail-backdrop" data-close-member-detail></div>
+
+    <aside class="member-detail" aria-label="멤버 상세정보">
+      <div class="member-detail__header">
+        <div>
+          <span class="member-detail__eyebrow">MEMBER DETAIL</span>
+          <h3>${escapeHtml(item.nickname ?? '')}</h3>
+          <p>${escapeHtml(item.discord_name || 'Discord 미연동')}</p>
+        </div>
+
+        <button
+          class="member-detail__close"
+          type="button"
+          aria-label="상세정보 닫기"
+          data-close-member-detail
+        >
+          ×
+        </button>
+      </div>
+
+      <div class="member-detail__body">
+        ${renderDetailItem('상태', renderStatus(item.status), true)}
+        ${renderDetailItem('권한', renderRole(item.role), true)}
+        ${renderDetailItem('배지', escapeHtml(item.badge || '—'), true)}
+        ${renderDetailItem('가입일', escapeHtml(item.joined_date || '—'))}
+        ${renderDetailItem('최근 로그인', escapeHtml(item.last_login || '—'))}
+        ${renderDetailItem('퇴사일', escapeHtml(item.resigned_at || '—'))}
+        ${renderDetailItem('포인트', formatNumber(item.points))}
+        ${renderDetailItem('정렬 순서', escapeHtml(item.sort_order ?? '—'))}
+
+        <div class="member-detail__note">
+          현재는 조회 전용입니다. 수정 기능은 관리자 인증/권한 구조를 만든 뒤 연결합니다.
+        </div>
+      </div>
+    </aside>
+  `;
+}
+
+function renderDetailItem(label, value, raw = false) {
+  return `
+    <div class="member-detail__item">
+      <span>${label}</span>
+      <strong>${raw ? value : escapeHtml(value)}</strong>
     </div>
   `;
 }
@@ -141,7 +246,7 @@ function renderFilterButton(filter, label, activeFilter) {
 
 function renderMemberRow(item) {
   return `
-    <tr>
+    <tr class="member-table__row" data-member-key="${escapeAttribute(item.member_key)}">
       <td>${escapeHtml(item.sort_order ?? '')}</td>
       <td><strong>${escapeHtml(item.nickname ?? '')}</strong></td>
       <td>${escapeHtml(item.discord_name || '—')}</td>
@@ -166,7 +271,7 @@ function renderStatus(status) {
   };
 
   return `
-    <span class="member-status member-status--${escapeHtml(status || 'inactive')}">
+    <span class="member-status member-status--${escapeAttribute(status || 'inactive')}">
       ${labels[status] ?? escapeHtml(status ?? '')}
     </span>
   `;
@@ -184,4 +289,8 @@ function escapeHtml(value) {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
+}
+
+function escapeAttribute(value) {
+  return escapeHtml(value).replaceAll('`', '&#096;');
 }
