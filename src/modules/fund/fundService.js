@@ -174,7 +174,7 @@ export async function rejectFundRequest(requestId, reviewNote) {
 }
 
 export async function fetchFundAdminLedger(limit = 1000) {
-  return api.select('fund_ledger', {
+  const rows = await api.select('fund_ledger', {
     columns: [
       'id',
       'member_key',
@@ -184,6 +184,8 @@ export async function fetchFundAdminLedger(limit = 1000) {
       'week',
       'entry_type',
       'amount',
+      'public_amount',
+      'company_amount',
       'status',
       'memo',
       'ledger_date',
@@ -204,10 +206,11 @@ export async function fetchFundAdminLedger(limit = 1000) {
     ascending: false,
     limit,
   });
+  return Promise.all(rows.map(hydrateAdminEvidenceRow));
 }
 
 export async function createFundPayment(values) {
-  return api.rpc('create_fund_payment', {
+  return withAdminEvidence(values.evidence, 'admin-ledger', async (evidenceUrl) => api.rpc('create_fund_payment_v2', {
     p_member_key: values.member_key,
     p_year: values.year,
     p_month: values.month,
@@ -216,11 +219,12 @@ export async function createFundPayment(values) {
     p_account: values.account,
     p_ledger_date: values.ledger_date || null,
     p_memo: values.memo || null,
-  });
+    p_evidence_url: evidenceUrl,
+  }));
 }
 
 export async function createFundTransaction(values) {
-  return api.rpc('create_fund_transaction', {
+  return withAdminEvidence(values.evidence, 'admin-ledger', async (evidenceUrl) => api.rpc('create_fund_transaction_v2', {
     p_direction: values.direction,
     p_account: values.account,
     p_amount: values.amount,
@@ -228,7 +232,8 @@ export async function createFundTransaction(values) {
     p_ledger_date: values.ledger_date || null,
     p_member_key: values.member_key || null,
     p_memo: values.memo || null,
-  });
+    p_evidence_url: evidenceUrl,
+  }));
 }
 
 export async function updateFundLedgerEntry(values) {
@@ -335,7 +340,7 @@ export async function setFundFeeRuleEnabled(ruleId, enabled) {
 }
 
 export async function fetchFundBalanceChecks(limit = 30) {
-  return api.select('fund_balance_checks', {
+  const rows = await api.select('fund_balance_checks', {
     columns: [
       'id',
       'computed_public',
@@ -345,6 +350,7 @@ export async function fetchFundBalanceChecks(limit = 30) {
       'difference_public',
       'difference_company',
       'checked_by_name',
+      'evidence_url',
       'note',
       'created_at',
     ].join(','),
@@ -352,14 +358,62 @@ export async function fetchFundBalanceChecks(limit = 30) {
     ascending: false,
     limit,
   });
+  return Promise.all(rows.map(hydrateAdminEvidenceRow));
 }
 
 export async function createFundBalanceCheck(values) {
-  return api.rpc('create_fund_balance_check', {
+  return withAdminEvidence(values.evidence, 'balance-checks', async (evidenceUrl) => api.rpc('create_fund_balance_check_v2', {
     p_actual_public: values.actual_public,
     p_actual_company: values.actual_company,
+    p_evidence_url: evidenceUrl,
+    p_note: values.note || null,
+  }));
+}
+
+export async function fetchFundMemberSettings() {
+  return api.select('fund_member_settings', {
+    columns: 'member_key,enabled,join_date_override,note,updated_by,created_at,updated_at',
+    orderBy: 'updated_at',
+    ascending: false,
+    limit: 1000,
+  });
+}
+
+export async function setFundMemberSetting(values) {
+  return api.rpc('set_fund_member_setting', {
+    p_member_key: values.member_key,
+    p_enabled: values.enabled,
+    p_join_date_override: values.join_date_override || null,
     p_note: values.note || null,
   });
+}
+
+export async function fetchFundIntegrityReport() {
+  return api.rpc('get_fund_integrity_report');
+}
+
+
+async function withAdminEvidence(evidence, folder, operation) {
+  let path = null;
+  let evidenceUrl = null;
+
+  if (evidence?.dataUrl) {
+    const blob = await fetch(evidence.dataUrl).then((response) => response.blob());
+    const extension = evidenceExtension(evidence.type || blob.type);
+    path = `${folder}/${new Date().toISOString().slice(0, 7)}/${cryptoRandomId()}.${extension}`;
+    await api.storageUpload('fund-evidence', path, blob, {
+      contentType: evidence.type || blob.type || 'image/jpeg',
+      cacheControl: '3600',
+    });
+    evidenceUrl = `storage://fund-evidence/${path}`;
+  }
+
+  try {
+    return await operation(evidenceUrl);
+  } catch (error) {
+    if (path) await api.storageRemove('fund-evidence', [path]).catch(() => {});
+    throw error;
+  }
 }
 
 

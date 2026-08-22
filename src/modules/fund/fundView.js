@@ -288,6 +288,15 @@ function bindFundEvents(root, state, actions) {
     element.addEventListener('click', () => actions.onCloseEntryCreator?.());
   });
 
+  bindEvidenceDropzone(root, {
+    fileSelector: '[data-admin-entry-evidence-file]',
+    browseSelector: '[data-admin-entry-evidence-browse]',
+    clearSelector: '[data-admin-entry-evidence-clear]',
+    dropSelector: '[data-admin-entry-evidence-drop]',
+    onFile: (file) => actions.onEntryEvidenceFile?.(file),
+    onClear: () => actions.onEntryEvidenceClear?.(),
+  });
+
   root.querySelector('[data-direct-payment-form]')?.addEventListener('submit', (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
@@ -327,6 +336,15 @@ function bindFundEvents(root, state, actions) {
       if (!window.confirm('삭제된 공금내역을 복구할까요?')) return;
       actions.onRestoreLedger?.(Number(button.dataset.restoreLedger));
     });
+  });
+
+  bindEvidenceDropzone(root, {
+    fileSelector: '[data-balance-evidence-file]',
+    browseSelector: '[data-balance-evidence-browse]',
+    clearSelector: '[data-balance-evidence-clear]',
+    dropSelector: '[data-balance-evidence-drop]',
+    onFile: (file) => actions.onBalanceEvidenceFile?.(file),
+    onClear: () => actions.onBalanceEvidenceClear?.(),
   });
 
   root.querySelector('[data-balance-check-form]')?.addEventListener('submit', (event) => {
@@ -369,6 +387,52 @@ function bindFundEvents(root, state, actions) {
 
   root.querySelectorAll('[data-disable-exemption]').forEach((button) => {
     button.addEventListener('click', () => actions.onDisableExemption?.(Number(button.dataset.disableExemption)));
+  });
+
+  root.querySelectorAll('[data-fund-member-setting-form]').forEach((form) => {
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const data = new FormData(form);
+      actions.onSaveFundMemberSetting?.({
+        member_key: String(form.dataset.memberKey || ''),
+        nickname: String(form.dataset.nickname || ''),
+        enabled: data.get('enabled') === 'on',
+        join_date_override: String(data.get('join_date_override') || ''),
+        note: String(data.get('note') || '').trim(),
+      });
+    });
+  });
+}
+
+function bindEvidenceDropzone(root, options) {
+  const input = root.querySelector(options.fileSelector);
+  const drop = root.querySelector(options.dropSelector);
+  root.querySelector(options.browseSelector)?.addEventListener('click', () => input?.click());
+  root.querySelector(options.clearSelector)?.addEventListener('click', () => options.onClear?.());
+  input?.addEventListener('change', () => options.onFile?.(input.files?.[0] || null));
+  drop?.addEventListener('click', () => input?.click());
+  drop?.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      input?.click();
+    }
+  });
+  drop?.addEventListener('paste', (event) => {
+    const file = evidenceFromClipboard(event);
+    if (!file) return;
+    event.preventDefault();
+    options.onFile?.(file);
+  });
+  drop?.addEventListener('dragover', (event) => {
+    event.preventDefault();
+    drop.classList.add('is-dragging');
+  });
+  drop?.addEventListener('dragleave', () => drop.classList.remove('is-dragging'));
+  drop?.addEventListener('drop', (event) => {
+    event.preventDefault();
+    drop.classList.remove('is-dragging');
+    const file = evidenceFromDrop(event);
+    if (file) options.onFile?.(file);
   });
 }
 

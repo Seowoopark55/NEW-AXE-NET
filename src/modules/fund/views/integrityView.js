@@ -1,91 +1,57 @@
-import {
-  escapeHtml,
-  formatMoney,
-  formatPeriodLabel,
-} from '../fundUtils.js';
+import { escapeHtml, formatDateTime, formatMoney } from '../fundUtils.js';
 import { renderPageHeader } from '../components/shared.js';
 
 export function renderIntegrityView(state) {
-  const { fund } = state;
-  const requests = fund.admin.requests ?? [];
-  const ledgers = fund.admin.ledgerItems ?? [];
-
-  const activePayments = ledgers.filter((item) => item.status === 'active' && item.entry_type === 'payment');
-  const activeByPeriod = new Map();
-  for (const item of activePayments) {
-    const key = `${item.member_key}:${item.year}:${item.month}:${item.week}`;
-    const list = activeByPeriod.get(key) ?? [];
-    list.push(item);
-    activeByPeriod.set(key, list);
-  }
-
-  const duplicates = [...activeByPeriod.entries()]
-    .filter(([, rows]) => rows.length > 1)
-    .map(([key, rows]) => ({ key, rows }));
-
-  const approvedMissing = requests
-    .filter((request) => request.status === 'approved')
-    .filter((request) => {
-      if (request.id && ledgers.some((ledger) => Number(ledger.request_id) === Number(request.id) && ledger.status === 'active')) {
-        return false;
-      }
-      const key = `${request.member_key}:${request.year}:${request.month}:${request.week}`;
-      return !(activeByPeriod.get(key)?.length);
-    });
-
-  const pendingWithPayment = requests
-    .filter((request) => request.status === 'pending')
-    .filter((request) => {
-      const key = `${request.member_key}:${request.year}:${request.month}:${request.week}`;
-      return Boolean(activeByPeriod.get(key)?.length);
-    });
-
-  const issueCount = duplicates.length + approvedMissing.length + pendingWithPayment.length;
+  const report = state.fund.admin.integrityReport;
+  const counts = report?.counts ?? {};
+  const total = Number(counts.total ?? 0);
 
   return `
-    ${renderPageHeader(
-      '정합성점검',
-      '공금 신청과 납부내역 사이의 중복·누락을 자동 점검합니다.',
-      '<button class="fund-secondary-button" type="button" data-fund-refresh>다시 점검</button>',
-    )}
+    <div class="fund-admin13-page">
+      ${renderPageHeader('정합성점검', '브라우저 추정이 아니라 Supabase 원본에서 신청·원장 연결 상태를 직접 점검합니다.', '<button class="fund-secondary-button" type="button" data-fund-refresh>다시 점검</button>')}
 
-    <div class="fund-integrity-summary ${issueCount ? 'is-warning' : 'is-ok'}">
-      <strong>${issueCount ? `${issueCount}건 확인 필요` : '정합성 이상 없음'}</strong>
-      <span>${issueCount ? '아래 항목을 확인해 실제 운영 데이터와 맞는지 점검하세요.' : '현재 불러온 활성 요청과 공금내역에서 자동 판정 가능한 오류가 없습니다.'}</span>
+      <div class="fund-admin13-integrity-hero ${total ? 'is-warning' : 'is-ok'}">
+        <div><span>DATABASE INTEGRITY</span><strong>${report ? (total ? `${total}건 확인 필요` : '정합성 이상 없음') : '점검 결과 준비 중'}</strong><small>${report?.generated_at ? `점검 ${formatDateTime(report.generated_at)}` : '관리자 데이터를 새로고침하세요.'}</small></div>
+        <b>${total}</b>
+      </div>
+
+      <div class="fund-admin13-stat-grid">
+        ${metric('중복 납부', counts.duplicates)}
+        ${metric('승인원장 누락', counts.approved_missing)}
+        ${metric('대기+납부 충돌', counts.pending_with_payment)}
+        ${metric('연결 신청 없음', counts.orphan_ledgers)}
+      </div>
+
+      ${renderSection('중복 활성 납부', '같은 멤버·주차에 활성 납부 원장이 2건 이상입니다.', report?.duplicates ?? [], renderDuplicate)}
+      ${renderSection('승인 신청 · 원장 누락', '승인된 신청은 있으나 연결되는 활성 납부 원장이 없습니다.', report?.approved_missing ?? [], renderRequestIssue)}
+      ${renderSection('검수대기 · 이미 납부완료', '검수대기 신청과 활성 납부 원장이 동시에 존재합니다.', report?.pending_with_payment ?? [], renderRequestIssue)}
+      ${renderSection('원장 · 연결 신청 없음', 'request_id를 가진 활성 원장이지만 연결 대상 신청 행이 없습니다.', report?.orphan_ledgers ?? [], renderOrphan)}
     </div>
-
-    ${renderSection('중복 활성 납부', duplicates.map((item) => `
-      <article class="fund-integrity-item">
-        <strong>${escapeHtml(item.rows[0]?.nickname || item.key)}</strong>
-        <span>${formatPeriodLabel(item.rows[0])} · 활성 납부 ${item.rows.length}건</span>
-      </article>
-    `))}
-
-    ${renderSection('승인 신청과 공금내역 불일치', approvedMissing.map((item) => `
-      <article class="fund-integrity-item">
-        <strong>${escapeHtml(item.nickname || '멤버')} · ${formatMoney(item.amount)}</strong>
-        <span>${formatPeriodLabel(item)} · 승인 신청은 있으나 활성 납부내역을 찾지 못했습니다.</span>
-      </article>
-    `))}
-
-    ${renderSection('검수대기인데 이미 납부완료', pendingWithPayment.map((item) => `
-      <article class="fund-integrity-item">
-        <strong>${escapeHtml(item.nickname || '멤버')} · ${formatMoney(item.amount)}</strong>
-        <span>${formatPeriodLabel(item)} · 검수대기 요청과 활성 납부내역이 동시에 존재합니다.</span>
-      </article>
-    `))}
   `;
 }
 
-function renderSection(title, items) {
+function metric(label, value) {
+  const number = Number(value ?? 0);
+  return `<div class="fund-admin13-stat ${number ? 'is-warning' : ''}"><span>${label}</span><strong>${number}건</strong><small>${number ? '확인 필요' : '정상'}</small></div>`;
+}
+
+function renderSection(title, desc, items, renderer) {
   return `
-    <section class="fund-legacy-panel fund-integrity-section">
-      <div class="fund-legacy-panel__head">
-        <div><h3>${title}</h3><p>${items.length}건</p></div>
-      </div>
-      <div class="fund-integrity-list">
-        ${items.length ? items.join('') : '<div class="fund-empty-state">해당 항목 없음</div>'}
-      </div>
+    <section class="fund-admin13-panel fund-admin13-integrity-section">
+      <div class="fund-admin13-panel-head fund-admin13-panel-head--row"><div><span>CHECK</span><h3>${title}</h3><p>${desc}</p></div><b>${items.length}건</b></div>
+      <div class="fund-admin13-integrity-list">${items.length ? items.map(renderer).join('') : '<div class="fund-admin13-integrity-empty">이상 없음</div>'}</div>
     </section>
   `;
+}
+
+function renderDuplicate(item) {
+  return `<article><div><strong>${escapeHtml(item.nickname || item.member_key || '멤버')}</strong><span>${item.year}년 ${item.month}월 ${item.week}주차</span></div><b>활성 ${Number(item.active_count || 0)}건</b><small>원장 #${(item.ledger_ids || []).join(', #')}</small></article>`;
+}
+
+function renderRequestIssue(item) {
+  return `<article><div><strong>${escapeHtml(item.nickname || '멤버')} · ${formatMoney(item.amount)}</strong><span>${item.year}년 ${item.month}월 ${item.week}주차</span></div><b>신청 #${item.request_id}</b></article>`;
+}
+
+function renderOrphan(item) {
+  return `<article><div><strong>${escapeHtml(item.nickname || '멤버')} · ${formatMoney(item.amount)}</strong><span>${item.year}년 ${item.month}월 ${item.week}주차</span></div><b>원장 #${item.ledger_id}</b><small>request #${item.request_id}</small></article>`;
 }

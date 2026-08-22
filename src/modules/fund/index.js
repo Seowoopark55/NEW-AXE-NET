@@ -1,4 +1,5 @@
 import './fund.css';
+import './views/admin.css';
 import { store } from '../../state/store.js';
 import {
   approveFundRequest,
@@ -13,6 +14,8 @@ import {
   fetchFundBalanceChecks,
   fetchFundExemptions,
   fetchFundFeeRules,
+  fetchFundIntegrityReport,
+  fetchFundMemberSettings,
   fetchFundMonthOverview,
   fetchFundMonthMatrix,
   fetchFundPeriodStatus,
@@ -25,6 +28,7 @@ import {
   rejectFundRequest,
   restoreFundLedgerEntry,
   setFundFeeRuleEnabled,
+  setFundMemberSetting,
   submitAdminFundRequest,
   submitSessionFundRequest,
   updateFundLedgerEntry,
@@ -232,7 +236,7 @@ function buildActions() {
           ...state.fund,
           admin: {
             ...state.fund.admin,
-            entryCreator: { open: true, mode },
+            entryCreator: { open: true, mode, evidence: null, evidencePreview: '' },
             error: null,
             message: null,
           },
@@ -244,13 +248,69 @@ function buildActions() {
       closeEntryCreator();
     },
 
+    async onEntryEvidenceFile(file) {
+      if (!file) return;
+      try {
+        const evidence = await prepareEvidenceFile(file);
+        store.updateState((state) => ({
+          ...state,
+          fund: {
+            ...state.fund,
+            admin: {
+              ...state.fund.admin,
+              entryCreator: {
+                ...state.fund.admin.entryCreator,
+                evidence,
+                evidencePreview: evidence.dataUrl,
+              },
+              error: null,
+            },
+          },
+        }));
+      } catch (error) {
+        store.updateState((state) => ({
+          ...state,
+          fund: {
+            ...state.fund,
+            admin: {
+              ...state.fund.admin,
+              entryCreator: {
+                ...state.fund.admin.entryCreator,
+                evidence: null,
+                evidencePreview: '',
+              },
+              error: formatError(error),
+            },
+          },
+        }));
+      }
+    },
+
+    onEntryEvidenceClear() {
+      store.updateState((state) => ({
+        ...state,
+        fund: {
+          ...state.fund,
+          admin: {
+            ...state.fund.admin,
+            entryCreator: {
+              ...state.fund.admin.entryCreator,
+              evidence: null,
+              evidencePreview: '',
+            },
+          },
+        },
+      }));
+    },
+
     async onCreateDirectPayment(values) {
       const period = store.getState().fund.selectedPeriod;
       if (!period) return;
       const success = await runAdminMutation(async () => {
         if (!values.member_key) throw new Error('멤버를 선택하세요.');
         if (!Number.isInteger(values.amount) || values.amount <= 0) throw new Error('납부 금액은 0원보다 큰 정수로 입력하세요.');
-        await createFundPayment({ ...values, ...period });
+        const evidence = store.getState().fund.admin.entryCreator.evidence;
+        await createFundPayment({ ...values, ...period, evidence });
         return '공금 납부를 직접 등록했습니다.';
       });
       if (success) closeEntryCreator();
@@ -262,7 +322,8 @@ function buildActions() {
         if (!Number.isInteger(values.amount) || values.amount === 0) throw new Error('금액은 0이 아닌 정수로 입력하세요.');
         if (['수입', '지출'].includes(values.direction) && values.amount < 0) throw new Error('수입/지출 금액은 양수로 입력하세요.');
         if (!values.category) throw new Error('분류를 입력하세요.');
-        await createFundTransaction(values);
+        const evidence = store.getState().fund.admin.entryCreator.evidence;
+        await createFundTransaction({ ...values, evidence });
         return '수입·지출 내역을 등록했습니다.';
       });
       if (success) closeEntryCreator();
@@ -325,11 +386,71 @@ function buildActions() {
       });
     },
 
+    async onBalanceEvidenceFile(file) {
+      if (!file) return;
+      try {
+        const evidence = await prepareEvidenceFile(file);
+        store.updateState((state) => ({
+          ...state,
+          fund: {
+            ...state.fund,
+            admin: {
+              ...state.fund.admin,
+              balanceEvidence: evidence,
+              balanceEvidencePreview: evidence.dataUrl,
+              error: null,
+            },
+          },
+        }));
+      } catch (error) {
+        store.updateState((state) => ({
+          ...state,
+          fund: {
+            ...state.fund,
+            admin: {
+              ...state.fund.admin,
+              balanceEvidence: null,
+              balanceEvidencePreview: '',
+              error: formatError(error),
+            },
+          },
+        }));
+      }
+    },
+
+    onBalanceEvidenceClear() {
+      store.updateState((state) => ({
+        ...state,
+        fund: {
+          ...state.fund,
+          admin: {
+            ...state.fund.admin,
+            balanceEvidence: null,
+            balanceEvidencePreview: '',
+          },
+        },
+      }));
+    },
+
     async onCreateBalanceCheck(values) {
-      await runAdminMutation(async () => {
-        await createFundBalanceCheck(values);
+      const evidence = store.getState().fund.admin.balanceEvidence;
+      const success = await runAdminMutation(async () => {
+        await createFundBalanceCheck({ ...values, evidence });
         return '잔액점검을 기록했습니다.';
       });
+      if (success) {
+        store.updateState((state) => ({
+          ...state,
+          fund: {
+            ...state.fund,
+            admin: {
+              ...state.fund.admin,
+              balanceEvidence: null,
+              balanceEvidencePreview: '',
+            },
+          },
+        }));
+      }
     },
 
     async onCreateFeeRule(values) {
@@ -359,6 +480,13 @@ function buildActions() {
       await runAdminMutation(async () => {
         await disableFundExemption(id);
         return '면제를 해제했습니다.';
+      });
+    },
+
+    async onSaveFundMemberSetting(values) {
+      await runAdminMutation(async () => {
+        await setFundMemberSetting(values);
+        return `${values.nickname || '멤버'} 공금 대상 설정을 저장했습니다.`;
       });
     },
   };
@@ -731,12 +859,14 @@ async function refreshAdminWorkspace(message = null) {
   }));
 
   try {
-    const [requests, ledgerItems, feeRules, exemptions, balanceChecks] = await Promise.all([
+    const [requests, ledgerItems, feeRules, exemptions, balanceChecks, fundMemberSettings, integrityReport] = await Promise.all([
       fetchFundRequests(500),
       fetchFundAdminLedger(1000),
       fetchFundFeeRules(),
       period ? fetchFundExemptions(period) : Promise.resolve([]),
       fetchFundBalanceChecks(30),
+      fetchFundMemberSettings(),
+      fetchFundIntegrityReport(),
     ]);
 
     store.updateState((current) => ({
@@ -754,6 +884,8 @@ async function refreshAdminWorkspace(message = null) {
           feeRules: feeRules ?? [],
           exemptions: exemptions ?? [],
           balanceChecks: balanceChecks ?? [],
+          fundMemberSettings: fundMemberSettings ?? [],
+          integrityReport: integrityReport ?? null,
         },
       },
     }));
@@ -786,8 +918,11 @@ async function refreshExemptionsOnly() {
   }));
 }
 
+let fundAdminMutationInFlight = false;
+
 async function runAdminMutation(mutation) {
-  if (!store.getState().auth.admin) return false;
+  if (!store.getState().auth.admin || fundAdminMutationInFlight) return false;
+  fundAdminMutationInFlight = true;
   store.updateState((state) => ({
     ...state,
     fund: {
@@ -814,6 +949,8 @@ async function runAdminMutation(mutation) {
       },
     }));
     return false;
+  } finally {
+    fundAdminMutationInFlight = false;
   }
 }
 
@@ -923,7 +1060,7 @@ function closeEntryCreator() {
       ...state.fund,
       admin: {
         ...state.fund.admin,
-        entryCreator: { open: false, mode: 'payment' },
+        entryCreator: { open: false, mode: 'payment', evidence: null, evidencePreview: '' },
       },
     },
   }));

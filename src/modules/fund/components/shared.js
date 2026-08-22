@@ -155,6 +155,13 @@ export function renderLedgerEditModal(admin, members) {
           </label>
         </div>
 
+        ${item.evidence_url ? `
+          <div class="fund-admin13-evidence-existing">
+            <span>증빙</span>
+            <button type="button" data-evidence-preview="${escapeAttribute(item.evidence_url)}" data-evidence-label="공금내역 #${item.id} 증빙">증빙 크게 보기</button>
+          </div>
+        ` : ''}
+
         ${isPayment ? '<div class="fund-info-box">납부 멤버와 주차는 공금 상태 계산 기준이라 이 화면에서는 고정됩니다.</div>' : ''}
 
         <div class="fund-dialog__actions fund-dialog__actions--three">
@@ -229,7 +236,8 @@ export function renderEntryCreatorModal(admin, fund, members) {
               <input name="memo" maxlength="300" placeholder="선택" />
             </label>
           </div>
-          <div class="fund-info-box">현재 선택한 ${formatPeriodLabel(period)}에 관리자가 직접 납부 완료를 등록합니다.</div>
+          ${renderAdminEntryEvidence(admin.entryCreator)}
+          <div class="fund-info-box">현재 선택한 ${formatPeriodLabel(period)}에 관리자가 직접 납부 완료를 등록합니다. 증빙은 선택 사항이며 등록하면 공금내역에서 바로 확인할 수 있습니다.</div>
           <div class="fund-dialog__actions">
             <button class="fund-secondary-button" type="button" data-close-entry-creator>취소</button>
             <button class="fund-primary-button" type="submit" ${admin.saving ? 'disabled' : ''}>납부 등록</button>
@@ -246,6 +254,7 @@ export function renderEntryCreatorModal(admin, fund, members) {
             <label class="fund-field"><span>분류</span><input name="category" maxlength="100" placeholder="예: 화약 구매" required /></label>
             <label class="fund-field fund-field--wide"><span>메모</span><input name="memo" maxlength="300" placeholder="선택" /></label>
           </div>
+          ${renderAdminEntryEvidence(admin.entryCreator)}
           <div class="fund-info-box">수입/지출은 양수로 입력하고, 조정은 증가 시 양수 · 감소 시 음수로 입력합니다.</div>
           <div class="fund-dialog__actions">
             <button class="fund-secondary-button" type="button" data-close-entry-creator>취소</button>
@@ -254,6 +263,23 @@ export function renderEntryCreatorModal(admin, fund, members) {
         </form>
       `}
     </section>
+  `;
+}
+
+
+function renderAdminEntryEvidence(entryCreator) {
+  const preview = entryCreator?.evidencePreview || '';
+  return `
+    <div class="fund-admin13-upload" data-admin-entry-evidence-drop tabindex="0" role="button">
+      ${preview
+        ? `<div class="fund-admin13-upload__preview"><img src="${escapeAttribute(preview)}" alt="등록 증빙 미리보기" /></div>`
+        : `<div class="fund-admin13-upload__empty"><b>증빙 스크린샷</b><span>이 영역을 클릭하거나 Ctrl+V / 드래그앤드롭</span></div>`}
+    </div>
+    <div class="fund-admin13-upload__actions">
+      <input type="file" accept="image/*" data-admin-entry-evidence-file hidden />
+      <button type="button" class="fund-secondary-button fund-secondary-button--small" data-admin-entry-evidence-browse>파일첨부</button>
+      ${preview ? '<button type="button" class="fund-secondary-button fund-secondary-button--small" data-admin-entry-evidence-clear>첨부 제거</button>' : ''}
+    </div>
   `;
 }
 

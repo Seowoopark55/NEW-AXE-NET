@@ -116,11 +116,17 @@ const initialState = {
       entryCreator: {
         open: false,
         mode: 'payment',
+        evidence: null,
+        evidencePreview: '',
       },
 
       exemptions: [],
       feeRules: [],
       balanceChecks: [],
+      balanceEvidence: null,
+      balanceEvidencePreview: '',
+      fundMemberSettings: [],
+      integrityReport: null,
     },
   },
 
