@@ -1,35 +1,88 @@
-# NEW AXE NET v0.4
+# NEW AXE NET v0.5
 
-멤버 모듈의 조회 UX를 보강한 버전입니다.
+관리자 인증 기반을 추가한 버전입니다.
 
-## v0.4 변경사항
+## v0.5 변경사항
+- Supabase Auth 이메일/비밀번호 로그인
+- 로그인 상태를 단일 `state.auth`에서 관리
+- 세션 유지 및 새로고침 복원
+- `new_axe_net.admin_accounts` 관리자 allow-list
+- DB 함수 `new_axe_net.is_admin()`으로 관리자 여부 판정
+- 멤버 base table의 SELECT/UPDATE RLS를 관리자에게만 허용
+- 로그인하지 않은 사용자는 기존 `members_app` 조회 화면을 그대로 사용
+- 아직 멤버 수정 UI는 넣지 않음
 
-- 멤버 실시간 검색
-  - 닉네임
-  - Discord 이름
-  - 권한
-  - 상태
-  - 배지
-- 기존 상태 필터 유지
-  - 전체 / 활동 / 비활성 / 퇴사
-- 검색 결과 인원 표시
-- 멤버 행 클릭 시 우측 상세 패널
-- 상세 패널에서 가입일, 최근 로그인, 퇴사일, 포인트, 정렬순서 확인
-- 현재 멤버 수정 기능은 의도적으로 포함하지 않음
+## 1. SQL 실행
 
-## 왜 수정은 아직 안 넣었나
+Supabase SQL Editor에서:
 
-현재 Vercel 프론트엔드는 publishable key로 Supabase를 읽습니다.
-관리자 인증 및 쓰기 RLS가 없는 상태에서 수정 기능부터 열면 보안 구조가 깨집니다.
+`supabase/003_admin_auth.sql`
 
-따라서 순서는:
-1. 조회 모듈 안정화
-2. 관리자 인증 구조
-3. 쓰기 RLS
-4. 멤버 수정 기능
+전체를 실행합니다.
 
-## 적용
+## 2. 관리자 Auth 계정 만들기
 
-기존 NEW-AXE-NET 폴더에 ZIP 내용을 덮어쓴 뒤 GitHub Desktop에서 Commit → Push 합니다.
+Supabase Dashboard:
 
-이번 버전은 DB 변경이 없어서 Supabase SQL 실행이나 CSV Import가 추가로 필요하지 않습니다.
+Authentication → Users → Add user
+
+에서 관리자가 사용할 이메일/비밀번호 계정을 하나 만듭니다.
+
+이메일 확인을 요구하지 않게 만들려면 Dashboard에서 생성할 때
+해당 사용자를 confirmed 상태로 생성하세요.
+
+## 3. Auth 사용자와 NEW AXE NET 멤버 연결
+
+Authentication → Users에서 방금 만든 사용자의 UUID를 복사합니다.
+
+그리고 SQL Editor에서 아래 SQL을 실행합니다.
+
+```sql
+insert into new_axe_net.admin_accounts (user_id, member_key)
+values (
+  '여기에_AUTH_USER_UUID',
+  (
+    select member_key
+    from new_axe_net.members
+    where nickname = '여기에_관리자_닉네임'
+    limit 1
+  )
+);
+```
+
+예를 들어 nickname이 `영포티`라면 마지막 조건만:
+
+```sql
+where nickname = '영포티'
+```
+
+로 바꾸면 됩니다.
+
+## 4. 코드 배포
+
+기존 NEW-AXE-NET 폴더에 ZIP 내용을 덮어쓴 뒤:
+
+GitHub Desktop → Commit → Push
+
+Vercel이 자동 배포합니다.
+
+## 5. 확인
+
+사이트 우측 상단에 `관리자 로그인` 버튼이 생깁니다.
+
+정상 관리자 계정으로 로그인하면:
+- `관리자`
+- 연결된 멤버 닉네임
+- `로그아웃`
+
+이 표시됩니다.
+
+Auth 로그인에는 성공했지만 `admin_accounts`에 등록되지 않은 사용자는
+`권한 없음`으로 표시됩니다.
+
+## 보안 원칙
+
+- `service_role` / secret key를 브라우저 코드에 넣지 않습니다.
+- Vercel에는 publishable key만 사용합니다.
+- 관리자 판정은 브라우저 문자열이 아니라 DB의 `admin_accounts` + RLS로 처리합니다.
+- 기존 password / admin_token 값은 재사용하지 않습니다.

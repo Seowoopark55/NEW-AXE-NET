@@ -1,6 +1,7 @@
 import './styles/main.css';
 import { store } from './state/store.js';
 import { renderAppShell } from './components/AppShell.js';
+import { initAuthModule } from './modules/auth/index.js';
 import { initMembersModule } from './modules/members/index.js';
 import { runSupabaseHealthCheck } from './modules/system/systemService.js';
 
@@ -20,6 +21,7 @@ async function bootstrap() {
     },
   });
 
+  await initAuthModule();
   await initMembersModule();
 
   store.updateState((state) => ({

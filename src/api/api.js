@@ -38,6 +38,25 @@ async function select(table, options = {}) {
   return data ?? [];
 }
 
+async function update(table, values, match) {
+  const client = requireSupabase();
+
+  let query = client.from(table).update(values);
+
+  for (const [column, value] of Object.entries(match ?? {})) {
+    query = query.eq(column, value);
+  }
+
+  const { data, error } = await query.select();
+
+  if (error) {
+    throw error;
+  }
+
+  return data ?? [];
+}
+
 export const api = {
   select,
+  update,
 };

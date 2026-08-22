@@ -53,7 +53,7 @@ export function renderMembersView(root, state, actions = {}) {
       </div>
     </section>
 
-    ${selectedMember ? renderMemberDetail(selectedMember) : ''}
+    ${selectedMember ? renderMemberDetail(selectedMember, state.auth) : ''}
   `;
 
   const searchInput = root.querySelector('[data-member-search]');
@@ -174,7 +174,7 @@ function renderMembersState(members, counts, visibleItems) {
   `;
 }
 
-function renderMemberDetail(item) {
+function renderMemberDetail(item, auth) {
   return `
     <div class="member-detail-backdrop" data-close-member-detail></div>
 
@@ -207,7 +207,11 @@ function renderMemberDetail(item) {
         ${renderDetailItem('정렬 순서', escapeHtml(item.sort_order ?? '—'))}
 
         <div class="member-detail__note">
-          현재는 조회 전용입니다. 수정 기능은 관리자 인증/권한 구조를 만든 뒤 연결합니다.
+          ${
+            auth.admin
+              ? `관리자 <strong>${escapeHtml(auth.admin.nickname)}</strong>으로 인증되었습니다. 다음 버전에서 이 영역에 멤버 수정 기능을 연결할 수 있습니다.`
+              : '현재는 조회 전용입니다. 멤버 수정은 관리자 로그인 후 사용할 수 있도록 구성합니다.'
+          }
         </div>
       </div>
     </aside>

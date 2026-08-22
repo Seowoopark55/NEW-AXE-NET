@@ -10,7 +10,14 @@ const initialState = {
     error: null,
   },
 
-  user: null,
+  auth: {
+    initialized: false,
+    loading: false,
+    user: null,
+    admin: null,
+    error: null,
+    loginOpen: false,
+  },
 
   members: {
     items: [],

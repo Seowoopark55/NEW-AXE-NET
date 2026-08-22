@@ -22,7 +22,11 @@ export function renderAppShell(root) {
             <h1>NEW AXE NET</h1>
             <p>Supabase-first modular architecture</p>
           </div>
-          <div id="connection-status" class="connection-status"></div>
+
+          <div class="topbar__controls">
+            <div id="connection-status" class="connection-status"></div>
+            <div id="auth-root"></div>
+          </div>
         </header>
 
         <section id="module-root" class="module-root"></section>
