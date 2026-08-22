@@ -225,7 +225,7 @@ function renderMembersState(members, counts, visibleItems) {
         <tbody>
           ${
             visibleItems.length
-              ? visibleItems.map(renderMemberRow).join('')
+              ? visibleItems.map((item, index) => renderMemberRow(item, index + 1)).join('')
               : '<tr><td colspan="8" class="member-table__empty">조건에 맞는 멤버가 없습니다.</td></tr>'
           }
         </tbody>
@@ -284,7 +284,7 @@ function renderMemberReadOnly(item, auth, membersState) {
     ${renderDetailItem('최근 로그인', escapeHtml(item.last_login || '—'))}
     ${renderDetailItem('퇴사일', escapeHtml(item.resigned_at || '—'))}
     ${renderDetailItem('포인트', formatNumber(item.points))}
-    ${renderDetailItem('정렬 순서', escapeHtml(item.sort_order ?? '—'))}
+    ${renderDetailItem('전체 정렬 순서', escapeHtml(item.sort_order ?? '—'))}
 
     ${
       auth.admin
@@ -436,10 +436,10 @@ function renderFilterButton(filter, label, activeFilter) {
   `;
 }
 
-function renderMemberRow(item) {
+function renderMemberRow(item, displayOrder) {
   return `
     <tr class="member-table__row" data-member-key="${escapeAttribute(item.member_key)}">
-      <td>${escapeHtml(item.sort_order ?? '')}</td>
+      <td>${escapeHtml(displayOrder)}</td>
       <td><strong>${escapeHtml(item.nickname ?? '')}</strong></td>
       <td>${escapeHtml(item.discord_name || '—')}</td>
       <td>${renderRole(item.role)}</td>
