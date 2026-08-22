@@ -445,7 +445,7 @@ function renderFundRequestModal(fund, memberItems) {
                       type="number"
                       name="amount"
                       min="1"
-                      step="1000"
+                      step="1"
                       value="${weeklyFee}"
                       required
                     />
@@ -725,7 +725,7 @@ function renderLedgerAdmin(admin, fund, activeMembers, allMembers) {
                 type="number"
                 name="amount"
                 min="1"
-                step="1000"
+                step="1"
                 value="${weeklyFee}"
                 required
               />
