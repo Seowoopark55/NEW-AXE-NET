@@ -31,7 +31,6 @@ export function renderOverviewView(state) {
             <colgroup>
               <col class="fund-col-member" />
               ${weeks.map(() => '<col class="fund-col-week" />').join('')}
-              <col class="fund-col-unpaid" />
             </colgroup>
             <thead>
               <tr>
@@ -45,13 +44,12 @@ export function renderOverviewView(state) {
                     </th>
                   `;
                 }).join('')}
-                <th>미납</th>
               </tr>
             </thead>
             <tbody>
               ${members.length
                 ? members.map((member) => renderMemberRow(member, weeks, todayKst)).join('')
-                : `<tr><td colspan="${weeks.length + 2}" class="fund-empty-state">공금 대상 멤버가 없습니다.</td></tr>`}
+                : `<tr><td colspan="${weeks.length + 1}" class="fund-empty-state">공금 대상 멤버가 없습니다.</td></tr>`}
             </tbody>
           </table>
         </div>
@@ -69,7 +67,6 @@ function renderMemberRow(member, weeks, todayKst) {
     <tr>
       <td class="left fund-member-cell">
         <strong>${escapeHtml(member.nickname)}</strong>
-        <small>회원 목록 기준 자동 공금대상</small>
       </td>
       ${weeks.map((week) => {
         const cell = cellMap.get(Number(week.week));
@@ -80,9 +77,6 @@ function renderMemberRow(member, weeks, todayKst) {
           </td>
         `;
       }).join('')}
-      <td class="fund-matrix__unpaid">
-        <strong>${Number(member.unpaid_count ?? 0)}</strong>
-      </td>
     </tr>
   `;
 }
