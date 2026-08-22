@@ -1448,3 +1448,26 @@ button, input, select, textarea { font: inherit; }
     grid-template-columns: 1fr;
   }
 }
+
+
+/* v1.0 live fund engine */
+.fund-live-note {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px solid #315745;
+  border-radius: 9px;
+  color: #8f9a95;
+  background: #151c18;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.fund-live-note strong {
+  flex: 0 0 auto;
+  color: #9be7bb;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+}

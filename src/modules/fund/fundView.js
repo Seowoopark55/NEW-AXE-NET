@@ -62,7 +62,7 @@ export function renderFundView(root, state, actions = {}) {
       <div class="panel__header fund-header">
         <div>
           <h2>공금</h2>
-          <p>원장 · 주간 현황 · 면제/회비 규칙</p>
+          <p>원장 · 주간 현황 · 면제/회비 규칙 · 실시간 계산</p>
         </div>
 
         <label class="fund-period-select">
@@ -151,9 +151,10 @@ export function renderFundView(root, state, actions = {}) {
           </section>
         </div>
 
-        <div class="fund-legacy-note">
-          현재 주간 상태는 기존 AXE NET에서 계산되어 있던 상태 스냅샷을 안전하게 이전해 표시합니다.
-          다음 단계에서 NEW AXE NET 자체 계산 엔진으로 전환합니다.
+        <div class="fund-live-note">
+          <strong>LIVE ENGINE</strong>
+          주간 상태는 현재 members + fund_fee_rules + fund_exemptions + fund_ledger를 기준으로 실시간 계산됩니다.
+          fund_status_snapshot은 이전 검증 자료로만 보존됩니다.
         </div>
       </div>
     </section>
