@@ -19,3 +19,20 @@ export async function fetchMembers() {
     ascending: true,
   });
 }
+
+export async function updateMember(memberKey, values) {
+  const allowed = {
+    nickname: values.nickname,
+    role: values.role,
+    status: values.status,
+    badge: values.badge || null,
+    points: Number(values.points),
+    resigned_at: values.status === 'resigned'
+      ? (values.resigned_at || null)
+      : null,
+  };
+
+  return api.update('members', allowed, {
+    member_key: memberKey,
+  });
+}

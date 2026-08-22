@@ -26,6 +26,10 @@ const initialState = {
     filter: 'all',
     search: '',
     selectedMemberKey: null,
+    editingMemberKey: null,
+    saving: false,
+    saveError: null,
+    saveSuccess: null,
   },
 
   ui: {

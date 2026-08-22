@@ -53,7 +53,16 @@ export function renderMembersView(root, state, actions = {}) {
       </div>
     </section>
 
-    ${selectedMember ? renderMemberDetail(selectedMember, state.auth) : ''}
+    ${
+      selectedMember
+        ? renderMemberDetail(
+            selectedMember,
+            state.auth,
+            members.editingMemberKey === selectedMember.member_key,
+            members,
+          )
+        : ''
+    }
   `;
 
   const searchInput = root.querySelector('[data-member-search]');
@@ -78,6 +87,55 @@ export function renderMembersView(root, state, actions = {}) {
   root.querySelectorAll('[data-close-member-detail]').forEach((element) => {
     element.addEventListener('click', () => {
       actions.onCloseDetail?.();
+    });
+  });
+
+  root.querySelector('[data-member-edit]')?.addEventListener('click', () => {
+    actions.onStartEdit?.(selectedMember?.member_key);
+  });
+
+  root.querySelector('[data-member-edit-cancel]')?.addEventListener('click', () => {
+    actions.onCancelEdit?.();
+  });
+
+  const statusSelect = root.querySelector('[data-edit-status]');
+  const resignedAtInput = root.querySelector('[data-edit-resigned-at]');
+
+  if (statusSelect && resignedAtInput) {
+    const syncResignedAt = () => {
+      const resigned = statusSelect.value === 'resigned';
+
+      resignedAtInput.disabled = !resigned;
+
+      if (!resigned) {
+        resignedAtInput.value = '';
+        return;
+      }
+
+      if (!resignedAtInput.value) {
+        resignedAtInput.value = getLocalDateString();
+      }
+    };
+
+    statusSelect.addEventListener('change', syncResignedAt);
+    syncResignedAt();
+  }
+
+  const editForm = root.querySelector('[data-member-edit-form]');
+  editForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    if (!selectedMember) return;
+
+    const formData = new FormData(editForm);
+
+    actions.onSaveMember?.(selectedMember.member_key, {
+      nickname: String(formData.get('nickname') ?? '').trim(),
+      role: String(formData.get('role') ?? ''),
+      status: String(formData.get('status') ?? ''),
+      badge: String(formData.get('badge') ?? '').trim(),
+      points: String(formData.get('points') ?? '0'),
+      resigned_at: String(formData.get('resigned_at') ?? ''),
     });
   });
 }
@@ -176,14 +234,16 @@ function renderMembersState(members, counts, visibleItems) {
   `;
 }
 
-function renderMemberDetail(item, auth) {
+function renderMemberDetail(item, auth, editing, membersState) {
   return `
     <div class="member-detail-backdrop" data-close-member-detail></div>
 
     <aside class="member-detail" aria-label="멤버 상세정보">
       <div class="member-detail__header">
         <div>
-          <span class="member-detail__eyebrow">MEMBER DETAIL</span>
+          <span class="member-detail__eyebrow">
+            ${editing ? 'EDIT MEMBER' : 'MEMBER DETAIL'}
+          </span>
           <h3>${escapeHtml(item.nickname ?? '')}</h3>
           <p>${escapeHtml(item.discord_name || 'Discord 미연동')}</p>
         </div>
@@ -199,24 +259,150 @@ function renderMemberDetail(item, auth) {
       </div>
 
       <div class="member-detail__body">
-        ${renderDetailItem('상태', renderStatus(item.status), true)}
-        ${renderDetailItem('권한', renderRole(item.role), true)}
-        ${renderDetailItem('배지', escapeHtml(item.badge || '—'), true)}
-        ${renderDetailItem('가입일', escapeHtml(item.joined_date || '—'))}
-        ${renderDetailItem('최근 로그인', escapeHtml(item.last_login || '—'))}
-        ${renderDetailItem('퇴사일', escapeHtml(item.resigned_at || '—'))}
-        ${renderDetailItem('포인트', formatNumber(item.points))}
-        ${renderDetailItem('정렬 순서', escapeHtml(item.sort_order ?? '—'))}
-
-        <div class="member-detail__note">
-          ${
-            auth.admin
-              ? `관리자 <strong>${escapeHtml(auth.admin.nickname)}</strong>으로 인증되었습니다. 다음 버전에서 이 영역에 멤버 수정 기능을 연결할 수 있습니다.`
-              : '현재는 조회 전용입니다. 멤버 수정은 관리자 로그인 후 사용할 수 있도록 구성합니다.'
-          }
-        </div>
+        ${
+          editing
+            ? renderMemberEditForm(item, membersState)
+            : renderMemberReadOnly(item, auth, membersState)
+        }
       </div>
     </aside>
+  `;
+}
+
+function renderMemberReadOnly(item, auth, membersState) {
+  return `
+    ${
+      membersState.saveSuccess
+        ? `<div class="member-save-message member-save-message--success">${escapeHtml(membersState.saveSuccess)}</div>`
+        : ''
+    }
+
+    ${renderDetailItem('상태', renderStatus(item.status), true)}
+    ${renderDetailItem('권한', renderRole(item.role), true)}
+    ${renderDetailItem('배지', escapeHtml(item.badge || '—'), true)}
+    ${renderDetailItem('가입일', escapeHtml(item.joined_date || '—'))}
+    ${renderDetailItem('최근 로그인', escapeHtml(item.last_login || '—'))}
+    ${renderDetailItem('퇴사일', escapeHtml(item.resigned_at || '—'))}
+    ${renderDetailItem('포인트', formatNumber(item.points))}
+    ${renderDetailItem('정렬 순서', escapeHtml(item.sort_order ?? '—'))}
+
+    ${
+      auth.admin
+        ? `
+          <button class="member-edit-button" type="button" data-member-edit>
+            멤버 정보 수정
+          </button>
+          <div class="member-detail__note">
+            관리자 <strong>${escapeHtml(auth.admin.nickname)}</strong>으로 인증되었습니다.
+            수정 내용은 Supabase에 즉시 반영됩니다.
+          </div>
+        `
+        : `
+          <div class="member-detail__note">
+            현재는 조회 전용입니다. 수정 기능은 관리자 로그인 후 사용할 수 있습니다.
+          </div>
+        `
+    }
+  `;
+}
+
+function renderMemberEditForm(item, membersState) {
+  return `
+    <form class="member-edit-form" data-member-edit-form>
+      <label class="member-edit-field">
+        <span>닉네임</span>
+        <input
+          type="text"
+          name="nickname"
+          value="${escapeAttribute(item.nickname ?? '')}"
+          maxlength="50"
+          required
+        />
+      </label>
+
+      <label class="member-edit-field">
+        <span>권한</span>
+        <select name="role">
+          ${renderOption('admin', 'admin', item.role)}
+          ${renderOption('user', 'user', item.role)}
+        </select>
+      </label>
+
+      <label class="member-edit-field">
+        <span>상태</span>
+        <select name="status" data-edit-status>
+          ${renderOption('active', '활동', item.status)}
+          ${renderOption('inactive', '비활성', item.status)}
+          ${renderOption('resigned', '퇴사', item.status)}
+        </select>
+      </label>
+
+      <label class="member-edit-field">
+        <span>배지</span>
+        <input
+          type="text"
+          name="badge"
+          value="${escapeAttribute(item.badge ?? '')}"
+          maxlength="50"
+          placeholder="예: admin, bronze"
+        />
+      </label>
+
+      <label class="member-edit-field">
+        <span>포인트</span>
+        <input
+          type="number"
+          name="points"
+          min="0"
+          step="1"
+          value="${escapeAttribute(item.points ?? 0)}"
+          required
+        />
+      </label>
+
+      <label class="member-edit-field">
+        <span>퇴사일</span>
+        <input
+          type="date"
+          name="resigned_at"
+          value="${escapeAttribute(item.resigned_at ?? '')}"
+          data-edit-resigned-at
+        />
+      </label>
+
+      ${
+        membersState.saveError
+          ? `<div class="member-save-message member-save-message--error">${escapeHtml(membersState.saveError)}</div>`
+          : ''
+      }
+
+      <div class="member-edit-actions">
+        <button
+          class="member-edit-cancel"
+          type="button"
+          data-member-edit-cancel
+          ${membersState.saving ? 'disabled' : ''}
+        >
+          취소
+        </button>
+
+        <button
+          class="member-edit-save"
+          type="submit"
+          ${membersState.saving ? 'disabled' : ''}
+        >
+          ${membersState.saving ? '저장 중...' : '저장'}
+        </button>
+      </div>
+    </form>
+  `;
+}
+
+function renderOption(value, label, current) {
+  return `
+    <option value="${escapeAttribute(value)}" ${value === current ? 'selected' : ''}>
+      ${escapeHtml(label)}
+    </option>
   `;
 }
 
@@ -286,6 +472,13 @@ function renderStatus(status) {
 function formatNumber(value) {
   const number = Number(value ?? 0);
   return Number.isFinite(number) ? number.toLocaleString('ko-KR') : '0';
+}
+
+function getLocalDateString() {
+  const now = new Date();
+  const offset = now.getTimezoneOffset();
+  const local = new Date(now.getTime() - offset * 60_000);
+  return local.toISOString().slice(0, 10);
 }
 
 function escapeHtml(value) {

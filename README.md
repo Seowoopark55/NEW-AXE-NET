@@ -1,21 +1,40 @@
-# NEW AXE NET v0.5.1
+# NEW AXE NET v0.6
 
-v0.5 관리자 인증 버전의 멤버 상세 패널 닫기 버그 수정본입니다.
+관리자 멤버 수정 기능을 추가한 버전입니다.
 
-## 수정사항
-- 우측 상세 패널의 `X` 버튼이 닫히지 않던 문제 수정
-- 패널 바깥 영역 클릭 닫기 동작은 그대로 유지
+## v0.6 기능
+- 관리자 로그인 상태에서 멤버 상세 패널에 `멤버 정보 수정` 버튼 표시
+- 수정 가능:
+  - 닉네임
+  - 권한
+  - 상태
+  - 배지
+  - 포인트
+  - 퇴사일
+- 저장 후 Supabase 즉시 반영
+- 저장 후 목록 자동 재조회
+- 상태가 `퇴사`인데 퇴사일이 없으면 오늘 날짜 자동 입력
+- 상태가 `활동/비활성`이면 퇴사일 자동 제거
+- 상세 패널 배경 오버레이를 이전보다 약하게 조정
+- X 버튼/바깥 클릭 닫기 모두 유지
 
-## 원인
-상세 패널의 바깥 배경과 X 버튼이 같은 `data-close-member-detail` 속성을 사용하고 있었는데,
-이벤트 연결 코드가 `querySelector()`로 첫 번째 요소에만 리스너를 붙이고 있었습니다.
+## 보안
+DB에서도 authenticated 역할의 UPDATE 컬럼을 제한합니다.
 
-`querySelectorAll()`로 변경해 두 요소 모두 닫기 이벤트를 받도록 수정했습니다.
+수정 허용 컬럼:
+- nickname
+- role
+- status
+- badge
+- points
+- resigned_at
 
-## 적용
-1. ZIP 내용을 기존 `NEW-AXE-NET` 폴더에 덮어쓰기
-2. GitHub Desktop에서 Commit
-3. Push
+member_key, Discord ID, 정렬순서, 가입일, memo 등은
+브라우저 콘솔에서 직접 요청해도 UPDATE 권한이 없습니다.
+
+## 적용 순서
+1. Supabase SQL Editor에서 `supabase/004_member_edit.sql` 전체 실행
+2. ZIP 내용을 기존 NEW-AXE-NET 폴더에 덮어쓰기
+3. GitHub Desktop → Commit → Push
 4. Vercel 자동 배포 확인
-
-이번 버전은 DB 변경이 없으므로 Supabase SQL 실행은 필요 없습니다.
+5. 관리자 로그인 → 멤버 선택 → 멤버 정보 수정 테스트

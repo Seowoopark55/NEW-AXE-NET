@@ -409,7 +409,7 @@ button, input, select, textarea { font: inherit; }
   position: fixed;
   inset: 0;
   z-index: 30;
-  background: rgba(0, 0, 0, 0.42);
+  background: rgba(0, 0, 0, 0.24);
 }
 
 .member-detail {
@@ -727,4 +727,112 @@ button, input, select, textarea { font: inherit; }
     width: 100%;
     justify-content: flex-start;
   }
+}
+
+
+/* v0.6 member editor */
+.member-edit-button {
+  width: 100%;
+  min-height: 42px;
+  margin-top: 4px;
+  border: 1px solid #46584d;
+  border-radius: 9px;
+  color: #e5f1e9;
+  background: #243329;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.member-edit-button:hover {
+  border-color: #5d7566;
+  background: #2b3d31;
+}
+
+.member-edit-form {
+  display: grid;
+  gap: 12px;
+}
+
+.member-edit-field {
+  display: grid;
+  gap: 7px;
+}
+
+.member-edit-field > span {
+  color: #8d96a3;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.member-edit-field input,
+.member-edit-field select {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 11px;
+  border: 1px solid #353d49;
+  border-radius: 8px;
+  outline: 0;
+  color: #f3f4f6;
+  background: #111419;
+}
+
+.member-edit-field input:focus,
+.member-edit-field select:focus {
+  border-color: #5a6778;
+}
+
+.member-edit-field input:disabled {
+  opacity: 0.48;
+}
+
+.member-edit-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 9px;
+  margin-top: 6px;
+}
+
+.member-edit-cancel,
+.member-edit-save {
+  min-height: 42px;
+  border-radius: 8px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.member-edit-cancel {
+  border: 1px solid #3a424e;
+  color: #bec5cf;
+  background: #1d2229;
+}
+
+.member-edit-save {
+  border: 1px solid #46584d;
+  color: #e5f1e9;
+  background: #243329;
+}
+
+.member-edit-cancel:disabled,
+.member-edit-save:disabled {
+  opacity: 0.52;
+  cursor: wait;
+}
+
+.member-save-message {
+  padding: 11px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.member-save-message--success {
+  border: 1px solid #315745;
+  color: #9be7bb;
+  background: #151d18;
+}
+
+.member-save-message--error {
+  border: 1px solid #653d3d;
+  color: #ffaaaa;
+  background: #1b1517;
 }
