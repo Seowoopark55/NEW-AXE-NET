@@ -37,6 +37,19 @@ export async function updateMember(memberKey, values) {
   });
 }
 
+export async function createMember(values) {
+  return api.rpc('create_member', {
+    p_nickname: values.nickname,
+    p_discord_user_id: values.discord_user_id || null,
+    p_discord_name: values.discord_name || null,
+    p_role: values.role,
+    p_status: values.status,
+    p_joined_date: values.joined_date || null,
+    p_badge: values.badge || null,
+    p_points: Number(values.points),
+  });
+}
+
 export async function fetchMemberAudit(memberKey) {
   return api.select('member_audit_log', {
     columns: [

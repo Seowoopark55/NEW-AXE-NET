@@ -61,7 +61,19 @@ async function update(table, values, match) {
   return data ?? [];
 }
 
+async function rpc(functionName, args = {}) {
+  const client = requireSupabase();
+  const { data, error } = await client.rpc(functionName, args);
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
 export const api = {
   select,
   update,
+  rpc,
 };

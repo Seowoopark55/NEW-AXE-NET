@@ -45,7 +45,18 @@ export function renderMembersView(root, state, actions = {}) {
           <h2>멤버</h2>
           <p>Supabase · new_axe_net.members</p>
         </div>
-        <span class="badge">${members.loading ? 'LOADING' : `${counts.all} MEMBERS`}</span>
+        <div class="member-panel-actions">
+          ${
+            state.auth.admin
+              ? `
+                <button class="member-create-button" type="button" data-open-member-create>
+                  + 멤버 추가
+                </button>
+              `
+              : ''
+          }
+          <span class="badge">${members.loading ? 'LOADING' : `${counts.all} MEMBERS`}</span>
+        </div>
       </div>
 
       <div class="panel__body">
@@ -61,6 +72,12 @@ export function renderMembersView(root, state, actions = {}) {
             members.editingMemberKey === selectedMember.member_key,
             members,
           )
+        : ''
+    }
+
+    ${
+      members.create.open && state.auth.admin
+        ? renderMemberCreateModal(members.create)
         : ''
     }
   `;
@@ -81,6 +98,34 @@ export function renderMembersView(root, state, actions = {}) {
   root.querySelectorAll('[data-member-key]').forEach((row) => {
     row.addEventListener('click', () => {
       actions.onSelectMember?.(row.dataset.memberKey);
+    });
+  });
+
+  root.querySelector('[data-open-member-create]')?.addEventListener('click', () => {
+    actions.onOpenCreate?.();
+  });
+
+  root.querySelectorAll('[data-close-member-create]').forEach((element) => {
+    element.addEventListener('click', () => {
+      actions.onCloseCreate?.();
+    });
+  });
+
+  const createForm = root.querySelector('[data-member-create-form]');
+  createForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    const formData = new FormData(createForm);
+
+    actions.onCreateMember?.({
+      nickname: String(formData.get('nickname') ?? '').trim(),
+      discord_user_id: String(formData.get('discord_user_id') ?? '').trim(),
+      discord_name: String(formData.get('discord_name') ?? '').trim(),
+      role: String(formData.get('role') ?? ''),
+      status: String(formData.get('status') ?? ''),
+      joined_date: String(formData.get('joined_date') ?? ''),
+      badge: String(formData.get('badge') ?? '').trim(),
+      points: String(formData.get('points') ?? '0'),
     });
   });
 
@@ -231,6 +276,146 @@ function renderMembersState(members, counts, visibleItems) {
         </tbody>
       </table>
     </div>
+  `;
+}
+
+function renderMemberCreateModal(createState) {
+  return `
+    <div class="member-create-backdrop" data-close-member-create></div>
+
+    <section class="member-create-modal" role="dialog" aria-modal="true" aria-label="신규 멤버 등록">
+      <div class="member-create-modal__header">
+        <div>
+          <span>NEW MEMBER</span>
+          <h3>신규 멤버 등록</h3>
+          <p>등록 후 목록 마지막 순서에 자동 배치됩니다.</p>
+        </div>
+
+        <button
+          class="member-create-modal__close"
+          type="button"
+          aria-label="닫기"
+          data-close-member-create
+        >
+          ×
+        </button>
+      </div>
+
+      <form class="member-create-form" data-member-create-form>
+        <div class="member-create-grid">
+          <label class="member-edit-field member-create-grid__wide">
+            <span>닉네임 *</span>
+            <input
+              type="text"
+              name="nickname"
+              maxlength="50"
+              placeholder="인게임 닉네임"
+              required
+              autofocus
+            />
+          </label>
+
+          <label class="member-edit-field">
+            <span>Discord 사용자 ID</span>
+            <input
+              type="text"
+              name="discord_user_id"
+              inputmode="numeric"
+              placeholder="숫자 ID · 선택"
+            />
+          </label>
+
+          <label class="member-edit-field">
+            <span>Discord 표시명</span>
+            <input
+              type="text"
+              name="discord_name"
+              maxlength="100"
+              placeholder="선택"
+            />
+          </label>
+
+          <label class="member-edit-field">
+            <span>권한</span>
+            <select name="role">
+              <option value="user" selected>user</option>
+              <option value="admin">admin</option>
+            </select>
+          </label>
+
+          <label class="member-edit-field">
+            <span>상태</span>
+            <select name="status">
+              <option value="active" selected>활동</option>
+              <option value="inactive">비활성</option>
+            </select>
+          </label>
+
+          <label class="member-edit-field">
+            <span>가입일 *</span>
+            <input
+              type="date"
+              name="joined_date"
+              value="${getLocalDateString()}"
+              required
+            />
+          </label>
+
+          <label class="member-edit-field">
+            <span>배지</span>
+            <input
+              type="text"
+              name="badge"
+              maxlength="50"
+              value="bronze"
+              placeholder="bronze"
+            />
+          </label>
+
+          <label class="member-edit-field member-create-grid__wide">
+            <span>초기 포인트</span>
+            <input
+              type="number"
+              name="points"
+              min="0"
+              step="1"
+              value="0"
+              required
+            />
+          </label>
+        </div>
+
+        <div class="member-create-help">
+          role=admin으로 등록해도 로그인 관리자 권한이 자동 부여되지는 않습니다.
+          실제 관리자 로그인 권한은 별도의 admin_accounts 연결로 관리됩니다.
+        </div>
+
+        ${
+          createState.error
+            ? `<div class="member-save-message member-save-message--error">${escapeHtml(createState.error)}</div>`
+            : ''
+        }
+
+        <div class="member-create-actions">
+          <button
+            class="member-edit-cancel"
+            type="button"
+            data-close-member-create
+            ${createState.creating ? 'disabled' : ''}
+          >
+            취소
+          </button>
+
+          <button
+            class="member-edit-save"
+            type="submit"
+            ${createState.creating ? 'disabled' : ''}
+          >
+            ${createState.creating ? '등록 중...' : '멤버 등록'}
+          </button>
+        </div>
+      </form>
+    </section>
   `;
 }
 

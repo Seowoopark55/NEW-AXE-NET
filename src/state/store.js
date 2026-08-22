@@ -30,6 +30,13 @@ const initialState = {
     saving: false,
     saveError: null,
     saveSuccess: null,
+
+    create: {
+      open: false,
+      creating: false,
+      error: null,
+    },
+
     audit: {
       memberKey: null,
       items: [],

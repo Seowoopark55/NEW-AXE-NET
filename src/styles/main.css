@@ -959,3 +959,138 @@ button, input, select, textarea { font: inherit; }
   color: #7f8996;
   font-size: 11px;
 }
+
+
+/* v0.8 member create */
+.member-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.member-create-button {
+  min-height: 30px;
+  padding: 0 11px;
+  border: 1px solid #46584d;
+  border-radius: 8px;
+  color: #dff0e5;
+  background: #223128;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.member-create-button:hover {
+  border-color: #5f7868;
+  background: #2a3b31;
+}
+
+.member-create-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(0, 0, 0, 0.52);
+}
+
+.member-create-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 71;
+  width: min(620px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  transform: translate(-50%, -50%);
+  overflow-y: auto;
+  border: 1px solid #333c47;
+  border-radius: 14px;
+  background: #171b21;
+  box-shadow: 0 26px 90px rgba(0, 0, 0, 0.45);
+}
+
+.member-create-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px 24px 18px;
+  border-bottom: 1px solid #2d343f;
+}
+
+.member-create-modal__header > div > span {
+  color: #808a97;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.member-create-modal__header h3 {
+  margin: 6px 0 5px;
+  font-size: 21px;
+}
+
+.member-create-modal__header p {
+  margin: 0;
+  color: #8f98a5;
+  font-size: 12px;
+}
+
+.member-create-modal__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  border: 1px solid #3a424e;
+  border-radius: 9px;
+  color: #d8dde5;
+  background: #20252d;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.member-create-form {
+  display: grid;
+  gap: 16px;
+  padding: 20px 24px 24px;
+}
+
+.member-create-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+}
+
+.member-create-grid__wide {
+  grid-column: 1 / -1;
+}
+
+.member-create-help {
+  padding: 12px 13px;
+  border: 1px dashed #39424e;
+  border-radius: 8px;
+  color: #838d99;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.member-create-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 9px;
+}
+
+@media (max-width: 680px) {
+  .member-panel-actions {
+    align-items: flex-end;
+    flex-direction: column-reverse;
+  }
+
+  .member-create-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .member-create-grid__wide {
+    grid-column: auto;
+  }
+}
