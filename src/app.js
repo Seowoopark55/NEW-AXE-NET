@@ -7,6 +7,7 @@ import './modules/notice/notice.css';
 import './modules/info/info.css';
 import './modules/assets/assets.css';
 import './modules/outlaw/outlaw.css';
+import './modules/tube/tube.css';
 import { store } from './state/store.js';
 import { renderAppShell } from './components/AppShell.js';
 import { initAuthModule } from './modules/auth/index.js';
@@ -16,6 +17,7 @@ import { initNoticeModule } from './modules/notice/index.js';
 import { initInfoModule } from './modules/info/index.js';
 import { initAssetsModule } from './modules/assets/index.js';
 import { initOutlawModule } from './modules/outlaw/index.js';
+import { initTubeModule } from './modules/tube/index.js';
 import { initFundModule } from './modules/fund/index.js';
 import { runSupabaseHealthCheck } from './modules/system/systemService.js';
 
@@ -42,6 +44,7 @@ async function bootstrap() {
   await initMembersModule();
   await initAssetsModule();
   await initOutlawModule();
+  await initTubeModule();
   await initFundModule();
 
   store.updateState((state) => ({

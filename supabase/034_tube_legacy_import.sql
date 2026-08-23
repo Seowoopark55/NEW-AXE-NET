@@ -1,0 +1,108 @@
+-- NEW AXE NET v1.30.0
+-- 034_tube_legacy_import.sql
+-- 사용자 제공 `AXE NET - AXE_TUBE.csv` 12건을 new_axe_net.tube_videos로 1회 이관합니다.
+-- 전제: 033_tube_module.sql 실행 완료
+--
+-- SOURCE SUMMARY
+--   영상 12건 / 조회 182 / 추천 10 / 비추천 0
+--   작성자: 영포티 9 / 호듀 2 / 백민훈 1
+--   분류: 일반 11 / 무법 1
+--
+-- 중요
+-- - CSV의 password 해시는 NEW AXE NET에 이관하지 않습니다.
+--   NEW AXE NET은 멤버/관리자 인증을 사용하므로 레거시 게시글 비밀번호가 필요 없습니다.
+-- - thumbnail 값이 비어 있던 행은 YouTube video id 기준 hqdefault 썸네일 URL로 보완합니다.
+-- - writer_member_key는 현재 members.nickname과 작성자명이 일치할 때만 연결합니다.
+-- - tube_id 기준 UPSERT라 재실행해도 중복되지 않습니다.
+
+WITH source (
+  tube_id,title,url,youtube_video_id,thumbnail_url,published_at,
+  writer,writer_badge,content,category,sort_order,views,likes,dislikes,
+  source_updated_at,source_row
+) AS (
+  VALUES
+    ('tube_1778054050329_b85dc6a1', '박두억', 'https://youtu.be/TvLDiomS2dM?si=Gmm9q-cMyzpblYHF', 'TvLDiomS2dM', 'https://i.ytimg.com/vi/TvLDiomS2dM/hqdefault.jpg', ('2026-05-06 16:54:10'::timestamp AT TIME ZONE 'Asia/Seoul'), '영포티', null, '박두억 죽이기', '일반', 0, 51, 5, 0, null, 1),
+    ('tube_1778197194840_84d164d6', '사람은 인도로!!!', 'https://youtu.be/T4DRoXvLNqA', 'T4DRoXvLNqA', 'https://i.ytimg.com/vi/T4DRoXvLNqA/hqdefault.jpg', ('2026-05-08 08:39:55'::timestamp AT TIME ZONE 'Asia/Seoul'), '호듀', 'bronze', null, '일반', 0, 25, 1, 0, null, 2),
+    ('tube_1778379199904_506eefb8', '두쫀쿠 요리', 'https://youtu.be/w9Ly7hIqeF0?si=VOgHCL6tIPk0Q5i7', 'w9Ly7hIqeF0', 'https://i.ytimg.com/vi/w9Ly7hIqeF0/hqdefault.jpg', ('2026-05-10 11:13:20'::timestamp AT TIME ZONE 'Asia/Seoul'), '영포티', 'admin', null, '일반', 0, 31, 0, 0, null, 3),
+    ('tube_1779128515171_cc7bf740', '놀란 두쫀쿠', 'https://youtu.be/qqotiWNSnLY', 'qqotiWNSnLY', 'https://i.ytimg.com/vi/qqotiWNSnLY/hqdefault.jpg', ('2026-05-19 03:21:55'::timestamp AT TIME ZONE 'Asia/Seoul'), '호듀', 'bronze', null, '일반', 0, 16, 3, 0, null, 4),
+    ('tube_1784510601180_b9f62261', '무법지대 쌀먹단', 'https://youtu.be/ME_ipq1Pkog?si=K-5CI9bjdLKOkIhk', 'ME_ipq1Pkog', 'https://i.ytimg.com/vi/ME_ipq1Pkog/hqdefault.jpg', ('2026-07-20 10:23:21'::timestamp AT TIME ZONE 'Asia/Seoul'), '영포티', 'admin', '#포티 #야미 #샹크스', '일반', 0, 5, 1, 0, null, 5),
+    ('tube_1784544217066_8fae8088', '낚시터에서 고급스킬 쓰기', 'https://youtu.be/a4zqItDNQP0?si=WpeUkoxFgEOWZ1AG', 'a4zqItDNQP0', 'https://i.ytimg.com/vi/a4zqItDNQP0/hqdefault.jpg', ('2026-07-20 19:43:37'::timestamp AT TIME ZONE 'Asia/Seoul'), '영포티', 'admin', '#김안녕 #박두억 #영포티 #???', '일반', 0, 7, 0, 0, null, 6),
+    ('tube_1784706729458_f50201b2', '샷파 경찰 피트', 'https://youtu.be/EJZUXYZvlJ8?si=VZT48OO968gzvpUG', 'EJZUXYZvlJ8', 'https://i.ytimg.com/vi/EJZUXYZvlJ8/hqdefault.jpg', ('2026-07-22 16:52:09'::timestamp AT TIME ZONE 'Asia/Seoul'), '영포티', 'admin', '#밥풀 #AXE #샷파이어 #피트', '일반', 0, 15, 0, 0, null, 7),
+    ('tube_1785277214141_3da07689', '도파민에 싸버린 샹크스', 'https://youtu.be/gOJcHsnrxoo', 'gOJcHsnrxoo', 'https://i.ytimg.com/vi/gOJcHsnrxoo/hqdefault.jpg', ('2026-07-29 07:20:14'::timestamp AT TIME ZONE 'Asia/Seoul'), '영포티', 'admin', null, '일반', 0, 5, 0, 0, null, 8),
+    ('tube_1785277257372_b9d48ecc', 'OFF,AXE 경찰서 습격', 'https://youtu.be/3y-qj1lpZIY', '3y-qj1lpZIY', 'https://i.ytimg.com/vi/3y-qj1lpZIY/hqdefault.jpg', ('2026-07-29 07:20:57'::timestamp AT TIME ZONE 'Asia/Seoul'), '영포티', 'admin', null, '일반', 0, 5, 0, 0, null, 9),
+    ('tube_1785277617530_9bbfbe1d', '메이드카페 체험', 'https://youtu.be/WgaWqUDrVOo', 'WgaWqUDrVOo', 'https://i.ytimg.com/vi/WgaWqUDrVOo/hqdefault.jpg', ('2026-07-29 07:26:58'::timestamp AT TIME ZONE 'Asia/Seoul'), '영포티', 'admin', null, '일반', 0, 15, 0, 0, ('2026-08-18 00:00:00'::timestamp AT TIME ZONE 'Asia/Seoul'), 10),
+    ('tube_1785558959531_17f337b5', '[무법] AXE vs 밤양갱 (with.엄석대/OuO)', 'https://youtu.be/tXmfy-vZcaY?si=ZFO_DZXJOcOYr5eU', 'tXmfy-vZcaY', 'https://i.ytimg.com/vi/tXmfy-vZcaY/hqdefault.jpg', ('2026-08-01 13:36:00'::timestamp AT TIME ZONE 'Asia/Seoul'), '백민훈', 'admin', null, '무법', 0, 2, 0, 0, null, 11),
+    ('tube_1786097136946_111e84cb', '해변 뉴비가이드 영포티', 'https://youtu.be/JLa-VG8fkrw', 'JLa-VG8fkrw', 'https://i.ytimg.com/vi/JLa-VG8fkrw/hqdefault.jpg', ('2026-08-07 19:05:37'::timestamp AT TIME ZONE 'Asia/Seoul'), '영포티', 'admin', null, '일반', 0, 5, 0, 0, ('2026-08-18 00:00:00'::timestamp AT TIME ZONE 'Asia/Seoul'), 12)
+), resolved AS (
+  SELECT
+    s.*,
+    (
+      SELECT m.member_key
+      FROM new_axe_net.members m
+      WHERE lower(btrim(m.nickname)) = lower(btrim(s.writer))
+      ORDER BY CASE WHEN m.status = 'active' THEN 0 ELSE 1 END, m.id
+      LIMIT 1
+    ) AS writer_member_key
+  FROM source s
+)
+INSERT INTO new_axe_net.tube_videos (
+  tube_id,title,url,youtube_video_id,thumbnail_url,published_at,
+  writer_member_key,writer,writer_badge,content,category,sort_order,
+  views,likes,dislikes,source_updated_at,source,active
+)
+SELECT
+  tube_id,title,url,youtube_video_id,thumbnail_url,published_at,
+  writer_member_key,writer,writer_badge,content,category,sort_order,
+  views,likes,dislikes,source_updated_at,'legacy_sheet',true
+FROM resolved
+ON CONFLICT (tube_id)
+DO UPDATE SET
+  title = excluded.title,
+  url = excluded.url,
+  youtube_video_id = excluded.youtube_video_id,
+  thumbnail_url = excluded.thumbnail_url,
+  published_at = excluded.published_at,
+  writer_member_key = excluded.writer_member_key,
+  writer = excluded.writer,
+  writer_badge = excluded.writer_badge,
+  content = excluded.content,
+  category = excluded.category,
+  sort_order = excluded.sort_order,
+  views = excluded.views,
+  likes = excluded.likes,
+  dislikes = excluded.dislikes,
+  source_updated_at = excluded.source_updated_at,
+  source = excluded.source,
+  active = true,
+  updated_at = now();
+
+-- 검증 1: 이관 요약
+SELECT
+  count(*) AS imported_videos,
+  count(*) FILTER (WHERE writer_member_key IS NOT NULL) AS linked_writers,
+  count(*) FILTER (WHERE writer_member_key IS NULL) AS unlinked_writers,
+  sum(views) AS total_views,
+  sum(likes) AS total_likes,
+  sum(dislikes) AS total_dislikes
+FROM new_axe_net.tube_videos
+WHERE source = 'legacy_sheet';
+
+-- 기대값: 12 / 12 / 0 / 182 / 10 / 0
+
+-- 검증 2: 영상별 연결 상태
+SELECT
+  t.tube_id,
+  t.title,
+  t.writer,
+  m.nickname AS linked_member,
+  t.category,
+  t.views,
+  t.likes,
+  t.published_at
+FROM new_axe_net.tube_videos t
+LEFT JOIN new_axe_net.members m
+  ON m.member_key = t.writer_member_key
+WHERE t.source = 'legacy_sheet'
+ORDER BY t.published_at;
+
+notify pgrst, 'reload schema';

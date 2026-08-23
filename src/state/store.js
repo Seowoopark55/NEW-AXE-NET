@@ -173,6 +173,19 @@ const initialState = {
     },
   },
 
+  tube: {
+    initialized: false,
+    loading: false,
+    error: null,
+    videos: [],
+    selectedTubeId: null,
+    filters: {
+      search: '',
+      category: 'all',
+      sort: 'recent',
+    },
+  },
+
   fund: {
     initialized: false,
     loading: false,

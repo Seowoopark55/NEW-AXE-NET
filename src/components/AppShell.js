@@ -36,6 +36,7 @@ export function renderAppShell(root) {
               <button class="ops-module-nav__item" type="button" data-nav-module="members">멤버</button>
               <button class="ops-module-nav__item" type="button" data-nav-module="assets">자산·계좌</button>
               <button class="ops-module-nav__item" type="button" data-nav-module="outlaw">무법지대</button>
+              <button class="ops-module-nav__item" type="button" data-nav-module="tube">AXE TUBE</button>
               <button class="ops-module-nav__item" type="button" data-nav-module="fund">공금</button>
             </nav>
           </div>
