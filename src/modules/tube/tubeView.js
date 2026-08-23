@@ -8,6 +8,7 @@ export function renderTubeView(root, state, actions) {
   const categories = [...new Set((tube.videos || []).map((item) => String(item.category || '일반').trim() || '일반'))]
     .sort((a, b) => a.localeCompare(b, 'ko'));
   const totals = aggregate(tube.videos || []);
+  const runtime = runtimeHealth(tube.videos || []);
   const isMember = Boolean(state.auth?.member);
   const isAdmin = Boolean(state.auth?.admin);
   const canCreate = isMember || isAdmin;
@@ -34,8 +35,8 @@ export function renderTubeView(root, state, actions) {
 
       <section class="ops-tube-summary" aria-label="AXE TUBE 요약">
         ${summary('영상', `${totals.count}개`, '현재 활성 영상')}
-        ${summary('조회', formatNumber(totals.views), '기존 + NEW AXE NET')}
-        ${summary('추천', formatNumber(totals.likes), '기존 + 멤버 추천')}
+        ${summary('조회', formatNumber(totals.views), 'Supabase 누적')}
+        ${summary('추천', formatNumber(totals.likes), 'Supabase 누적')}
         ${summary('분류', `${totals.categories}개`, '영상 카테고리')}
       </section>
 
@@ -63,10 +64,12 @@ export function renderTubeView(root, state, actions) {
           <div class="ops-tube-toolbar__meta">${videos.length} VIDEOS</div>
         </div>
 
-        <div class="ops-tube-note">
-          <strong>Supabase-first</strong>
-          <span>NEW AXE NET이 AXE TUBE의 기준 원본입니다. Discord 등록도 Supabase에 먼저 저장되고, 기존 Apps Script / Sheet는 백업 경로로 유지됩니다.</span>
+        <div class="ops-tube-note ops-tube-note--primary">
+          <strong>Runtime Primary</strong>
+          <span>AXE TUBE의 읽기·쓰기·Discord 포럼 원본은 NEW AXE NET Supabase입니다. 기존 Apps Script / Google Sheet는 NEW → Legacy 단방향 백업 전용이며, 기존 AXE TUBE의 변경은 기본적으로 다시 가져오지 않습니다.</span>
         </div>
+
+        ${isAdmin ? renderRuntimeHealth(runtime) : ''}
 
         ${videos.length
           ? `<div class="ops-tube-grid">${videos.map((video) => renderCard(video, {
@@ -439,6 +442,48 @@ function filterVideos(videos, filters) {
     return dateValue(b.published_at) - dateValue(a.published_at);
   });
   return rows;
+}
+
+
+function runtimeHealth(videos) {
+  const rows = Array.isArray(videos) ? videos : [];
+  const primary = rows.filter((item) => String(item.sync_owner || '').toLowerCase() === 'supabase');
+  const discordPending = rows.filter((item) => String(item.discord_sync_status || 'pending').toLowerCase() === 'pending').length;
+  const discordError = rows.filter((item) => String(item.discord_sync_status || '').toLowerCase() === 'error').length;
+  const backupPending = primary.filter((item) => ['none', 'pending'].includes(String(item.legacy_backup_status || 'none').toLowerCase())).length;
+  const backupError = primary.filter((item) => String(item.legacy_backup_status || '').toLowerCase() === 'error').length;
+  const legacySource = rows.filter((item) => String(item.sync_owner || 'legacy').toLowerCase() !== 'supabase').length;
+  return {
+    primary: primary.length,
+    legacySource,
+    discordPending,
+    discordError,
+    backupPending,
+    backupError,
+  };
+}
+
+function renderRuntimeHealth(runtime) {
+  const discordProblem = Number(runtime.discordPending || 0) + Number(runtime.discordError || 0);
+  const backupProblem = Number(runtime.backupPending || 0) + Number(runtime.backupError || 0);
+  return `
+    <section class="ops-tube-runtime" aria-label="AXE TUBE 운영 상태">
+      <div class="ops-tube-runtime__head">
+        <strong>관리자 운영 상태</strong>
+        <span>Legacy inbound OFF · Sheet outbound backup only</span>
+      </div>
+      <div class="ops-tube-runtime__grid">
+        ${runtimeMetric('NEW 관리', `${runtime.primary}개`, 'Supabase가 원본인 영상', runtime.primary > 0 ? 'ok' : '')}
+        ${runtimeMetric('Discord', discordProblem ? `${discordProblem}건 확인` : '정상', `대기 ${runtime.discordPending} · 오류 ${runtime.discordError}`, discordProblem ? 'warn' : 'ok')}
+        ${runtimeMetric('Sheet 백업', backupProblem ? `${backupProblem}건 확인` : '정상', `대기 ${runtime.backupPending} · 오류 ${runtime.backupError}`, backupProblem ? 'warn' : 'ok')}
+        ${runtimeMetric('기존 이관', `${runtime.legacySource}개`, '읽기 기준은 Supabase에 고정', '')}
+      </div>
+    </section>
+  `;
+}
+
+function runtimeMetric(label, value, sub, tone = '') {
+  return `<div class="ops-tube-runtime__metric ${tone ? `ops-tube-runtime__metric--${tone}` : ''}"><span>${h(label)}</span><strong>${h(value)}</strong><small>${h(sub)}</small></div>`;
 }
 
 function aggregate(videos) {

@@ -1,0 +1,25 @@
+NEW AXE NET v1.36.0 · AXE TUBE RUNTIME CUTOVER
+
+PRIMARY
+- NEW AXE NET Supabase: 읽기/쓰기/영상/댓글/추천/조회 원본
+- Discord Forum: Supabase 활성 영상 기준 동기화
+
+BACKUP ONLY
+- Apps Script / Google Sheet: NEW AXE NET → Legacy 단방향 백업
+
+DEFAULT DISABLED
+- Legacy → Supabase 자동 흡수
+
+BOT DEFAULTS
+AXE_TUBE_FORUM_SOURCE=supabase
+AXE_TUBE_DISCORD_WRITE_MODE=supabase
+AXE_TUBE_LEGACY_PULL_MODE=off
+AXE_TUBE_FORUM_LEGACY_FALLBACK=false
+
+NORMAL LOG
+[AXE TUBE Runtime Primary] forum-source=supabase · legacy-pull=off · sheet-backup=outbound-only
+
+EMERGENCY ONLY
+AXE_TUBE_LEGACY_PULL_MODE=mirror
+AXE_TUBE_FORUM_SOURCE=legacy
+AXE_TUBE_FORUM_LEGACY_FALLBACK=true
