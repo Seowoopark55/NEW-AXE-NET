@@ -1,0 +1,29 @@
+NEW AXE NET v1.29.1 — OUTLAW MAP ASSET MAPPING
+
+브리핑맵 좌표/근사좌표 기준 연결
+01 남부항구 10100 -> 10100.png -> map_001.png (exact)
+02 남부 델페로 해변 8002 -> 8002.png -> map_002.png (exact)
+03 남부 가스공장 9199 -> 9198.png -> map_003.png (delta 1)
+04 남부 공장지대 9386 -> 9386.png -> map_004.png (exact)
+05 도심지 공사장 8162 -> 8164.png -> map_005.png (delta 2)
+06 도심 촬영지 7256 -> 7263.png -> map_006.png (delta 7)
+07 코르츠센터 6000 -> 6000.png -> map_007.png (exact)
+08 바인우드 공사장 7280 -> 7280.png -> map_008.png (exact)
+09 라 푸엔테 블랑카 5024 -> 5024.png -> map_009.png (exact)
+10 중부 교도소 4000 -> 4000.png -> map_010.png (exact)
+11 중부 휴메인 연구소 2060 -> 2060.png -> map_011.png (exact)
+12 중부 파머 스테이션 3062 -> 3063.png -> map_012.png (delta 1)
+13 중부 고철처리장 3048 -> 3048.png -> map_013.png (exact)
+14 중부 하모니 구역 4014 -> 4014.png -> map_014.png (exact)
+15 중부 스탭시티 3034 -> 3033.png -> map_015.png (delta 1)
+16 칠리야드 야생캠프 1085 -> 1085.png -> map_016.png (exact)
+17 페리코 ???? -> cayo.png -> map_017.png (name/visual match)
+
+공략 메인맵 재사용
+중부 교도소 4000.png -> prison_map.png
+휴메인 연구소 2060.png -> humane_map.png
+칠리아드 1085.png -> chiliad_map.png
+
+보관(현재 UI 미연결)
+cayo-estate.png
+cayo-estate-2.png
