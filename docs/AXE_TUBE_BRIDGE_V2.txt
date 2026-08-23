@@ -1,0 +1,21 @@
+NEW AXE NET v1.31.0 · AXE TUBE BRIDGE V2
+
+목표
+- 기존 AXE TUBE 운영을 멈추지 않는다.
+- NEW AXE NET 멤버 추천/비추천을 독립적으로 기록한다.
+- 기존 Sheet 카운터 변화량은 legacy baseline 차이만 합산한다.
+- 어느 한쪽의 카운터가 다른 쪽 값을 덮어쓰지 않는다.
+
+데이터 모델
+- tube_videos.views / likes / dislikes = 통합 총계
+- tube_videos.legacy_* = 마지막으로 확인한 기존 AXE TUBE 카운터
+- tube_reactions = NEW AXE NET 멤버별 추천/비추천 상태
+
+BOT V2
+- metadata upsert
+- apply_tube_legacy_metrics RPC
+- full sync에서 legacy source 누락 영상 soft deactivate
+
+다음 단계
+- NEW AXE NET 영상 등록/수정/삭제를 Supabase-first로 전환
+- Discord 포럼은 Supabase 변경을 구독/동기화하는 보조 출력으로 전환

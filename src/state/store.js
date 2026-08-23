@@ -177,8 +177,11 @@ const initialState = {
     initialized: false,
     loading: false,
     error: null,
+    message: null,
     videos: [],
     selectedTubeId: null,
+    myReactions: {},
+    reactionSavingTubeId: null,
     filters: {
       search: '',
       category: 'all',

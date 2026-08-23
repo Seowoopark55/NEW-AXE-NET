@@ -129,3 +129,18 @@ export async function fetchMemberOutlawHistory(memberKey) {
   });
   return Array.isArray(data.history) ? data.history : [];
 }
+
+export async function fetchMemberTubeReactions() {
+  const data = await postJson('/api/member-session', { action: 'tube_my_reactions' });
+  return Array.isArray(data.reactions) ? data.reactions : [];
+}
+
+export async function setMemberTubeReaction(tubeId, reaction) {
+  const data = await postJson('/api/member-session', {
+    action: 'tube_reaction_set',
+    tube_id: String(tubeId || '').trim(),
+    reaction: reaction == null ? null : String(reaction || '').trim(),
+  });
+  return data.result || null;
+}
+

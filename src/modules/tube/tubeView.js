@@ -5,6 +5,7 @@ export function renderTubeView(root, state, actions) {
   const categories = [...new Set((tube.videos || []).map((item) => String(item.category || '일반').trim() || '일반'))]
     .sort((a, b) => a.localeCompare(b, 'ko'));
   const totals = aggregate(tube.videos || []);
+  const isMember = Boolean(state.auth?.member);
 
   root.innerHTML = `
     <section class="ops-tube">
@@ -20,12 +21,13 @@ export function renderTubeView(root, state, actions) {
       </header>
 
       ${tube.error ? `<div class="ops-tube-alert ops-tube-alert--error">${h(tube.error)}</div>` : ''}
+      ${tube.message ? `<div class="ops-tube-alert ops-tube-alert--error">${h(tube.message)}</div>` : ''}
       ${tube.loading && !tube.initialized ? '<div class="ops-tube-loading">AXE TUBE 데이터를 불러오는 중입니다.</div>' : ''}
 
       <section class="ops-tube-summary" aria-label="AXE TUBE 요약">
-        ${summary('영상', `${totals.count}개`, '현재 이관된 영상')}
-        ${summary('조회', formatNumber(totals.views), '누적 조회수')}
-        ${summary('추천', formatNumber(totals.likes), '누적 추천')}
+        ${summary('영상', `${totals.count}개`, '현재 동기화된 영상')}
+        ${summary('조회', formatNumber(totals.views), '기존 + NEW AXE NET')}
+        ${summary('추천', formatNumber(totals.likes), '기존 + 멤버 추천')}
         ${summary('분류', `${totals.categories}개`, '영상 카테고리')}
       </section>
 
@@ -55,7 +57,7 @@ export function renderTubeView(root, state, actions) {
 
         <div class="ops-tube-note">
           <strong>병행 운영 중</strong>
-          <span>현재 영상 등록·수정은 기존 AXE TUBE / Discord 흐름을 유지합니다. NEW AXE NET은 Supabase 이관 데이터를 표시합니다.</span>
+          <span>영상 등록·수정은 기존 AXE TUBE / Discord 흐름을 유지합니다. 조회·추천·비추천은 기존 카운터와 NEW AXE NET 활동을 합산해 보존합니다.</span>
         </div>
 
         ${videos.length
@@ -63,7 +65,11 @@ export function renderTubeView(root, state, actions) {
           : '<div class="ops-tube-empty">조건에 맞는 영상이 없습니다.</div>'}
       </section>
 
-      ${selected ? renderDetail(selected) : ''}
+      ${selected ? renderDetail(selected, {
+        reaction: tube.myReactions?.[selected.tube_id] || null,
+        isMember,
+        saving: tube.reactionSavingTubeId === selected.tube_id,
+      }) : ''}
     </section>
   `;
 
@@ -96,12 +102,15 @@ function renderCard(video) {
   `;
 }
 
-function renderDetail(video) {
+function renderDetail(video, options = {}) {
   const videoId = safeYoutubeId(video.youtube_video_id || extractYoutubeId(video.url));
   const player = videoId
     ? `<iframe src="https://www.youtube.com/embed/${videoId}?rel=0" title="${h(video.title || 'AXE TUBE')}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`
     : `<div class="ops-tube-detail__fallback">YouTube 영상을 불러올 수 없습니다.</div>`;
   const youtubeUrl = normalizeYoutubeUrl(video.url, videoId);
+  const reaction = options.reaction || null;
+  const isMember = Boolean(options.isMember);
+  const saving = Boolean(options.saving);
 
   return `
     <div class="ops-tube-modal" data-tube-modal-backdrop>
@@ -123,11 +132,29 @@ function renderDetail(video) {
             </div>
             <time>${formatDateTime(video.published_at)}</time>
           </div>
-          <div class="ops-tube-detail__stats">
-            <span><b>${formatNumber(video.views)}</b> 조회</span>
-            <span><b>${formatNumber(video.likes)}</b> 추천</span>
-            <span><b>${formatNumber(video.dislikes)}</b> 비추천</span>
+
+          <div class="ops-tube-detail__engagement">
+            <span class="ops-tube-view-count"><b>${formatNumber(video.views)}</b> 조회</span>
+            <button
+              type="button"
+              class="ops-tube-reaction ${reaction === 'like' ? 'is-active' : ''}"
+              data-tube-react="like"
+              data-tube-id="${h(video.tube_id)}"
+              ${saving ? 'disabled' : ''}
+            >👍 추천 <b>${formatNumber(video.likes)}</b></button>
+            <button
+              type="button"
+              class="ops-tube-reaction ops-tube-reaction--dislike ${reaction === 'dislike' ? 'is-active' : ''}"
+              data-tube-react="dislike"
+              data-tube-id="${h(video.tube_id)}"
+              ${saving ? 'disabled' : ''}
+            >👎 비추천 <b>${formatNumber(video.dislikes)}</b></button>
           </div>
+
+          ${isMember
+            ? `<div class="ops-tube-reaction-help">${saving ? '반응을 저장하는 중입니다…' : reaction ? '같은 버튼을 다시 누르면 반응이 취소됩니다.' : '멤버 계정 기준으로 한 영상에 추천 또는 비추천 하나만 기록됩니다.'}</div>`
+            : '<button type="button" class="ops-tube-login-cta" data-tube-login>추천·비추천은 멤버 로그인 후 사용할 수 있습니다 →</button>'}
+
           <p>${h(video.content || '등록된 설명이 없습니다.')}</p>
           ${youtubeUrl ? `<a class="ops-tube-youtube" href="${h(youtubeUrl)}" target="_blank" rel="noopener noreferrer">YouTube에서 보기 ↗</a>` : ''}
         </div>
@@ -148,6 +175,11 @@ function bindEvents(root, actions) {
     button.addEventListener('click', () => actions.onOpenVideo?.(button.dataset.tubeOpen));
   });
 
+  root.querySelectorAll('[data-tube-react]').forEach((button) => {
+    button.addEventListener('click', () => actions.onReact?.(button.dataset.tubeId, button.dataset.tubeReact));
+  });
+
+  root.querySelector('[data-tube-login]')?.addEventListener('click', () => actions.onOpenLogin?.());
   root.querySelector('[data-tube-close]')?.addEventListener('click', () => actions.onCloseVideo?.());
   root.querySelector('[data-tube-modal-backdrop]')?.addEventListener('click', (event) => {
     if (event.target === event.currentTarget) actions.onCloseVideo?.();

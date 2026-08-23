@@ -112,6 +112,36 @@ export default async function handler(req, res) {
       return sendJson(res, 200, { ok: true, history: data || [] });
     }
 
+    if (action === 'tube_my_reactions') {
+      const { data, error } = await context.client
+        .from('tube_reactions')
+        .select('tube_id,reaction,updated_at')
+        .eq('member_key', context.member.member_key)
+        .order('updated_at', { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      return sendJson(res, 200, { ok: true, reactions: data || [] });
+    }
+
+    if (action === 'tube_reaction_set') {
+      const tubeId = String(body.tube_id || '').trim();
+      const rawReaction = body.reaction == null ? null : String(body.reaction || '').trim().toLowerCase();
+      if (!tubeId) {
+        return sendJson(res, 400, { ok: false, message: '영상 정보가 올바르지 않습니다.' });
+      }
+      if (rawReaction !== null && !['like', 'dislike'].includes(rawReaction)) {
+        return sendJson(res, 400, { ok: false, message: '추천/비추천 값이 올바르지 않습니다.' });
+      }
+
+      const { data, error } = await context.client.rpc('set_tube_reaction', {
+        p_tube_id: tubeId,
+        p_member_key: context.member.member_key,
+        p_reaction: rawReaction,
+      });
+      if (error) throw error;
+      return sendJson(res, 200, { ok: true, result: data || null });
+    }
+
     if (action === 'fund_profile') {
       const discordUserId = String(context.member.discord_user_id || '').trim();
       if (!discordUserId) {

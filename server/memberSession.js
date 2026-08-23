@@ -362,6 +362,13 @@ export function normalizeApiError(error) {
     };
   }
 
+  if (lower.includes('tube_reactions') || lower.includes('set_tube_reaction') || lower.includes('tube_videos')) {
+    return {
+      status: 500,
+      message: 'AXE TUBE 반응 데이터베이스가 아직 준비되지 않았습니다. 035_tube_reactions_bridge.sql 실행 여부를 확인하세요.',
+    };
+  }
+
   if (lower.includes('outlaw_stats_') || lower.includes('outlaw_guide_') || lower.includes('outlaw_briefing_maps')) {
     return {
       status: 500,
