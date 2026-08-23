@@ -1,4 +1,4 @@
-/* NEW AXE NET v1.19.0 · Fund Operations Console 2.0
+/* NEW AXE NET v1.20.0 · Unified Fund Operations
    ------------------------------------------------------------------
    A calmer, site-like operational UI. The fund workspace no longer
    stretches to fill the page; it uses deliberate widths, grouped data
@@ -6,7 +6,7 @@
 */
 
 .ops-fund {
-  width: min(1040px, 100%);
+  width: min(1000px, 100%);
   margin: 0 auto;
   color: #e9e5dd;
 }
@@ -21,18 +21,11 @@
 }
 .ops-fund__header > div { min-width: 0; }
 .ops-fund__kicker,
-.ops-view-kicker {
-  display: block;
-  margin-bottom: 5px;
-  color: #aa7c32;
-  font-size: 8.5px;
-  font-weight: 900;
-  letter-spacing: .16em;
-}
+.ops-view-kicker { display: none; }
 .ops-fund__header h1 {
   margin: 0;
   color: #faf6ee;
-  font-size: 21px;
+  font-size: 22px;
   font-weight: 900;
   letter-spacing: -.02em;
   line-height: 1.1;
@@ -62,7 +55,7 @@
   border-radius: 7px;
   color: #aaa9a5;
   background: rgba(255,255,255,.015);
-  font-size: 10.8px;
+  font-size: 11.8px;
   font-weight: 800;
   cursor: pointer;
 }
@@ -70,86 +63,84 @@
 .ops-quiet-button:hover { color: #e8e3d9; border-color: rgba(255,255,255,.15); background: rgba(255,255,255,.03); }
 
 .ops-fund-summary {
-  min-height: 66px;
+  min-height: 58px;
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) auto;
+  grid-template-columns: minmax(250px, 1fr) auto;
   align-items: stretch;
   overflow: hidden;
-  border: 1px solid rgba(255,255,255,.07);
-  border-radius: 11px;
-  background: linear-gradient(180deg, #101216, #0d0f12);
-  box-shadow: inset 0 1px rgba(255,255,255,.018);
+  border-top: 1px solid rgba(255,255,255,.07);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  background: rgba(255,255,255,.008);
 }
 .ops-fund-summary__balance {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 3px;
-  padding: 11px 16px;
-  border-right: 1px solid rgba(255,255,255,.06);
+  align-items: baseline;
+  gap: 12px;
+  padding: 10px 12px;
 }
 .ops-fund-summary__balance span,
-.ops-fund-summary__metrics span { color: #797d83; font-size: 9.8px; font-weight: 760; }
+.ops-fund-summary__metrics span { color: #777b82; font-size: 10px; font-weight: 760; }
 .ops-fund-summary__balance strong {
   color: #ffc660;
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 900;
   font-variant-numeric: tabular-nums;
 }
 .ops-fund-summary__metrics { display: flex; align-items: stretch; }
 .ops-fund-summary__metrics > div {
-  min-width: 112px;
+  min-width: 108px;
   display: flex;
-  flex-direction: column;
+  align-items: baseline;
   justify-content: center;
-  gap: 3px;
-  padding: 9px 14px;
+  gap: 8px;
+  padding: 9px 12px;
   border-left: 1px solid rgba(255,255,255,.055);
 }
-.ops-fund-summary__metrics > div:first-child { border-left: 0; }
-.ops-fund-summary__metrics strong { color: #d8d4cc; font-size: 14px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.ops-fund-summary__metrics strong { color: #d8d4cc; font-size: 13px; font-weight: 900; font-variant-numeric: tabular-nums; }
 .ops-fund-summary__metrics .is-alert strong { color: #ff948b; }
 
 /* Fund section navigation ------------------------------------------------ */
 .ops-fund-nav {
-  margin: 11px 0 0;
+  margin: 4px 0 0;
   overflow: hidden;
+  border-bottom: 1px solid rgba(255,255,255,.07);
 }
 .ops-fund-nav__scroll {
-  width: fit-content;
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 4px;
+  width: 100%;
   display: flex;
-  align-items: center;
-  gap: 2px;
+  align-items: stretch;
+  gap: 0;
   overflow-x: auto;
-  border: 1px solid rgba(255,255,255,.07);
-  border-radius: 10px;
-  background: #0d0f12;
   scrollbar-width: none;
 }
 .ops-fund-nav__scroll::-webkit-scrollbar { display: none; }
 .ops-fund-nav__item {
+  position: relative;
   flex: 0 0 auto;
-  height: 34px;
-  padding: 0 10px;
-  border: 1px solid transparent;
-  border-radius: 7px;
-  color: #81858b;
+  height: 39px;
+  padding: 0 11px;
+  border: 0;
+  color: #7f838a;
   background: transparent;
-  font-size: 10.8px;
+  font-size: 11px;
   font-weight: 820;
   cursor: pointer;
-  transition: color .14s ease, background .14s ease, border-color .14s ease;
+  transition: color .14s ease, background .14s ease;
 }
-.ops-fund-nav__item::after { display: none; }
-.ops-fund-nav__item:hover { color: #ddd8cf; background: rgba(255,255,255,.025); }
-.ops-fund-nav__item.is-active {
-  color: #fff1d5;
-  border-color: rgba(255,181,46,.18);
-  background: rgba(255,181,46,.075);
+.ops-fund-nav__item::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 0;
+  height: 2px;
+  transform: scaleX(0);
+  background: #ffb52e;
+  transition: transform .14s ease;
 }
+.ops-fund-nav__item:hover { color: #ddd8cf; background: rgba(255,255,255,.015); }
+.ops-fund-nav__item.is-active { color: #fff0d1; }
+.ops-fund-nav__item.is-active::after { transform: scaleX(1); }
 .ops-fund-nav__item b {
   display: inline-flex;
   align-items: center;
@@ -168,11 +159,12 @@
   flex: 0 0 1px;
   width: 1px;
   height: 18px;
-  margin: 0 3px;
-  background: rgba(255,255,255,.08);
+  align-self: center;
+  margin: 0 4px;
+  background: rgba(255,255,255,.07);
 }
 
-.ops-fund__content { min-width: 0; padding-top: 22px; }
+.ops-fund__content { min-width: 0; padding-top: 20px; }
 
 /* Shared page controls --------------------------------------------------- */
 .ops-view-head {
@@ -184,8 +176,8 @@
   margin: 0 0 12px;
 }
 .ops-view-head > div:first-child { min-width: 0; }
-.ops-view-head h2 { margin: 0; color: #f3efe7; font-size: 17px; font-weight: 900; letter-spacing: -.012em; }
-.ops-view-head p { margin: 4px 0 0; color: #797d82; font-size: 11px; line-height: 1.42; }
+.ops-view-head h2 { margin: 0; color: #f3efe7; font-size: 18px; font-weight: 900; letter-spacing: -.012em; }
+.ops-view-head p { margin: 4px 0 0; color: #797d82; font-size: 11.5px; line-height: 1.42; }
 .ops-view-actions { display: flex; align-items: center; gap: 7px; flex: 0 0 auto; }
 
 .ops-select {
@@ -302,7 +294,7 @@
 .ops-empty-cell { padding: 24px !important; color: #757980; font-size: 11px; text-align: center !important; }
 
 /* Ledger 2.0 ------------------------------------------------------------- */
-.ops-ledger { width: min(940px, 100%); margin: 0 auto; }
+.ops-ledger { width: min(900px, 100%); margin: 0 auto; }
 .ops-view-head--ledger { margin-bottom: 11px; }
 .ops-ledger-board {
   overflow: hidden;
@@ -312,7 +304,7 @@
   box-shadow: inset 0 1px rgba(255,255,255,.015);
 }
 .ops-ledger-toolbar {
-  min-height: 54px;
+  min-height: 50px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -322,9 +314,10 @@
   background: #101216;
 }
 .ops-ledger-toolbar__filters { display: flex; align-items: center; gap: 7px; min-width: 0; flex-wrap: wrap; }
-.ops-ledger-toolbar__meta { margin-left: auto; display: flex; align-items: center; gap: 5px; color: #70747a; font-size: 9.8px; white-space: nowrap; }
-.ops-ledger-filter { display: inline-flex; align-items: center; gap: 5px; color: #767a80; font-size: 9.7px; font-weight: 800; }
-.ops-ledger-filter .ops-select { min-width: 93px; height: 30px; }
+.ops-ledger-toolbar__meta { margin-left: auto; display: flex; align-items: center; gap: 5px; color: #70747a; font-size: 10.2px; white-space: nowrap; }
+.ops-ledger-filter { display: inline-flex; align-items: center; }
+.ops-ledger-filter > span { display: none; }
+.ops-ledger-filter .ops-select { min-width: 104px; height: 31px; }
 .ops-ledger-list { display: grid; }
 .ops-ledger-day {
   display: grid;
@@ -341,9 +334,9 @@
 .ops-ledger-day__date span { display: block; margin-top: 2px; color: #60646a; font-size: 8.8px; font-weight: 760; }
 .ops-ledger-day__rows { min-width: 0; }
 .ops-ledger-row {
-  min-height: 54px;
+  min-height: 58px;
   display: grid;
-  grid-template-columns: minmax(250px, 1fr) 150px 108px 104px;
+  grid-template-columns: minmax(230px, 1fr) 150px 108px 104px;
   align-items: center;
   gap: 12px;
   padding: 7px 10px 7px 12px;
@@ -356,11 +349,11 @@
 .ops-ledger-row__entry,
 .ops-ledger-row__who { min-width: 0; }
 .ops-ledger-row__title { display: flex; align-items: center; gap: 6px; min-width: 0; }
-.ops-ledger-row__title strong { min-width: 0; overflow: hidden; color: #e6e2da; font-size: 11.8px; font-weight: 880; text-overflow: ellipsis; white-space: nowrap; }
-.ops-ledger-row__entry > span { display: block; margin-top: 3px; overflow: hidden; color: #73777d; font-size: 9.6px; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
-.ops-ledger-row__who strong { display: block; overflow: hidden; color: #c7c3bb; font-size: 10.8px; font-weight: 820; text-overflow: ellipsis; white-space: nowrap; }
-.ops-ledger-row__who span { display: block; margin-top: 3px; overflow: hidden; color: #6d7177; font-size: 9.3px; text-overflow: ellipsis; white-space: nowrap; }
-.ops-ledger-row__money { color: #83dda8; font-size: 11.5px; font-weight: 900; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ops-ledger-row__title strong { min-width: 0; overflow: hidden; color: #e6e2da; font-size: 12.8px; font-weight: 880; text-overflow: ellipsis; white-space: nowrap; }
+.ops-ledger-row__entry > span { display: block; margin-top: 3px; overflow: hidden; color: #73777d; font-size: 10.6px; line-height: 1.25; text-overflow: ellipsis; white-space: nowrap; }
+.ops-ledger-row__who strong { display: block; overflow: hidden; color: #c7c3bb; font-size: 11.6px; font-weight: 820; text-overflow: ellipsis; white-space: nowrap; }
+.ops-ledger-row__who span { display: block; margin-top: 3px; overflow: hidden; color: #6d7177; font-size: 10.3px; text-overflow: ellipsis; white-space: nowrap; }
+.ops-ledger-row__money { color: #83dda8; font-size: 12.8px; font-weight: 900; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .ops-ledger-row__money.is-out { color: #ff8f89; }
 .ops-ledger-row__actions { display: flex; align-items: center; justify-content: flex-end; gap: 5px; }
 .ops-ledger-row__no-evidence { width: 44px; color: #555a60; font-size: 10px; text-align: center; }
@@ -372,13 +365,13 @@
   border-radius: 6px;
   color: #9da0a4;
   background: transparent;
-  font-size: 9.8px;
+  font-size: 10.5px;
   font-weight: 800;
   cursor: pointer;
 }
 .ops-row-button:hover { color: #e3ded5; border-color: rgba(255,255,255,.15); background: rgba(255,255,255,.018); }
 .ops-row-button--evidence { color: #cda554; border-color: rgba(255,181,46,.18); background: rgba(255,181,46,.025); }
-.ops-kind { flex: 0 0 auto; display: inline-flex; align-items: center; height: 17px; padding: 0 5px; border-radius: 4px; font-size: 8.5px; font-weight: 900; }
+.ops-kind { flex: 0 0 auto; display: inline-flex; align-items: center; height: 17px; padding: 0 5px; border-radius: 4px; font-size: 9.2px; font-weight: 900; }
 .ops-kind--manual { color: #cbb6f8; background: rgba(156,95,255,.08); }
 .ops-kind--payment { color: #d6b66f; background: rgba(255,181,46,.07); }
 .ops-ledger-empty { padding: 30px 16px; color: #73777d; font-size: 11px; text-align: center; }

@@ -39,29 +39,27 @@ export function renderMembersView(root, state, actions = {}) {
     ) ?? null;
 
   root.innerHTML = `
-    <section class="panel">
-      <div class="panel__header">
+    <section class="ops-members">
+      <header class="ops-members__header">
         <div>
-          <h2>멤버</h2>
-          <p>Supabase · new_axe_net.members</p>
+          <h1>멤버</h1>
+          <p>조직 구성과 권한, 활동 상태를 한 곳에서 관리합니다.</p>
         </div>
-        <div class="member-panel-actions">
+        <div class="ops-members__actions">
           ${
             state.auth.admin
               ? `
-                <button class="member-create-button" type="button" data-open-member-create>
+                <button class="ops-member-primary" type="button" data-open-member-create>
                   + 멤버 추가
                 </button>
               `
               : ''
           }
-          <span class="badge">${members.loading ? 'LOADING' : `${counts.all} MEMBERS`}</span>
+          <span class="ops-member-count">${members.loading ? '불러오는 중' : `${counts.all}명`}</span>
         </div>
-      </div>
+      </header>
 
-      <div class="panel__body">
-        ${renderMembersState(members, counts, visibleItems)}
-      </div>
+      ${renderMembersState(members, counts, visibleItems)}
     </section>
 
     ${
@@ -191,17 +189,15 @@ function renderWaiting(system) {
     : '<strong>Supabase 연결 확인 중</strong><span>잠시 기다려주세요.</span>';
 
   return `
-    <section class="panel">
-      <div class="panel__header">
+    <section class="ops-members">
+      <header class="ops-members__header">
         <div>
-          <h2>멤버</h2>
-          <p>데이터 연결 대기</p>
+          <h1>멤버</h1>
+          <p>데이터 연결을 확인하고 있습니다.</p>
         </div>
-      </div>
-      <div class="panel__body">
-        <div class="notice ${system.error ? 'notice--error' : ''}">
-          ${message}
-        </div>
+      </header>
+      <div class="notice ${system.error ? 'notice--error' : ''}">
+        ${message}
       </div>
     </section>
   `;
@@ -222,60 +218,72 @@ function renderMembersState(members, counts, visibleItems) {
   }
 
   return `
-    <div class="member-stats">
+    <section class="ops-member-summary" aria-label="멤버 현황">
       ${renderStat('전체', counts.all)}
       ${renderStat('활동', counts.active)}
       ${renderStat('비활성', counts.inactive)}
       ${renderStat('퇴사', counts.resigned)}
-    </div>
+    </section>
 
-    <div class="member-toolbar member-toolbar--split">
-      <div class="member-toolbar__filters">
-        ${renderFilterButton('all', '전체', members.filter)}
-        ${renderFilterButton('active', '활동', members.filter)}
-        ${renderFilterButton('inactive', '비활성', members.filter)}
-        ${renderFilterButton('resigned', '퇴사', members.filter)}
+    <section class="ops-member-board">
+      <div class="ops-member-toolbar">
+        <div class="ops-member-toolbar__filters">
+          ${renderFilterButton('all', '전체', members.filter)}
+          ${renderFilterButton('active', '활동', members.filter)}
+          ${renderFilterButton('inactive', '비활성', members.filter)}
+          ${renderFilterButton('resigned', '퇴사', members.filter)}
+        </div>
+
+        <label class="ops-member-search">
+          <span aria-hidden="true">⌕</span>
+          <input
+            type="search"
+            placeholder="닉네임 · Discord · 권한 · 배지 검색"
+            value="${escapeAttribute(members.search)}"
+            data-member-search
+          />
+        </label>
       </div>
 
-      <label class="member-search">
-        <span class="member-search__icon">⌕</span>
-        <input
-          type="search"
-          placeholder="닉네임 · Discord · 권한 · 배지 검색"
-          value="${escapeAttribute(members.search)}"
-          data-member-search
-        />
-      </label>
-    </div>
+      <div class="ops-member-meta">
+        <span>${visibleItems.length}명 표시</span>
+        <span>행을 클릭하면 상세정보를 확인할 수 있습니다.</span>
+      </div>
 
-    <div class="member-result-meta">
-      <span>표시 ${visibleItems.length}명</span>
-      <span>행을 클릭하면 상세정보를 볼 수 있습니다.</span>
-    </div>
-
-    <div class="member-table-wrap">
-      <table class="member-table">
-        <thead>
-          <tr>
-            <th>순번</th>
-            <th>닉네임</th>
-            <th>Discord</th>
-            <th>권한</th>
-            <th>상태</th>
-            <th>가입일</th>
-            <th>배지</th>
-            <th class="member-table__number">포인트</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${
-            visibleItems.length
-              ? visibleItems.map((item, index) => renderMemberRow(item, index + 1)).join('')
-              : '<tr><td colspan="8" class="member-table__empty">조건에 맞는 멤버가 없습니다.</td></tr>'
-          }
-        </tbody>
-      </table>
-    </div>
+      <div class="ops-member-table-wrap">
+        <table class="ops-member-table">
+          <colgroup>
+            <col class="ops-member-col-order" />
+            <col class="ops-member-col-name" />
+            <col class="ops-member-col-discord" />
+            <col class="ops-member-col-role" />
+            <col class="ops-member-col-status" />
+            <col class="ops-member-col-date" />
+            <col class="ops-member-col-badge" />
+            <col class="ops-member-col-points" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th>순번</th>
+              <th>닉네임</th>
+              <th>Discord</th>
+              <th>권한</th>
+              <th>상태</th>
+              <th>가입일</th>
+              <th>배지</th>
+              <th class="is-number">포인트</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${
+              visibleItems.length
+                ? visibleItems.map((item, index) => renderMemberRow(item, index + 1)).join('')
+                : '<tr><td colspan="8" class="ops-member-empty">조건에 맞는 멤버가 없습니다.</td></tr>'
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
   `;
 }
 
@@ -732,7 +740,7 @@ function renderDetailItem(label, value, raw = false) {
 
 function renderStat(label, value) {
   return `
-    <div class="member-stat">
+    <div class="ops-member-stat">
       <span>${label}</span>
       <strong>${value}</strong>
     </div>
@@ -742,7 +750,7 @@ function renderStat(label, value) {
 function renderFilterButton(filter, label, activeFilter) {
   return `
     <button
-      class="member-filter ${filter === activeFilter ? 'member-filter--active' : ''}"
+      class="ops-member-filter ${filter === activeFilter ? 'is-active' : ''}"
       type="button"
       data-member-filter="${filter}"
     >
@@ -753,15 +761,15 @@ function renderFilterButton(filter, label, activeFilter) {
 
 function renderMemberRow(item, displayOrder) {
   return `
-    <tr class="member-table__row" data-member-key="${escapeAttribute(item.member_key)}">
-      <td>${escapeHtml(displayOrder)}</td>
-      <td><strong>${escapeHtml(item.nickname ?? '')}</strong></td>
-      <td>${escapeHtml(item.discord_name || '—')}</td>
+    <tr class="ops-member-row" data-member-key="${escapeAttribute(item.member_key)}">
+      <td class="ops-member-order">${escapeHtml(displayOrder)}</td>
+      <td class="ops-member-name"><strong>${escapeHtml(item.nickname ?? '')}</strong></td>
+      <td class="ops-member-discord">${escapeHtml(item.discord_name || '—')}</td>
       <td>${renderRole(item.role)}</td>
       <td>${renderStatus(item.status)}</td>
-      <td>${escapeHtml(item.joined_date || '—')}</td>
-      <td>${escapeHtml(item.badge || '—')}</td>
-      <td class="member-table__number">${formatNumber(item.points)}</td>
+      <td class="ops-member-date">${escapeHtml(item.joined_date || '—')}</td>
+      <td class="ops-member-badge">${escapeHtml(item.badge || '—')}</td>
+      <td class="is-number">${formatNumber(item.points)}</td>
     </tr>
   `;
 }

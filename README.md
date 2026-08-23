@@ -1,3 +1,51 @@
+# NEW AXE NET v1.20.0 — Unified UI Pass
+
+이번 버전은 기능 추가가 아니라 **사이트 전체의 디자인 언어를 한 번에 맞추는 전역 UI 정돈 버전**입니다.
+
+## 핵심 변경
+
+- 배너와 `멤버 / 공금`을 하나의 사이트 헤더 구조로 결합
+  - 중앙에 떠 있던 segmented menu 제거
+  - 배너 바로 아래 full-width navigation rail
+  - 선택 메뉴는 골드 underline
+- 공금 내부 10개 메뉴도 capsule box를 제거하고 동일한 underline navigation으로 변경
+- 업무영역의 `FUND MANAGEMENT / LEDGER` 같은 template형 영문 kicker 제거
+- 멤버 화면을 기존 대형 panel/card 방식에서 공금과 같은 flat operations workspace로 전면 재구성
+  - 기술문구 `Supabase · new_axe_net.members` 제거
+  - 4개의 큰 KPI card를 얇은 summary rail로 변경
+  - filter/search/table을 하나의 compact board로 통합
+  - column width와 workspace width 고정으로 넓은 화면에서도 불필요하게 퍼지지 않음
+- 공금 상단 summary도 card보다 얇은 정보 rail 형태로 변경
+- 공금내역
+  - 900px 중앙 ledger workspace
+  - 필터 라벨을 select 안으로 통합 (`전체 이름 / 전체 구분 / 전체 계좌`)
+  - 내역명/금액/메타의 글자 크기를 다시 올려 축소된 코드 UI 느낌 완화
+- 공금 공통 form/card와 admin panel의 radius/높이/타이포도 같은 시스템으로 통일
+- `AXE UI SYSTEM 3.0`으로 공통 control/radius/type token 재정리
+
+## DB / SQL
+
+**DB 변경 없음. Supabase SQL Editor에 입력할 내용 없음.**
+
+## 적용
+
+1. v1.20.0 ZIP 압축 해제
+2. 기존 NEW AXE NET 프로젝트에 전체 덮어쓰기
+3. GitHub Desktop Commit
+4. Push
+5. Vercel 자동배포 확인
+
+## 검증
+
+- JavaScript syntax check: PASS
+- Relative import check: PASS
+- CSS brace/structure check: PASS
+- npm install은 실행환경 네트워크 제한으로 시간초과되어 production build는 이 환경에서 수행하지 못함
+
+설계 문서: `docs/UNIFIED_UI_1.0.md`
+
+---
+
 # NEW AXE NET v1.19.0 — Fund UI Recomposition
 
 이번 버전은 공금 기능을 추가하지 않고 **배너 / 사이트 카테고리 / 공금 워크스페이스 / 공금내역 / 증빙 뷰어의 시각 구조를 다시 설계**한 UI 리컴포지션 버전입니다.

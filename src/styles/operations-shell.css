@@ -1,15 +1,14 @@
-/* NEW AXE NET v1.19.0 · Site shell
+/* NEW AXE NET v1.20.0 · Unified site shell
    ------------------------------------------------------------------
-   Purpose: make NEW AXE NET feel like a complete AXE website first,
-   then place the operational workspace inside it. The banner, module
-   categories and workspace now share one centered visual axis.
+   Brand at the top, one connected site navigation rail under the banner,
+   then a centered operational workspace. No floating segmented menus.
 */
 
 .ops-shell {
   min-height: 100vh;
   color: #ece8df;
   background:
-    radial-gradient(circle at 50% -180px, rgba(206,143,31,.07), transparent 520px),
+    radial-gradient(circle at 50% -180px, rgba(206,143,31,.055), transparent 520px),
     #08090b;
 }
 
@@ -20,7 +19,7 @@
   z-index: 30;
   height: 56px;
   border-bottom: 1px solid rgba(255,255,255,.055);
-  background: rgba(8,9,11,.94);
+  background: rgba(8,9,11,.95);
   backdrop-filter: blur(16px);
 }
 
@@ -33,25 +32,16 @@
   gap: 18px;
 }
 
-.ops-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-
+.ops-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .ops-brand__mark {
   width: 43px;
   height: 31px;
   overflow: hidden;
   border: 1px solid rgba(255,181,46,.16);
-  border-radius: 8px;
+  border-radius: 7px;
   background: #0d0f11;
-  box-shadow: inset 0 1px rgba(255,255,255,.025);
 }
-
 .ops-brand__mark img { width: 100%; height: 100%; display: block; object-fit: cover; }
-
 .ops-brand__copy { display: grid; gap: 2px; line-height: 1; }
 .ops-brand__copy strong { color: #fff6e5; font-size: 13px; font-weight: 900; letter-spacing: .025em; }
 .ops-brand__copy span { color: #967031; font-size: 8px; font-weight: 900; letter-spacing: .18em; }
@@ -64,15 +54,7 @@
   gap: 9px;
   min-width: 0;
 }
-
-.ops-topbar .status-pill {
-  min-height: 24px;
-  padding: 0 8px;
-  border-radius: 7px;
-  font-size: 8.5px;
-  letter-spacing: .04em;
-  background: rgba(255,255,255,.012);
-}
+.ops-topbar .status-pill { min-height: 24px; padding: 0 8px; border-radius: 7px; font-size: 8.5px; letter-spacing: .04em; background: rgba(255,255,255,.012); }
 .ops-topbar .status-pill i { width: 5px; height: 5px; }
 .ops-topbar .auth-signed-in { min-height: 30px; padding: 2px 3px 2px 9px; border-radius: 7px; background: transparent; }
 .ops-topbar .auth-pill,
@@ -82,104 +64,101 @@
 .ops-topbar .auth-signed-in__text span { font-size: 8px; }
 .ops-topbar .auth-signed-in__text strong { font-size: 10.5px; }
 
-/* Brand site head --------------------------------------------------------- */
-.ops-sitehead {
-  background: linear-gradient(180deg, rgba(255,178,32,.012), transparent 72%);
-}
-
+/* Connected banner + site navigation ------------------------------------ */
+.ops-sitehead { background: linear-gradient(180deg, rgba(255,178,32,.01), transparent 76%); }
 .ops-sitehead__inner {
   width: min(1120px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 16px 0 12px;
+  padding: 16px 0 0;
 }
 
 .ops-hero {
   position: relative;
   isolation: isolate;
-  height: 136px;
+  height: 128px;
   overflow: hidden;
   border: 1px solid rgba(226,157,37,.15);
-  border-radius: 14px;
+  border-bottom-color: rgba(255,255,255,.055);
+  border-radius: 13px 13px 0 0;
   background:
-    linear-gradient(90deg, rgba(4,5,6,.86) 0%, rgba(4,5,6,.48) 35%, rgba(4,5,6,.08) 68%, rgba(4,5,6,.34) 100%),
+    linear-gradient(90deg, rgba(4,5,6,.87) 0%, rgba(4,5,6,.46) 34%, rgba(4,5,6,.07) 68%, rgba(4,5,6,.32) 100%),
     url('/assets/axe-brand-hero.webp') center 50% / cover no-repeat;
-  box-shadow:
-    inset 0 1px rgba(255,255,255,.025),
-    0 16px 36px rgba(0,0,0,.18);
+  box-shadow: inset 0 1px rgba(255,255,255,.025);
 }
-
 .ops-hero::after {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 0;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,.01), transparent 32%),
-    radial-gradient(circle at 22% 65%, rgba(255,173,26,.11), transparent 31%);
+  background: radial-gradient(circle at 22% 65%, rgba(255,173,26,.10), transparent 31%);
   pointer-events: none;
 }
-
 .ops-hero__veil { display: none; }
-
 .ops-hero__caption {
   position: absolute;
   z-index: 1;
   left: 18px;
-  bottom: 16px;
+  bottom: 15px;
   display: grid;
   gap: 3px;
-  padding: 10px 12px 9px;
+  padding-left: 11px;
   border-left: 2px solid rgba(255,181,46,.78);
-  background: linear-gradient(90deg, rgba(5,6,7,.58), rgba(5,6,7,.12));
-  backdrop-filter: blur(2px);
 }
-.ops-hero__caption span { color: #c9953e; font-size: 8.5px; font-weight: 900; letter-spacing: .16em; }
-.ops-hero__caption strong { color: #fff5e4; font-size: 18px; font-weight: 900; letter-spacing: .01em; line-height: 1.1; }
-.ops-hero__caption p { margin: 0; color: rgba(235,226,211,.58); font-size: 9px; font-weight: 760; letter-spacing: .08em; }
+.ops-hero__caption span { color: #c9953e; font-size: 8.5px; font-weight: 900; letter-spacing: .15em; }
+.ops-hero__caption strong { color: #fff5e4; font-size: 18px; font-weight: 900; letter-spacing: .01em; line-height: 1.08; }
+.ops-hero__caption p { margin: 0; color: rgba(235,226,211,.56); font-size: 9px; font-weight: 760; letter-spacing: .07em; }
 
-/* Site categories: intentional segmented navigation, not a code-like tab row. */
+.ops-module-rail {
+  height: 48px;
+  display: flex;
+  align-items: stretch;
+  border: 1px solid rgba(255,255,255,.065);
+  border-top: 0;
+  border-radius: 0 0 11px 11px;
+  background: #0d0f12;
+  box-shadow: 0 12px 28px rgba(0,0,0,.14);
+}
 .ops-module-nav {
-  width: fit-content;
-  min-width: 236px;
-  margin: 11px auto 0;
-  padding: 4px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(108px, 1fr));
+  width: 100%;
+  display: flex;
+  align-items: stretch;
+  padding: 0 14px;
   gap: 4px;
-  border: 1px solid rgba(255,255,255,.075);
-  border-radius: 11px;
-  background: rgba(16,18,21,.88);
-  box-shadow: inset 0 1px rgba(255,255,255,.02);
 }
-
 .ops-module-nav__item {
   position: relative;
-  height: 38px;
-  padding: 0 14px;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  color: #8e9298;
+  min-width: 96px;
+  height: 47px;
+  padding: 0 16px;
+  border: 0;
+  color: #8d9197;
   background: transparent;
   font-size: 12.5px;
   font-weight: 850;
   cursor: pointer;
-  transition: color .15s ease, border-color .15s ease, background .15s ease, box-shadow .15s ease;
+  transition: color .15s ease, background .15s ease;
 }
-.ops-module-nav__item::after { display: none; }
-.ops-module-nav__item:hover { color: #e1ddd5; background: rgba(255,255,255,.025); }
-.ops-module-nav__item--active {
-  color: #fff4df;
-  border-color: rgba(255,181,46,.21);
-  background: linear-gradient(180deg, rgba(255,181,46,.10), rgba(255,181,46,.045));
-  box-shadow: inset 0 1px rgba(255,213,124,.05);
+.ops-module-nav__item::after {
+  content: "";
+  position: absolute;
+  left: 15px;
+  right: 15px;
+  bottom: 0;
+  height: 2px;
+  transform: scaleX(0);
+  background: #ffb52e;
+  transition: transform .15s ease;
 }
+.ops-module-nav__item:hover { color: #e2ded6; background: rgba(255,255,255,.018); }
+.ops-module-nav__item--active { color: #fff3da; }
+.ops-module-nav__item--active::after { transform: scaleX(1); }
 
 /* Workspace -------------------------------------------------------------- */
-.ops-main { min-width: 0; border-top: 1px solid rgba(255,255,255,.035); }
+.ops-main { min-width: 0; }
 .ops-main__inner {
   width: min(1120px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 24px 0 58px;
+  padding: 26px 0 58px;
 }
 .ops-main .module-root { min-width: 0; }
 
@@ -190,12 +169,13 @@
   .ops-brand__copy { display: none; }
   .ops-topbar__utility .status-pill { display: none; }
   .ops-sitehead__inner { padding-top: 10px; }
-  .ops-hero { height: 104px; border-radius: 10px; }
-  .ops-hero__caption { left: 12px; bottom: 11px; padding: 7px 9px; }
+  .ops-hero { height: 100px; border-radius: 10px 10px 0 0; }
+  .ops-hero__caption { left: 12px; bottom: 11px; padding-left: 8px; }
   .ops-hero__caption span,
   .ops-hero__caption p { display: none; }
   .ops-hero__caption strong { font-size: 14px; }
-  .ops-module-nav { margin-top: 8px; min-width: 220px; }
-  .ops-module-nav__item { height: 35px; }
-  .ops-main__inner { padding-top: 18px; }
+  .ops-module-rail { height: 44px; }
+  .ops-module-nav { padding-inline: 6px; }
+  .ops-module-nav__item { min-width: 82px; height: 43px; padding-inline: 10px; }
+  .ops-main__inner { padding-top: 20px; }
 }

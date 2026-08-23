@@ -1,4 +1,4 @@
-/* NEW AXE NET v1.17.0 · FUND ADMIN REBASE
+/* NEW AXE NET v1.20.0 · Unified Fund Admin
    ------------------------------------------------------------------
    Canonical admin layout. Existing AXE NET is the visual-density and
    information-hierarchy baseline. No version-layer overrides.
@@ -45,14 +45,9 @@
   justify-content: space-between;
   gap: 12px;
 }
-.fund-admin-panel__head span {
-  color: #b78331;
-  font-size: var(--axe-ui-font-kicker);
-  font-weight: var(--axe-ui-weight-strong);
-  letter-spacing: .12em;
-}
+.fund-admin-panel__head span { display: none; }
 .fund-admin-panel__head h3 {
-  margin: 3px 0;
+  margin: 0 0 3px;
   color: #fff;
   font-size: var(--axe-ui-font-section);
   font-weight: var(--axe-ui-weight-strong);

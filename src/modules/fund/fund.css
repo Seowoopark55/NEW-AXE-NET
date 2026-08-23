@@ -1,4 +1,4 @@
-/* NEW AXE NET v1.17.0 · FUND REBASE
+/* NEW AXE NET v1.20.0 · Unified Fund Workflow
    ------------------------------------------------------------------
    Existing AXE NET is the UI/UX baseline.
    This file owns shared fund shell / public workflow styles only.
@@ -51,18 +51,11 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 12px;
-  padding: 13px 14px 11px;
+  padding: 11px 12px 10px;
   border-bottom: 1px solid var(--fund-line-soft);
 }
 .fund-section-card__header > div { min-width: 0; }
-.fund-section-card__header > div > span {
-  display: block;
-  margin-bottom: 4px;
-  color: #b78331;
-  font-size: var(--axe-ui-font-kicker);
-  font-weight: var(--axe-ui-weight-strong);
-  letter-spacing: .12em;
-}
+.fund-section-card__header > div > span { display: none; }
 .fund-section-card__header h3 {
   margin: 0;
   color: #fff;

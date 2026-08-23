@@ -1,4 +1,4 @@
-/* AXE UI SYSTEM 2.0 · AXE NET REBASE
+/* AXE UI SYSTEM 3.0 · Unified Operations UI
    ------------------------------------------------------------------
    기준: 기존 AXE NET 최신 운영본의 실제 화면 밀도/타이포/컨트롤.
    NEW AXE NET은 이 수치를 기본값으로 사용하고, 기능 화면이 좁아지면
@@ -14,24 +14,24 @@
   --axe-ui-compact-gap: 8px;
 
   /* AXE NET typography baseline */
-  --axe-ui-font-page: 25px;
-  --axe-ui-font-section: 18px;
-  --axe-ui-font-card-title: 15px;
-  --axe-ui-font-body: 13px;
-  --axe-ui-font-control: 13px;
-  --axe-ui-font-label: 12px;
-  --axe-ui-font-meta: 11.5px;
-  --axe-ui-font-caption: 11px;
-  --axe-ui-font-kicker: 10px;
+  --axe-ui-font-page: 18px;
+  --axe-ui-font-section: 15px;
+  --axe-ui-font-card-title: 14px;
+  --axe-ui-font-body: 12px;
+  --axe-ui-font-control: 11.5px;
+  --axe-ui-font-label: 10.5px;
+  --axe-ui-font-meta: 10.5px;
+  --axe-ui-font-caption: 10px;
+  --axe-ui-font-kicker: 9px;
 
   --axe-ui-weight-strong: 950;
   --axe-ui-weight-label: 850;
 
   /* AXE NET control baseline */
-  --axe-ui-control-height: 38px;
-  --axe-ui-button-height: 36px;
-  --axe-ui-button-small-height: 32px;
-  --axe-ui-chip-height: 24px;
+  --axe-ui-control-height: 34px;
+  --axe-ui-button-height: 32px;
+  --axe-ui-button-small-height: 28px;
+  --axe-ui-chip-height: 22px;
   --axe-ui-chip-min-width: 44px;
 
   /* Table/list density */
@@ -42,11 +42,11 @@
   --axe-ui-row-min: 44px;
 
   /* Surfaces */
-  --axe-ui-radius-control: 11px;
-  --axe-ui-radius-button: 10px;
-  --axe-ui-radius-card: 13px;
-  --axe-ui-radius-panel: 15px;
-  --axe-ui-radius-section: 16px;
+  --axe-ui-radius-control: 7px;
+  --axe-ui-radius-button: 7px;
+  --axe-ui-radius-card: 9px;
+  --axe-ui-radius-panel: 10px;
+  --axe-ui-radius-section: 11px;
 
   --axe-ui-bg-field: #151515;
   --axe-ui-bg-card: rgba(0,0,0,.22);

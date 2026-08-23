@@ -1,0 +1,215 @@
+/* NEW AXE NET v1.20.0 · Members workspace
+   Flat operational layout shared with Fund. This file owns the members list
+   shell; existing detail/create drawers keep their proven interaction CSS.
+*/
+
+.ops-members {
+  width: min(1040px, 100%);
+  margin: 0 auto;
+  color: #e9e5dd;
+}
+
+.ops-members__header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 0 2px 13px;
+}
+.ops-members__header > div:first-child { min-width: 0; }
+.ops-members__header h1 {
+  margin: 0;
+  color: #faf6ee;
+  font-size: 21px;
+  line-height: 1.1;
+  font-weight: 900;
+  letter-spacing: -.02em;
+}
+.ops-members__header p {
+  margin: 5px 0 0;
+  color: #85888d;
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+.ops-members__actions { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.ops-member-primary {
+  height: 32px;
+  padding: 0 11px;
+  border: 1px solid rgba(91,151,110,.40);
+  border-radius: 7px;
+  color: #dcf3e4;
+  background: rgba(57,101,70,.30);
+  font: inherit;
+  font-size: 10.8px;
+  font-weight: 850;
+  cursor: pointer;
+}
+.ops-member-primary:hover { border-color: rgba(111,177,132,.55); background: rgba(63,116,80,.38); }
+.ops-member-count {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 9px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 7px;
+  color: #8f9399;
+  background: rgba(255,255,255,.012);
+  font-size: 10.3px;
+  font-weight: 800;
+}
+
+.ops-member-summary {
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  margin-bottom: 12px;
+  border-top: 1px solid rgba(255,255,255,.07);
+  border-bottom: 1px solid rgba(255,255,255,.07);
+  background: rgba(255,255,255,.009);
+}
+.ops-member-stat {
+  min-width: 118px;
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  padding: 10px 16px;
+  border-right: 1px solid rgba(255,255,255,.055);
+}
+.ops-member-stat:last-child { border-right: 0; }
+.ops-member-stat span { color: #777b82; font-size: 10.5px; font-weight: 760; }
+.ops-member-stat strong { color: #e8e4dc; font-size: 15px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.ops-member-stat:nth-child(2) strong { color: #92d6aa; }
+
+.ops-member-board {
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.075);
+  border-radius: 10px;
+  background: #0d0f12;
+}
+.ops-member-toolbar {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  background: #101216;
+}
+.ops-member-toolbar__filters { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.ops-member-filter {
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #84888e;
+  background: transparent;
+  font: inherit;
+  font-size: 10.8px;
+  font-weight: 820;
+  cursor: pointer;
+}
+.ops-member-filter:hover { color: #ddd9d0; background: rgba(255,255,255,.025); }
+.ops-member-filter.is-active {
+  color: #f4eee2;
+  border-color: rgba(255,181,46,.18);
+  background: rgba(255,181,46,.06);
+}
+.ops-member-search {
+  width: min(310px, 42vw);
+  height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 9px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 7px;
+  background: #111317;
+}
+.ops-member-search > span { color: #98783e; font-size: 13px; }
+.ops-member-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: #ddd9d1;
+  background: transparent;
+  font: inherit;
+  font-size: 11px;
+}
+.ops-member-search input::placeholder { color: #666b72; }
+
+.ops-member-meta {
+  min-height: 31px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 12px;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+  color: #70747a;
+  font-size: 9.8px;
+}
+.ops-member-table-wrap { width: 100%; overflow-x: auto; }
+.ops-member-table {
+  width: 100%;
+  min-width: 820px;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+.ops-member-table th,
+.ops-member-table td {
+  height: 44px;
+  padding: 7px 10px;
+  border-bottom: 1px solid rgba(255,255,255,.055);
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ops-member-table tbody tr:last-child td { border-bottom: 0; }
+.ops-member-table th {
+  height: 36px;
+  color: #777c83;
+  background: rgba(255,255,255,.009);
+  font-size: 10px;
+  font-weight: 820;
+}
+.ops-member-row { cursor: pointer; transition: background .13s ease; }
+.ops-member-row:hover { background: rgba(255,255,255,.018); }
+.ops-member-row td { color: #c8c5be; font-size: 11.4px; }
+.ops-member-order { color: #73777d !important; font-variant-numeric: tabular-nums; }
+.ops-member-name strong { color: #ece8df; font-size: 12.3px; font-weight: 880; }
+.ops-member-discord { color: #aaa7a1 !important; }
+.ops-member-date { font-variant-numeric: tabular-nums; }
+.ops-member-badge { color: #b8a984 !important; }
+.ops-member-table .is-number { text-align: right; font-variant-numeric: tabular-nums; }
+.ops-member-empty { height: 72px !important; color: #72767d !important; text-align: center !important; }
+
+.ops-member-col-order { width: 54px; }
+.ops-member-col-name { width: 132px; }
+.ops-member-col-discord { width: 155px; }
+.ops-member-col-role { width: 98px; }
+.ops-member-col-status { width: 98px; }
+.ops-member-col-date { width: 128px; }
+.ops-member-col-badge { width: 120px; }
+.ops-member-col-points { width: 88px; }
+
+.ops-members .member-tag,
+.ops-members .member-status {
+  min-height: 22px;
+  padding: 0 7px;
+  border-radius: 6px;
+  font-size: 9.8px;
+}
+
+@media (max-width: 760px) {
+  .ops-members__header { align-items: flex-start; flex-direction: column; }
+  .ops-members__actions { width: 100%; justify-content: space-between; }
+  .ops-member-summary { overflow-x: auto; }
+  .ops-member-stat { flex: 0 0 104px; padding-inline: 11px; }
+  .ops-member-toolbar { align-items: stretch; flex-direction: column; }
+  .ops-member-search { width: 100%; }
+  .ops-member-meta span:last-child { display: none; }
+}

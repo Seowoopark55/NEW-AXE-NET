@@ -28,7 +28,6 @@ export function renderHistoryView(state) {
     <div class="ops-ledger">
       <header class="ops-view-head ops-view-head--ledger">
         <div>
-          <span class="ops-view-kicker">LEDGER</span>
           <h2>공금내역</h2>
           <p>필요한 정보만 빠르게 확인하고, 상세 작업은 행에서 바로 처리합니다.</p>
         </div>
@@ -45,16 +44,14 @@ export function renderHistoryView(state) {
         <div class="ops-ledger-toolbar">
           <div class="ops-ledger-toolbar__filters">
             <label class="ops-ledger-filter">
-              <span>이름</span>
-              <select class="ops-select" data-history-filter="person" ${showingDeleted ? 'disabled' : ''}>
-                ${option('all', '전체', filters.person)}
+              <select class="ops-select" aria-label="이름 필터" data-history-filter="person" ${showingDeleted ? 'disabled' : ''}>
+                ${option('all', '전체 이름', filters.person)}
                 ${personOptions.map((name) => option(name, name, filters.person)).join('')}
               </select>
             </label>
             <label class="ops-ledger-filter">
-              <span>구분</span>
-              <select class="ops-select" data-history-filter="type" ${showingDeleted ? 'disabled' : ''}>
-                ${option('all', '전체', filters.type)}
+              <select class="ops-select" aria-label="구분 필터" data-history-filter="type" ${showingDeleted ? 'disabled' : ''}>
+                ${option('all', '전체 구분', filters.type)}
                 ${option('payment', '승인반영', filters.type)}
                 ${option('manual', '직접기입', filters.type)}
                 ${option('income', '수입', filters.type)}
@@ -63,9 +60,8 @@ export function renderHistoryView(state) {
               </select>
             </label>
             <label class="ops-ledger-filter">
-              <span>계좌</span>
-              <select class="ops-select" data-history-filter="account" ${showingDeleted ? 'disabled' : ''}>
-                ${option('all', '전체', filters.account)}
+              <select class="ops-select" aria-label="계좌 필터" data-history-filter="account" ${showingDeleted ? 'disabled' : ''}>
+                ${option('all', '전체 계좌', filters.account)}
                 ${option('공용계좌', '공용계좌', filters.account)}
                 ${option('회사잔고', '회사잔고', filters.account)}
                 ${option('분할납부', '분할납부', filters.account)}

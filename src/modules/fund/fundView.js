@@ -39,7 +39,6 @@ export function renderFundView(root, state, actions = {}) {
     <section class="ops-fund">
       <header class="ops-fund__header">
         <div>
-          <span class="ops-fund__kicker">FUND MANAGEMENT</span>
           <h1>공금관리</h1>
           <p>납부 현황부터 검수와 원장 관리까지 한 흐름으로 확인합니다.</p>
         </div>

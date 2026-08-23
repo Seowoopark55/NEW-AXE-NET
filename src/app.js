@@ -1,6 +1,7 @@
 import './styles/main.css';
 import './styles/axe-ui-system.css';
 import './styles/operations-shell.css';
+import './modules/members/operations-members.css';
 import { store } from './state/store.js';
 import { renderAppShell } from './components/AppShell.js';
 import { initAuthModule } from './modules/auth/index.js';

@@ -33,10 +33,12 @@ export function renderAppShell(root) {
             </div>
           </div>
 
-          <nav class="ops-module-nav" aria-label="주요 메뉴">
-            <button class="ops-module-nav__item" type="button" data-nav-module="members">멤버</button>
-            <button class="ops-module-nav__item" type="button" data-nav-module="fund">공금</button>
-          </nav>
+          <div class="ops-module-rail">
+            <nav class="ops-module-nav" aria-label="주요 메뉴">
+              <button class="ops-module-nav__item" type="button" data-nav-module="members">멤버</button>
+              <button class="ops-module-nav__item" type="button" data-nav-module="fund">공금</button>
+            </nav>
+          </div>
         </div>
       </section>
 
