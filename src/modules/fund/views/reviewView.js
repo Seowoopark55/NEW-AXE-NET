@@ -40,10 +40,10 @@ function renderBulkToolbar(count) {
           <input type="checkbox" data-review-select-all />
           <span>전체 선택</span>
         </label>
-        <span class="ops-toolbar__summary">대기 ${count}건 · 선택 <b data-review-selected-count>0</b>건</span>
+        <span class="ops-toolbar__summary"><b>${count}</b>건 대기 · <b data-review-selected-count>0</b>건 선택</span>
       </div>
       <div class="ops-toolbar__group">
-        <button class="ops-primary-button" type="button" data-review-bulk-approve disabled>선택 일괄승인</button>
+        <button class="ops-primary-button" type="button" data-review-bulk-approve disabled>선택 승인</button>
       </div>
     </div>
   `;
@@ -88,7 +88,7 @@ function renderRequest(item) {
       ${item.proxy_admin_name ? `<div class="ops-review__proxy">관리자 대리제출 · ${escapeHtml(item.proxy_admin_name)}</div>` : ''}
 
       <div class="ops-review__actions">
-        <input class="ops-review__note" type="text" maxlength="300" value="${escapeAttribute(item.review_note || '')}" placeholder="검수 메모 / 반려 사유" data-review-note="${item.id}" />
+        <input class="ops-review__note" type="text" maxlength="300" value="${escapeAttribute(item.review_note || '')}" placeholder="메모 또는 보류·반려 사유" data-review-note="${item.id}" />
         <button class="ops-primary-button" type="button" data-approve-request="${item.id}">승인</button>
         <button class="ops-secondary-button" type="button" data-hold-request="${item.id}">보류</button>
         <button class="ops-danger-button" type="button" data-reject-request="${item.id}">반려</button>

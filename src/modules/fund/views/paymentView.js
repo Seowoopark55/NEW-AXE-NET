@@ -158,15 +158,15 @@ function renderEvidence(payment) {
   return `
     <div class="fund-evidence-field">
       <div class="fund-field-label">증빙 스크린샷 <b>필수</b></div>
-      <div class="fund-evidence-drop ${payment.evidencePreview ? 'has-image' : ''}" tabindex="0" data-evidence-drop>
+      <div class="fund-evidence-drop ${payment.evidencePreview ? 'has-image' : ''}" tabindex="0" role="group" aria-label="증빙 스크린샷 붙여넣기 영역" data-evidence-drop>
         ${payment.evidencePreview
-          ? `<img src="${escapeAttribute(payment.evidencePreview)}" alt="증빙 미리보기" /><div class="fund-evidence-overlay">다른 이미지를 붙여넣거나 드래그해서 교체</div>`
-          : `<div class="fund-evidence-icon">▣</div><strong>스크린샷을 이곳에 Ctrl+V</strong><span>또는 클릭 / 드래그하여 이미지 첨부</span>`}
+          ? `<img src="${escapeAttribute(payment.evidencePreview)}" alt="증빙 미리보기" /><div class="fund-evidence-overlay">영역을 선택한 뒤 Ctrl+V 또는 드래그해서 교체</div>`
+          : `<div class="fund-evidence-icon">▣</div><strong>영역을 클릭한 뒤 Ctrl+V</strong><span>스크린샷 붙여넣기 · 드래그앤드롭</span>`}
       </div>
       <input type="file" accept="image/*" data-evidence-file hidden />
       <div class="fund-evidence-actions">
         <button type="button" class="fund-secondary-button" data-evidence-browse>파일첨부</button>
-        ${payment.evidence ? `<span>${escapeHtml(payment.evidence.name)} · ${formatBytes(payment.evidence.size)}</span><button type="button" class="fund-text-button" data-evidence-clear>지우기</button>` : '<span>3MB 이하 이미지</span>'}
+        ${payment.evidence ? `<span>${escapeHtml(payment.evidence.name)} · ${formatBytes(payment.evidence.size)}</span><button type="button" class="fund-text-button" data-evidence-clear>지우기</button>` : '<span>파일 선택은 왼쪽 버튼 · 최대 3MB</span>'}
       </div>
     </div>
   `;

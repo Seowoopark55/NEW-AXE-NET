@@ -73,7 +73,7 @@ export function renderHomeView(root, state, actions = {}) {
             ${shortcut('월별현황', '멤버별 공금 납부 상태를 한눈에 확인합니다.', 'fund', 'overview', actions)}
             ${shortcut('공금납부', '본인 또는 관리자 대리 납부를 제출합니다.', 'fund', 'payment', actions)}
             ${state.auth?.admin ? shortcut('검수대기', '대기·보류 제출을 검수하고 승인합니다.', 'fund', 'review', actions, pendingCount) : ''}
-            ${state.auth?.admin ? shortcut('공금내역', '수입·지출과 승인 반영 원장을 확인합니다.', 'fund', 'history', actions) : ''}
+            ${state.auth?.admin ? shortcut('공금내역', '수입·지출과 승인 반영 공금기록을 확인합니다.', 'fund', 'history', actions) : ''}
           </div>
         </section>
 
@@ -107,7 +107,7 @@ export function renderHomeView(root, state, actions = {}) {
         <div class="ops-home-panel__head">
           <div>
             <h2>최근 공금 흐름</h2>
-            <p>최근 반영된 공금 원장 기록입니다.</p>
+            <p>최근 반영된 공금 기록입니다.</p>
           </div>
           ${state.auth?.admin ? '<button class="ops-home-link" type="button" data-home-fund-section="history">공금내역 보기</button>' : ''}
         </div>

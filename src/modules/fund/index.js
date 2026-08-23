@@ -532,7 +532,7 @@ function buildActions() {
     async onRepairApprovedRequestLedger(id) {
       await runAdminMutation(async () => {
         await repairFundApprovedRequestLedger(id);
-        return `승인 신청 #${id}의 누락 원장을 복구했습니다.`;
+        return `승인 신청 #${id}의 누락된 납부기록을 복구했습니다.`;
       });
     },
 
@@ -540,11 +540,11 @@ function buildActions() {
       await runAdminMutation(async () => {
         if (direction === 'ledger_to_request') {
           await alignFundRequestToLedger(id);
-          return `신청 #${id}의 금액을 활성 원장 기준으로 맞췄습니다.`;
+          return `신청 #${id}의 금액을 반영된 납부기록 기준으로 맞췄습니다.`;
         }
         if (direction === 'request_to_ledger') {
           await alignFundLedgerToRequest(id);
-          return `신청 #${id} 기준으로 활성 원장 금액을 맞췄습니다.`;
+          return `신청 #${id} 기준으로 반영된 납부기록 금액을 맞췄습니다.`;
         }
         throw new Error('지원하지 않는 정합성 보정 방향입니다.');
       });
@@ -552,8 +552,8 @@ function buildActions() {
 
     async onRejectIntegrityConflict(id) {
       await runAdminMutation(async () => {
-        await rejectFundRequest(id, '정합성점검: 이미 활성 납부 원장이 있어 충돌 신청을 반려함');
-        return `활성 납부 원장과 충돌한 신청 #${id}을 반려했습니다.`;
+        await rejectFundRequest(id, '정합성점검: 이미 활성 납부기록이 있어 충돌 신청을 반려함');
+        return `기존 납부기록과 충돌한 신청 #${id}을 반려했습니다.`;
       });
     },
 

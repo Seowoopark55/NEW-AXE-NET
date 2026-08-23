@@ -70,7 +70,7 @@ export function renderHistoryView(state) {
             <button class="ops-text-button ops-ledger-reset" type="button" data-history-filter-reset ${showingDeleted ? 'disabled' : ''}>필터 초기화</button>
           </div>
           <div class="ops-ledger-toolbar__meta">
-            <span>${showingDeleted ? `삭제 ${activeRows.length}건` : `${activeRows.length}건 표시`}</span>
+            <span>${showingDeleted ? `삭제 ${activeRows.length}건` : `${activeRows.length}건`}</span>
             ${deletedCount ? `
               <button class="ops-text-button ${showingDeleted ? 'is-active' : ''}" type="button" data-history-status-toggle="${showingDeleted ? 'active' : 'cancelled'}">
                 ${showingDeleted ? '정상 내역 보기' : `삭제 내역 ${deletedCount}`}

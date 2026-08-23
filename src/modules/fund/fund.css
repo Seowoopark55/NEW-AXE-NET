@@ -357,12 +357,19 @@
   border: 1px dashed rgba(255,181,46,.34);
   border-radius: 11px;
   background: #0d0f12;
-  cursor: pointer;
+  cursor: text;
   outline: none;
   text-align: center;
+  transition: border-color .14s ease, background-color .14s ease, box-shadow .14s ease;
 }
 .fund-evidence-drop:hover,
 .fund-evidence-drop.is-dragging { border-color: rgba(255,181,46,.62); background: rgba(255,181,46,.03); }
+.fund-evidence-drop:focus-visible,
+.fund-evidence-drop:focus {
+  border-color: rgba(255,181,46,.82);
+  background: rgba(255,181,46,.045);
+  box-shadow: inset 0 0 0 1px rgba(255,181,46,.10), 0 0 0 2px rgba(255,181,46,.08);
+}
 .fund-evidence-drop.has-image { position: relative; height: 150px; }
 .fund-evidence-drop img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
 .fund-evidence-icon { color: #ffbd3d; font-size: 22px; }

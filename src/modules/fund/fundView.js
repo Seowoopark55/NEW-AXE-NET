@@ -40,7 +40,7 @@ export function renderFundView(root, state, actions = {}) {
       <header class="ops-fund__header">
         <div>
           <h1>공금관리</h1>
-          <p>납부 현황부터 검수와 원장 관리까지 한 흐름으로 확인합니다.</p>
+          <p>납부 현황부터 검수와 공금기록 관리까지 한 흐름으로 확인합니다.</p>
         </div>
         <button class="ops-quiet-button" type="button" data-fund-refresh><span aria-hidden="true">↻</span> 새로고침</button>
       </header>
@@ -194,9 +194,12 @@ function bindFundEvents(root, state, actions) {
   root.querySelector('[data-evidence-clear]')?.addEventListener('click', () => actions.onEvidenceClear?.());
 
   const evidenceDrop = root.querySelector('[data-evidence-drop]');
-  evidenceDrop?.addEventListener('click', () => evidenceInput?.click());
+  evidenceDrop?.addEventListener('click', () => evidenceDrop.focus());
   evidenceDrop?.addEventListener('keydown', (event) => {
-    if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); evidenceInput?.click(); }
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      evidenceDrop.focus();
+    }
   });
   evidenceDrop?.addEventListener('paste', (event) => {
     const file = evidenceFromClipboard(event);
@@ -463,7 +466,7 @@ function bindFundEvents(root, state, actions) {
   root.querySelectorAll('[data-integrity-repair-request]').forEach((button) => {
     button.addEventListener('click', () => {
       const id = Number(button.dataset.integrityRepairRequest);
-      if (!Number.isInteger(id) || !window.confirm(`승인 신청 #${id} 기준으로 누락 원장을 복구할까요?`)) return;
+      if (!Number.isInteger(id) || !window.confirm(`승인 신청 #${id} 기준으로 누락된 납부기록을 복구할까요?`)) return;
       actions.onRepairApprovedRequestLedger?.(id);
     });
   });
@@ -472,7 +475,7 @@ function bindFundEvents(root, state, actions) {
     button.addEventListener('click', () => {
       const id = Number(button.dataset.integrityAlign);
       const direction = String(button.dataset.integrityDirection || '');
-      const target = direction === 'ledger_to_request' ? '신청 금액을 현재 활성 원장에' : '활성 원장 금액을 승인 신청에';
+      const target = direction === 'ledger_to_request' ? '신청 금액을 현재 반영된 기록에' : '반영된 기록 금액을 승인 신청에';
       if (!Number.isInteger(id) || !window.confirm(`${target} 맞출까요? 변경 내용은 감사 로그에 남습니다.`)) return;
       actions.onAlignIntegrityAmounts?.(id, direction);
     });
@@ -481,7 +484,7 @@ function bindFundEvents(root, state, actions) {
   root.querySelectorAll('[data-integrity-reject-conflict]').forEach((button) => {
     button.addEventListener('click', () => {
       const id = Number(button.dataset.integrityRejectConflict);
-      if (!Number.isInteger(id) || !window.confirm(`이미 납부 원장이 있는 충돌 신청 #${id}을 반려할까요?`)) return;
+      if (!Number.isInteger(id) || !window.confirm(`이미 납부기록이 있는 충돌 신청 #${id}을 반려할까요?`)) return;
       actions.onRejectIntegrityConflict?.(id);
     });
   });
@@ -530,11 +533,11 @@ function bindEvidenceDropzone(root, options) {
   root.querySelector(options.browseSelector)?.addEventListener('click', () => input?.click());
   root.querySelector(options.clearSelector)?.addEventListener('click', () => options.onClear?.());
   input?.addEventListener('change', () => options.onFile?.(input.files?.[0] || null));
-  drop?.addEventListener('click', () => input?.click());
+  drop?.addEventListener('click', () => drop.focus());
   drop?.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      input?.click();
+      drop.focus();
     }
   });
   drop?.addEventListener('paste', (event) => {

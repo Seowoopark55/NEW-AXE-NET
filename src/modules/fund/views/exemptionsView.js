@@ -56,15 +56,19 @@ function renderExemptionGroup(group) {
   return `
     <article class="fund-admin-exemption">
       <div class="fund-admin-exemption__main">
-        <strong>${escapeHtml(group.nickname || '멤버')}</strong>
-        <span class="fund-admin-exemption__range">${escapeHtml(rangeLabel)}</span>
-        <small>${escapeHtml(group.reason || '사유 없음')}</small>
+        <div class="fund-admin-exemption__title">
+          <strong>${escapeHtml(group.nickname || '멤버')}</strong>
+          <span class="fund-admin-exemption__range">${escapeHtml(rangeLabel)}</span>
+        </div>
+        <div class="fund-admin-exemption__sub">
+          <span>${escapeHtml(group.reason || '사유 없음')}</span>
+          <i aria-hidden="true">·</i>
+          <span>${escapeHtml(group.created_by || '관리자')}</span>
+          <i aria-hidden="true">·</i>
+          <time>${formatDateTime(group.created_at)}</time>
+        </div>
       </div>
-      <div class="fund-admin-exemption__meta">
-        <span>${escapeHtml(group.created_by || '관리자')}</span>
-        <small>${formatDateTime(group.created_at)}</small>
-      </div>
-      <button class="fund-danger-button fund-secondary-button--small" type="button" ${disableAttr}>면제 해제</button>
+      <button class="fund-danger-button fund-secondary-button--small fund-admin-exemption__remove" type="button" ${disableAttr}>해제</button>
     </article>
   `;
 }

@@ -37,10 +37,10 @@ export function renderBalanceView(state) {
               </label>
             </div>
 
-            <div class="fund-admin-upload" data-balance-evidence-drop tabindex="0" role="button">
+            <div class="fund-admin-upload" data-balance-evidence-drop tabindex="0" role="group" aria-label="잔액 증빙 붙여넣기 영역">
               ${preview
                 ? `<div class="fund-admin-upload__preview"><img src="${escapeAttribute(preview)}" alt="잔액점검 증빙 미리보기" /></div>`
-                : '<div class="fund-admin-upload__empty"><b>잔액 증빙</b><span>클릭 · Ctrl+V · 드래그앤드롭</span><small>필수는 아니지만 실제 잔액 대조 시 권장합니다.</small></div>'}
+                : '<div class="fund-admin-upload__empty"><b>잔액 증빙</b><span>영역을 클릭한 뒤 Ctrl+V · 또는 드래그앤드롭</span><small>파일 선택은 아래 파일첨부 버튼 · 증빙은 선택사항입니다.</small></div>'}
             </div>
             <div class="fund-admin-upload__actions">
               <input type="file" accept="image/*" data-balance-evidence-file hidden />

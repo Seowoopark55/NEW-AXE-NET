@@ -270,10 +270,10 @@ export function renderEntryCreatorModal(admin, fund, members) {
 function renderAdminEntryEvidence(entryCreator) {
   const preview = entryCreator?.evidencePreview || '';
   return `
-    <div class="fund-admin-upload" data-admin-entry-evidence-drop tabindex="0" role="button">
+    <div class="fund-admin-upload" data-admin-entry-evidence-drop tabindex="0" role="group" aria-label="증빙 스크린샷 붙여넣기 영역">
       ${preview
         ? `<div class="fund-admin-upload__preview"><img src="${escapeAttribute(preview)}" alt="등록 증빙 미리보기" /></div>`
-        : `<div class="fund-admin-upload__empty"><b>증빙 스크린샷</b><span>이 영역을 클릭하거나 Ctrl+V / 드래그앤드롭</span></div>`}
+        : `<div class="fund-admin-upload__empty"><b>증빙 스크린샷</b><span>영역을 클릭한 뒤 Ctrl+V · 또는 드래그앤드롭</span><small>파일 선택은 아래 파일첨부 버튼을 사용합니다.</small></div>`}
     </div>
     <div class="fund-admin-upload__actions">
       <input type="file" accept="image/*" data-admin-entry-evidence-file hidden />

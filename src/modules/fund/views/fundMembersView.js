@@ -40,13 +40,13 @@ function renderMember(member, setting, status, saving) {
       <div class="fund-admin-member__main">
         <div class="fund-admin-member__identity">
           <strong>${escapeHtml(member.nickname)}</strong>
-          <span>${member.discord_user_id ? 'Discord 연결' : 'Discord 미연결'}</span>
+          <span class="fund-admin-member__connection ${member.discord_user_id ? 'is-on' : 'is-off'}" title="${member.discord_user_id ? 'Discord 연결됨' : 'Discord 미연결'}" aria-label="${member.discord_user_id ? 'Discord 연결됨' : 'Discord 미연결'}"></span>
         </div>
         <label class="fund-admin-switch">
           <input type="checkbox" name="enabled" ${enabled ? 'checked' : ''} ${!memberActive ? 'disabled' : ''} />
           <span></span><b>${memberActive ? (enabled ? '대상' : '제외') : '비활성'}</b>
         </label>
-        <div class="fund-admin-member__date"><span>가입일</span><b>${formatDate(member.joined_date)}</b></div>
+        <div class="fund-admin-member__date" title="가입일"><b>${formatDate(member.joined_date)}</b></div>
         <div class="fund-admin-member__status">${status ? renderStatusBadge(status.status) : '<span>—</span>'}</div>
         <details class="fund-admin-member__details" ${needsAttention ? 'open' : ''}>
           <summary>설정</summary>
