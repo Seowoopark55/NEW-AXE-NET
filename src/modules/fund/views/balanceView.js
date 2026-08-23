@@ -14,24 +14,13 @@ export function renderBalanceView(state) {
 
   return `
     <div class="fund-admin fund-admin--medium">
-      ${renderPageHeader('잔액점검', '공용계좌를 중심으로 사이트 계산값과 인게임 실제 잔액을 대조합니다.')}
+      ${renderPageHeader('잔액점검', `공용계좌 계산 잔액 ${formatMoney(balance.public)} · 실제 인게임 잔액과 대조합니다.`)}
       ${admin.message ? `<div class="fund-inline-success">${escapeHtml(admin.message)}</div>` : ''}
       ${admin.error ? `<div class="fund-inline-error">${escapeHtml(admin.error)}</div>` : ''}
 
-      <div class="fund-admin-balance-summary">
-        <div class="fund-admin-balance-primary">
-          <span>공용계좌 계산 잔액</span>
-          <strong>${formatMoney(balance.public)}</strong>
-          <small>${latest?.difference_public == null ? '최근 점검 없음' : `최근 차이 ${formatDiff(latest.difference_public)}`}</small>
-        </div>
-        <div class="fund-admin-balance-secondary">
-          <span>회사잔고</span><b>${formatMoney(balance.company)}</b><small>보조 납부 수단</small>
-        </div>
-      </div>
-
       <div class="fund-admin-split fund-admin-split--balance">
         <section class="fund-admin-panel fund-admin-panel--form">
-          ${panelHead('BALANCE CHECK', '실제 잔액 확인', '확인한 시점의 인게임 금액을 기록합니다.')}
+          ${panelHead('실제 잔액 확인', '확인한 시점의 인게임 금액을 기록합니다.')}
           <form class="fund-balance-check-form" data-balance-check-form>
             <div class="fund-form-grid fund-form-grid--balance">
               <label class="fund-field fund-field--primary">
@@ -64,13 +53,13 @@ export function renderBalanceView(state) {
         </section>
 
         <section class="fund-admin-panel">
-          ${panelHead('LAST CHECK', '최근 대조 결과', latest ? formatDateTime(latest.created_at) : '아직 기록 없음')}
+          ${panelHead('최근 대조 결과', latest ? formatDateTime(latest.created_at) : '아직 기록 없음')}
           ${latest ? renderLatest(latest) : '<div class="fund-empty-state">점검을 기록하면 최근 결과가 표시됩니다.</div>'}
         </section>
       </div>
 
       <section class="fund-admin-panel fund-admin-panel--history">
-        ${panelHead('HISTORY', '잔액점검 이력', `${admin.balanceChecks.length}건`, true)}
+        ${panelHead('잔액점검 이력', '공용계좌 차이를 우선 표시합니다.', `${admin.balanceChecks.length}건`)}
         <div class="fund-admin-balance-history">
           ${admin.balanceChecks.length ? admin.balanceChecks.map(renderCheck).join('') : '<div class="fund-empty-state">아직 잔액점검 기록이 없습니다.</div>'}
         </div>
@@ -79,8 +68,8 @@ export function renderBalanceView(state) {
   `;
 }
 
-function panelHead(overline, title, desc, countMode = false) {
-  return `<div class="fund-admin-panel__head ${countMode ? 'is-row' : ''}"><div><span>${overline}</span><h3>${title}</h3>${countMode ? '' : `<p>${desc}</p>`}</div>${countMode ? `<b>${desc}</b>` : ''}</div>`;
+function panelHead(title, desc, count = '') {
+  return `<div class="fund-admin-panel__head is-row"><div><h3>${title}</h3><p>${desc}</p></div>${count ? `<b>${count}</b>` : ''}</div>`;
 }
 
 function renderLatest(item) {

@@ -1,0 +1,30 @@
+NEW AXE NET v1.17.0 · FUND REBASE VALIDATION
+
+Source baseline
+- AXE_NET_HTML_FUND_LIVE_BALANCE_DIRECT_FIX_STABLE_20260822
+- latest AXE NET fund shell / review / ledger filter-table behavior
+
+Static validation
+- JS syntax: PASS (35 files)
+- Relative JS imports: PASS (68 imports)
+- CSS brace balance: PASS
+- Migration 019 required RPC presence: PASS
+- Migration SQL $$ quote balance: PASS
+- PGRST schema reload notification: PASS
+- Stale 019 migration filename references: NONE
+- Legacy .fund-* definitions in src/styles/main.css: NONE
+
+Render smoke test
+- review view: PASS
+  * pending + hold queue
+  * select all / bulk approve
+  * approve / hold / reject
+  * review note field
+- ledger view: PASS
+  * month selector
+  * name / kind / account filters
+  * 11-column ledger table
+  * approval/manual badges
+
+Build note
+- Full Vite production build was not run in this environment because npm dependencies are not installed in the runtime.

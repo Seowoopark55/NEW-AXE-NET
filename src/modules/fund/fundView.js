@@ -33,21 +33,19 @@ export function renderFundView(root, state, actions = {}) {
 
   const isAdmin = Boolean(auth.admin);
   const safeSection = normalizeSection(fund.section, isAdmin);
-  const pendingCount = fund.admin.requests.filter((item) => item.status === 'pending').length;
+  const pendingCount = fund.admin.requests.filter((item) => item.status === 'pending' || item.status === 'hold').length;
 
   root.innerHTML = `
-    <section class="fund-workspace fund-workspace--axe">
-      <div class="fund-page-head fund-page-head--legacy">
+    <section class="fund-workspace fund-workspace--axe axe-ui-workspace">
+      <div class="fund-page-head">
         <div class="fund-page-head__copy">
-          <span class="fund-page-head__eyebrow">AXE FUND OPERATIONS</span>
           <h1>공금관리</h1>
           <p>증빙 제출, 검수, 기간 면제, 공금내역과 잔액 정합성을 통합 관리합니다.</p>
         </div>
         <button class="fund-refresh-button" type="button" data-fund-refresh>새로고침</button>
       </div>
 
-      ${safeSection === 'overview' ? '' : renderLegacySummary(state, pendingCount)}
-
+      ${renderLegacySummary(state, pendingCount)}
       ${renderFundNav(safeSection, isAdmin, pendingCount)}
 
       <div class="fund-workspace__content">
@@ -74,7 +72,7 @@ function renderLegacySummary(state, pendingCount) {
         && Number(item.month) === Number(selectedMonth.month)
       ).length
     : 0;
-  const exemptionCount = Number(fund.monthOverview?.totals?.exempt ?? 0);
+  const exemptionCount = countActiveExemptionGroups(fund.admin.exemptions ?? []) || Number(fund.monthOverview?.totals?.exempt || 0);
 
   return `
     <div class="fund-summary-grid fund-summary-grid-premium">
@@ -84,7 +82,7 @@ function renderLegacySummary(state, pendingCount) {
       </div>
       <div class="fund-summary-card">
         <div class="fund-summary-value ${pendingCount ? 'warn' : ''}">${pendingCount}</div>
-        <div class="fund-summary-label">전체 검수대기</div>
+        <div class="fund-summary-label">전체 검수대기·보류</div>
       </div>
       <div class="fund-summary-card">
         <div class="fund-summary-value">${approvedCount}</div>
@@ -92,10 +90,20 @@ function renderLegacySummary(state, pendingCount) {
       </div>
       <div class="fund-summary-card">
         <div class="fund-summary-value">${exemptionCount}</div>
-        <div class="fund-summary-label">선택월 면제</div>
+        <div class="fund-summary-label">활성 면제</div>
       </div>
     </div>
   `;
+}
+
+
+function countActiveExemptionGroups(rows) {
+  const keys = new Set();
+  (rows ?? []).forEach((item) => {
+    if (!item?.enabled) return;
+    keys.add(item.range_key || `legacy:${item.id}`);
+  });
+  return keys.size;
 }
 
 function renderSection(section, state) {
@@ -232,28 +240,75 @@ function bindFundEvents(root, state, actions) {
     button.addEventListener('click', () => actions.onRequestFilterChange?.(button.dataset.requestFilter));
   });
 
+  const updateReviewSelectionUi = () => {
+    const boxes = [...root.querySelectorAll('[data-review-select]')];
+    const selected = boxes.filter((box) => box.checked);
+    const count = root.querySelector('[data-review-selected-count]');
+    const bulkButton = root.querySelector('[data-review-bulk-approve]');
+    const selectAll = root.querySelector('[data-review-select-all]');
+    if (count) count.textContent = String(selected.length);
+    if (bulkButton) bulkButton.disabled = selected.length === 0;
+    if (selectAll) {
+      selectAll.checked = boxes.length > 0 && selected.length === boxes.length;
+      selectAll.indeterminate = selected.length > 0 && selected.length < boxes.length;
+    }
+  };
+
+  root.querySelectorAll('[data-review-select]').forEach((checkbox) => {
+    checkbox.addEventListener('change', updateReviewSelectionUi);
+  });
+
+  root.querySelector('[data-review-select-all]')?.addEventListener('change', (event) => {
+    root.querySelectorAll('[data-review-select]').forEach((checkbox) => {
+      checkbox.checked = Boolean(event.target.checked);
+    });
+    updateReviewSelectionUi();
+  });
+
+  root.querySelector('[data-review-bulk-approve]')?.addEventListener('click', () => {
+    const ids = [...root.querySelectorAll('[data-review-select]:checked')]
+      .map((checkbox) => Number(checkbox.dataset.reviewSelect))
+      .filter(Number.isInteger);
+    if (!ids.length) return;
+    actions.onApproveSelectedRequests?.(ids);
+  });
+
+  const reviewNote = (id) => String(root.querySelector(`[data-review-note="${id}"]`)?.value || '').trim();
+
   root.querySelectorAll('[data-approve-request]').forEach((button) => {
     button.addEventListener('click', () => {
-      const note = window.prompt('승인 메모가 있으면 입력하세요.', '');
-      if (note === null) return;
-      actions.onApproveRequest?.(Number(button.dataset.approveRequest), note.trim());
+      const id = Number(button.dataset.approveRequest);
+      actions.onApproveRequest?.(id, reviewNote(id));
+    });
+  });
+
+  root.querySelectorAll('[data-hold-request]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const id = Number(button.dataset.holdRequest);
+      actions.onHoldRequest?.(id, reviewNote(id));
     });
   });
 
   root.querySelectorAll('[data-reject-request]').forEach((button) => {
     button.addEventListener('click', () => {
-      const note = window.prompt('거절 사유를 입력하세요.', '');
-      if (note === null) return;
-      actions.onRejectRequest?.(Number(button.dataset.rejectRequest), note.trim());
+      const id = Number(button.dataset.rejectRequest);
+      actions.onRejectRequest?.(id, reviewNote(id));
     });
   });
 
   root.querySelectorAll('[data-history-filter]').forEach((input) => {
-    const eventName = input.tagName === 'INPUT' ? 'input' : 'change';
-    input.addEventListener(eventName, () => actions.onHistoryFilterChange?.(
+    input.addEventListener('change', () => actions.onHistoryFilterChange?.(
       input.dataset.historyFilter,
       input.value,
     ));
+  });
+
+  root.querySelector('[data-history-filter-reset]')?.addEventListener('click', () => {
+    actions.onHistoryFilterReset?.();
+  });
+
+  root.querySelector('[data-history-status-toggle]')?.addEventListener('click', (event) => {
+    actions.onHistoryFilterChange?.('status', event.currentTarget.dataset.historyStatusToggle || 'active');
   });
 
   root.querySelectorAll('[data-edit-ledger]').forEach((button) => {
@@ -376,17 +431,32 @@ function bindFundEvents(root, state, actions) {
     ));
   });
 
-  root.querySelector('[data-exemption-form]')?.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    actions.onCreateExemption?.({
-      member_key: String(data.get('member_key') || ''),
-      reason: String(data.get('reason') || '').trim(),
+  const exemptionForm = root.querySelector('[data-exemption-form]');
+  if (exemptionForm) {
+    const startMonth = exemptionForm.querySelector('[data-exemption-start-month]');
+    const startWeek = exemptionForm.querySelector('[data-exemption-start-week]');
+    const endMonth = exemptionForm.querySelector('[data-exemption-end-month]');
+    const endWeek = exemptionForm.querySelector('[data-exemption-end-week]');
+    startMonth?.addEventListener('change', () => syncExemptionWeekOptions(startMonth, startWeek, false));
+    endMonth?.addEventListener('change', () => syncExemptionWeekOptions(endMonth, endWeek, true));
+    exemptionForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const data = new FormData(event.currentTarget);
+      actions.onCreateExemption?.({
+        member_key: String(data.get('member_key') || ''),
+        start_period: makeExemptionPeriodValue(data.get('start_month'), data.get('start_week')),
+        end_period: makeExemptionPeriodValue(data.get('end_month'), data.get('end_week')),
+        reason: String(data.get('reason') || '').trim(),
+      });
     });
-  });
+  }
 
   root.querySelectorAll('[data-disable-exemption]').forEach((button) => {
     button.addEventListener('click', () => actions.onDisableExemption?.(Number(button.dataset.disableExemption)));
+  });
+
+  root.querySelectorAll('[data-disable-exemption-range]').forEach((button) => {
+    button.addEventListener('click', () => actions.onDisableExemptionRange?.(button.dataset.disableExemptionRange));
   });
 
   root.querySelectorAll('[data-fund-member-setting-form]').forEach((form) => {
@@ -402,6 +472,29 @@ function bindFundEvents(root, state, actions) {
       });
     });
   });
+}
+
+
+function makeExemptionPeriodValue(monthValue, weekValue) {
+  const [year, month] = String(monthValue || '').split('-').map(Number);
+  const week = Number(weekValue || 0);
+  return `${year}-${month}-${week}`;
+}
+
+function syncExemptionWeekOptions(monthInput, weekSelect, preferLast) {
+  if (!monthInput || !weekSelect) return;
+  const [year, month] = String(monthInput.value || '').split('-').map(Number);
+  if (!year || !month) return;
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  let count = 0;
+  for (let day = 1; day <= lastDay; day += 1) {
+    if (new Date(Date.UTC(year, month - 1, day)).getUTCDay() === 6) count += 1;
+  }
+  const previous = Number(weekSelect.value || 1);
+  const selected = preferLast ? count : Math.min(previous, count);
+  weekSelect.innerHTML = Array.from({ length: Math.max(count, 1) }, (_, index) => index + 1)
+    .map((week) => `<option value="${week}" ${week === selected ? 'selected' : ''}>${week}주차</option>`)
+    .join('');
 }
 
 function bindEvidenceDropzone(root, options) {

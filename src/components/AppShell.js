@@ -22,30 +22,32 @@ export function renderAppShell(root) {
       </aside>
 
       <main class="main">
-        <div class="utility-bar" aria-label="시스템 및 계정 상태">
-          <div class="utility-bar__left">
-            <div id="connection-status" class="connection-status"></div>
+        <div class="main__wrap">
+          <div class="utility-bar" aria-label="시스템 및 계정 상태">
+            <div class="utility-bar__left">
+              <div id="connection-status" class="connection-status"></div>
+            </div>
+            <div class="utility-bar__right">
+              <div id="auth-root"></div>
+            </div>
           </div>
-          <div class="utility-bar__right">
-            <div id="auth-root"></div>
-          </div>
+
+          <header class="hero-banner">
+            <div class="hero-banner__logo">
+              <img src="/assets/axe-brand-mark.webp" alt="AXE" />
+            </div>
+            <div class="hero-banner__identity">
+              <span class="hero-banner__eyebrow">AXE COMPANY NETWORK</span>
+              <h1>NEW AXE NET</h1>
+              <p>AXE 내부 운영 시스템</p>
+            </div>
+            <div class="hero-banner__watermark" aria-hidden="true">AXE</div>
+            <div class="hero-banner__network" aria-hidden="true">NETWORK</div>
+            <div class="hero-banner__shine" aria-hidden="true"></div>
+          </header>
+
+          <section id="module-root" class="module-root"></section>
         </div>
-
-        <header class="hero-banner">
-          <div class="hero-banner__logo">
-            <img src="/assets/axe-brand-mark.webp" alt="AXE" />
-          </div>
-          <div class="hero-banner__identity">
-            <span class="hero-banner__eyebrow">AXE COMPANY NETWORK</span>
-            <h1>NEW AXE NET</h1>
-            <p>AXE 내부 운영 시스템</p>
-          </div>
-          <div class="hero-banner__watermark" aria-hidden="true">AXE</div>
-          <div class="hero-banner__network" aria-hidden="true">NETWORK</div>
-          <div class="hero-banner__shine" aria-hidden="true"></div>
-        </header>
-
-        <section id="module-root" class="module-root"></section>
       </main>
     </div>
   `;

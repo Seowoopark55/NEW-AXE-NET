@@ -3,6 +3,7 @@ import './views/admin.css';
 import { store } from '../../state/store.js';
 import {
   approveFundRequest,
+  approveFundRequestsBulk,
   createFundBalanceCheck,
   createFundPayment,
   createFundTransaction,
@@ -10,6 +11,7 @@ import {
   createFundFeeRule,
   deleteFundLedgerEntry,
   disableFundExemption,
+  disableFundExemptionRange,
   fetchFundAdminLedger,
   fetchFundBalanceChecks,
   fetchFundExemptions,
@@ -25,6 +27,7 @@ import {
   fetchFundSummary,
   fetchAdminFundProfile,
   fetchSessionFundProfile,
+  holdFundRequest,
   rejectFundRequest,
   restoreFundLedgerEntry,
   setFundFeeRuleEnabled,
@@ -158,7 +161,7 @@ function buildActions() {
       }));
       try {
         const profile = await fetchAdminFundProfile(memberKey);
-        const selectedPeriod = profile?.periods?.find((item) => item.status === '미납' && item.request_status !== 'pending') ?? null;
+        const selectedPeriod = profile?.periods?.find((item) => item.status === '미납' && !['pending', 'hold'].includes(item.request_status)) ?? null;
         store.updateState((state) => ({
           ...state,
           fund: { ...state.fund, payment: { ...state.fund.payment, proxyLoading: false, proxyProfile: profile, selectedPeriod, amount: selectedPeriod?.weekly_fee ? String(selectedPeriod.weekly_fee) : '', publicAmount: '', companyAmount: '' } },
@@ -222,10 +225,25 @@ function buildActions() {
       });
     },
 
+    async onApproveSelectedRequests(ids) {
+      if (!Array.isArray(ids) || !ids.length) return;
+      await runAdminMutation(async () => {
+        const count = await approveFundRequestsBulk(ids);
+        return `선택한 공금 제출 ${Number(count || ids.length)}건을 일괄승인했습니다.`;
+      });
+    },
+
+    async onHoldRequest(id, note) {
+      await runAdminMutation(async () => {
+        await holdFundRequest(id, note);
+        return '공금 제출을 보류 처리했습니다.';
+      });
+    },
+
     async onRejectRequest(id, note) {
       await runAdminMutation(async () => {
         await rejectFundRequest(id, note);
-        return '공금 제출을 거절했습니다.';
+        return '공금 제출을 반려했습니다.';
       });
     },
 
@@ -339,6 +357,25 @@ function buildActions() {
             historyFilters: {
               ...state.fund.admin.historyFilters,
               [key]: value,
+            },
+          },
+        },
+      }));
+    },
+
+    onHistoryFilterReset() {
+      store.updateState((state) => ({
+        ...state,
+        fund: {
+          ...state.fund,
+          admin: {
+            ...state.fund.admin,
+            historyFilters: {
+              ...state.fund.admin.historyFilters,
+              person: 'all',
+              type: 'all',
+              account: 'all',
+              status: 'active',
             },
           },
         },
@@ -468,11 +505,9 @@ function buildActions() {
     },
 
     async onCreateExemption(values) {
-      const period = store.getState().fund.selectedPeriod;
-      if (!period) return;
       await runAdminMutation(async () => {
-        await createFundExemption({ ...values, ...period });
-        return '면제를 등록했습니다.';
+        await createFundExemption(values);
+        return '면제 기간을 등록했습니다.';
       });
     },
 
@@ -480,6 +515,13 @@ function buildActions() {
       await runAdminMutation(async () => {
         await disableFundExemption(id);
         return '면제를 해제했습니다.';
+      });
+    },
+
+    async onDisableExemptionRange(rangeKey) {
+      await runAdminMutation(async () => {
+        await disableFundExemptionRange(rangeKey);
+        return '면제 기간을 해제했습니다.';
       });
     },
 
@@ -706,7 +748,7 @@ async function syncFundIdentityFromAuth() {
 
     const profile = await fetchProfileForIdentity({ source, memberKey });
     const selectedPeriod = profile?.periods?.find(
-      (item) => item.status === '미납' && item.request_status !== 'pending',
+      (item) => item.status === '미납' && !['pending', 'hold'].includes(item.request_status),
     ) ?? null;
 
     store.updateState((current) => ({
@@ -863,7 +905,7 @@ async function refreshAdminWorkspace(message = null) {
       fetchFundRequests(500),
       fetchFundAdminLedger(1000),
       fetchFundFeeRules(),
-      period ? fetchFundExemptions(period) : Promise.resolve([]),
+      fetchFundExemptions(),
       fetchFundBalanceChecks(30),
       fetchFundMemberSettings(),
       fetchFundIntegrityReport(),
@@ -907,8 +949,8 @@ async function refreshAdminWorkspace(message = null) {
 
 async function refreshExemptionsOnly() {
   const state = store.getState();
-  if (!state.auth.admin || !state.fund.selectedPeriod) return;
-  const exemptions = await fetchFundExemptions(state.fund.selectedPeriod);
+  if (!state.auth.admin) return;
+  const exemptions = await fetchFundExemptions();
   store.updateState((current) => ({
     ...current,
     fund: {

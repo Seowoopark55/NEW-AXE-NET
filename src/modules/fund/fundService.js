@@ -166,6 +166,19 @@ export async function approveFundRequest(requestId, reviewNote) {
   });
 }
 
+export async function approveFundRequestsBulk(requestIds) {
+  return api.rpc('approve_fund_requests_bulk', {
+    p_request_ids: requestIds,
+  });
+}
+
+export async function holdFundRequest(requestId, reviewNote) {
+  return api.rpc('hold_fund_request', {
+    p_request_id: requestId,
+    p_review_note: reviewNote || null,
+  });
+}
+
 export async function rejectFundRequest(requestId, reviewNote) {
   return api.rpc('reject_fund_request', {
     p_request_id: requestId,
@@ -281,7 +294,7 @@ export async function fetchFundFeeRules() {
   });
 }
 
-export async function fetchFundExemptions(period) {
+export async function fetchFundExemptions() {
   return api.select('fund_exemptions', {
     columns: [
       'id',
@@ -290,28 +303,30 @@ export async function fetchFundExemptions(period) {
       'year',
       'month',
       'week',
+      'exemption_type',
+      'range_key',
       'reason',
       'enabled',
       'created_by',
       'created_at',
     ].join(','),
-    filters: {
-      year: period.year,
-      month: period.month,
-      week: period.week,
-      enabled: true,
-    },
+    filters: { enabled: true },
     orderBy: 'created_at',
     ascending: false,
   });
 }
 
 export async function createFundExemption(values) {
-  return api.rpc('create_fund_exemption', {
+  const start = parseFundPeriodValue(values.start_period);
+  const end = parseFundPeriodValue(values.end_period);
+  return api.rpc('create_fund_exemption_range', {
     p_member_key: values.member_key,
-    p_year: values.year,
-    p_month: values.month,
-    p_week: values.week,
+    p_start_year: start.year,
+    p_start_month: start.month,
+    p_start_week: start.week,
+    p_end_year: end.year,
+    p_end_month: end.month,
+    p_end_week: end.week,
     p_reason: values.reason || null,
   });
 }
@@ -320,6 +335,18 @@ export async function disableFundExemption(exemptionId) {
   return api.rpc('disable_fund_exemption', {
     p_exemption_id: exemptionId,
   });
+}
+
+export async function disableFundExemptionRange(rangeKey) {
+  return api.rpc('disable_fund_exemption_range', {
+    p_range_key: rangeKey,
+  });
+}
+
+function parseFundPeriodValue(value) {
+  const [year, month, week] = String(value || '').split('-').map(Number);
+  if (!year || !month || !week) throw new Error('면제 시작/종료 기간을 확인해주세요.');
+  return { year, month, week };
 }
 
 export async function createFundFeeRule(values) {

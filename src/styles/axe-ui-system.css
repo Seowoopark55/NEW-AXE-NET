@@ -1,42 +1,40 @@
-/* AXE UI SYSTEM 1.0
+/* AXE UI SYSTEM 2.0 · AXE NET REBASE
    ------------------------------------------------------------------
-   UI/UX source of truth for NEW AXE NET.
-   Baseline is the existing AXE NET operational UI, not an arbitrary
-   new dashboard scale. Feature CSS should consume these tokens instead
-   of inventing per-screen font sizes / row heights / control sizes.
+   기준: 기존 AXE NET 최신 운영본의 실제 화면 밀도/타이포/컨트롤.
+   NEW AXE NET은 이 수치를 기본값으로 사용하고, 기능 화면이 좁아지면
+   남는 폭을 좌측에 붙이지 않고 중앙에 둔다.
 */
 
 :root {
-  /* Layout */
-  --axe-ui-content-max: 1280px;
+  /* Shell / workspace */
+  --axe-ui-shell-max: 1280px;
   --axe-ui-content-pad-x: 18px;
   --axe-ui-section-gap: 14px;
   --axe-ui-block-gap: 12px;
   --axe-ui-compact-gap: 8px;
 
-  /* Typography — AXE NET baseline */
+  /* AXE NET typography baseline */
   --axe-ui-font-page: 25px;
-  --axe-ui-font-section: 16px;
+  --axe-ui-font-section: 18px;
   --axe-ui-font-card-title: 15px;
-  --axe-ui-font-body: 12.5px;
+  --axe-ui-font-body: 13px;
   --axe-ui-font-control: 13px;
   --axe-ui-font-label: 12px;
   --axe-ui-font-meta: 11.5px;
-  --axe-ui-font-caption: 10.5px;
+  --axe-ui-font-caption: 11px;
   --axe-ui-font-kicker: 10px;
 
-  /* Weight */
   --axe-ui-weight-strong: 950;
   --axe-ui-weight-label: 850;
 
-  /* Controls */
+  /* AXE NET control baseline */
   --axe-ui-control-height: 38px;
   --axe-ui-button-height: 36px;
   --axe-ui-button-small-height: 32px;
   --axe-ui-chip-height: 24px;
   --axe-ui-chip-min-width: 44px;
 
-  /* Tables / lists */
+  /* Table/list density */
   --axe-ui-table-cell-y: 9px;
   --axe-ui-table-cell-x: 8px;
   --axe-ui-table-head: 11.5px;
@@ -63,25 +61,38 @@
   --axe-ui-minus: #ff7a7a;
 }
 
-/* Shared typography helpers for current and future modules. */
+/* Canonical centered workspaces. */
+.axe-ui-workspace {
+  width: 100%;
+  max-width: var(--axe-ui-shell-max);
+  margin-inline: auto;
+}
+
+.axe-ui-compact {
+  width: fit-content;
+  max-width: 100%;
+  margin-inline: auto;
+}
+
 .axe-ui-page-title {
   margin: 0;
   font-size: var(--axe-ui-font-page);
   font-weight: var(--axe-ui-weight-strong);
   line-height: 1.15;
 }
+
 .axe-ui-section-title {
   margin: 0;
   font-size: var(--axe-ui-font-section);
   font-weight: var(--axe-ui-weight-strong);
 }
+
 .axe-ui-meta {
   color: var(--axe-ui-muted);
   font-size: var(--axe-ui-font-meta);
   line-height: 1.45;
 }
 
-/* New modules can use these generic building blocks directly. */
 .axe-ui-control {
   min-height: var(--axe-ui-control-height);
   padding: 0 10px;
@@ -91,6 +102,7 @@
   background: var(--axe-ui-bg-field);
   font-size: var(--axe-ui-font-control);
 }
+
 .axe-ui-button {
   min-height: var(--axe-ui-button-height);
   padding: 0 12px;
@@ -101,6 +113,7 @@
   font-size: var(--axe-ui-font-control);
   font-weight: var(--axe-ui-weight-strong);
 }
+
 .axe-ui-card {
   border: 1px solid var(--axe-ui-border);
   border-radius: var(--axe-ui-radius-card);

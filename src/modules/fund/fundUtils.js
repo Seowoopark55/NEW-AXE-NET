@@ -96,8 +96,9 @@ export function renderStatusBadge(status) {
 export function requestStatusLabel(status) {
   const labels = {
     pending: '검수대기',
+    hold: '보류',
     approved: '승인',
-    rejected: '거절',
+    rejected: '반려',
     deleted: '삭제됨',
   };
   return labels[status] ?? status ?? '—';

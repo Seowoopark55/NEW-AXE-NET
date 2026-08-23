@@ -101,11 +101,10 @@ const initialState = {
 
       ledgerItems: [],
       historyFilters: {
-        search: '',
+        person: 'all',
         type: 'all',
         account: 'all',
         status: 'active',
-        month: 'all',
       },
 
       ledgerEditor: {
