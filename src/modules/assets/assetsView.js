@@ -183,7 +183,7 @@ function assetTableRow(row) {
     <td><span class="ops-assets-pill">${h(row.asset_category)}</span></td>
     <td>${h(row.asset_name)}</td>
     <td>${h(row.acquisition_method || '—')}</td>
-    <td>${h(row.acquired_at || '—')}</td>
+    <td>${h(assetAcquiredDisplay(row))}</td>
     <td>${row.personal_cost == null ? '—' : `${formatMoney(row.personal_cost)}$`}</td>
     <td>${assetStatusBadge(row.status)}</td>
     <td class="ops-assets-table__note">${h(row.note || '—')}</td>
@@ -401,6 +401,12 @@ function memberName(members, key) { return members.find((m) => m.member_key === 
 function mapMembers(members) { return new Map(members.map((m) => [m.member_key, m])); }
 function unique(values) { return [...new Set(values.map((v) => String(v || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ko')); }
 function normalize(value) { return String(value || '').trim().toLowerCase().replace(/\s+/g, ' '); }
+function assetAcquiredDisplay(row) {
+  const value = String(row?.acquired_at || '').trim();
+  if (!value) return '—';
+  if (row?.legacy_no && /^\d{4}-\d{2}-01$/.test(value)) return value.slice(0, 7);
+  return value;
+}
 function formatMoney(value) { return Number(value || 0).toLocaleString('ko-KR'); }
 function dateTime(value) { if (!value) return '—'; const date = new Date(value); return Number.isNaN(date.getTime()) ? h(value) : new Intl.DateTimeFormat('ko-KR', { timeZone: 'Asia/Seoul', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }).format(date); }
 function statusBadge(status) { const key = status === 'approved' ? 'is-ok' : status === 'rejected' ? 'is-danger' : 'is-wait'; const label = status === 'approved' ? '승인' : status === 'rejected' ? '반려' : '검수대기'; return `<span class="ops-assets-badge ${key}">${label}</span>`; }

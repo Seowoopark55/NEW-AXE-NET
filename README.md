@@ -1,4 +1,34 @@
-# NEW AXE NET v1.28.0 — ASSETS & PLIKA
+# NEW AXE NET v1.28.1 — ASSETS LEGACY IMPORT
+
+## v1.28.1 · 회사자산 / 퇴사자반납 레거시 데이터 1회 이관
+
+- 사용자 제공 `AXE NET - 회사자산.csv` 22건을 `new_axe_net.company_assets`로 이관
+- 사용자 제공 `AXE NET - 퇴사자반납.csv` 3건을 `new_axe_net.company_asset_returns`로 이관
+- `legacy_no` 기준 update + missing insert 방식이라 SQL 재실행 시 중복 생성 방지
+- 회사자산 22건 중 19건 멤버 연결, `미배정` 3건은 `member_key=NULL` 유지
+- 레거시 표기 `야미`는 현재 멤버 닉네임 `얌이`에 연결
+- 반납 3건은 모두 현재/퇴사 멤버와 연결
+- 레거시 회사자산 취득일 `YY/MM`은 DB에 해당 월 1일로 저장하되 UI에는 `YYYY-MM`만 표시
+- Google Sheet / Apps Script 런타임 의존 추가 없음
+
+### 추가 SQL
+
+`supabase/028_assets_legacy_import.sql`
+
+026/027을 이미 적용했다면 **028만 추가 실행**하면 됩니다.
+
+### 적용
+
+1. Supabase SQL Editor에서 `028_assets_legacy_import.sql` 전체 실행
+2. 마지막 검증 SELECT에서 `imported_assets=22`, `linked_assets=19`, `unlinked_assets=3`, `imported_returns=3`, `linked_returns=3`, `completed_returns=3` 확인
+3. v1.28.1 소스를 기존 프로젝트에 전체 덮어쓰기
+4. GitHub Commit / Push
+5. Vercel 자동 배포 후 관리자 → `자산·계좌` → `회사 자산` / `반납 내역` 확인
+
+상세 이관 기록: `docs/ASSETS_LEGACY_IMPORT_1.0.md`
+
+---
+
 
 ## v1.28.0 · 자산·계좌 Supabase-native 모듈
 

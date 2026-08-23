@@ -1,0 +1,23 @@
+NEW AXE NET v1.28.1 — ASSETS LEGACY IMPORT VALIDATION
+
+SOURCE
+[OK] company assets CSV rows: 22
+[OK] asset returns CSV rows: 3
+[OK] personal cost normalized total: 1,350,001
+
+MEMBER LINK PLAN
+[OK] company asset linked rows: 19
+[OK] company asset unlinked rows: 3 (all owner_name=미배정)
+[OK] asset return linked rows: 3
+[OK] legacy 야미 -> current 얌이 alias handled
+
+DATE PLAN
+[OK] asset YY/MM -> first day of month in DB
+[OK] legacy monthly date rendered as YYYY-MM in asset table
+[OK] return MM/DD -> 2026-MM-DD
+
+RUNTIME
+[OK] no Google Sheet runtime dependency added
+[OK] no Apps Script runtime dependency added
+[OK] new import targets new_axe_net schema only
+[OK] import is rerunnable without duplicate legacy_no rows
