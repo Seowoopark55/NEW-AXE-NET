@@ -74,6 +74,7 @@ export function renderHomeView(root, state, actions = {}) {
           </div>
           <div class="ops-home-shortcuts">
             ${shortcut('공지사항', '주요 공지와 운영기준을 확인합니다.', 'notice', null, actions)}
+            ${shortcut('정보', '제작·퀘스트·개조서·스킬랭크를 조회합니다.', 'info', null, actions)}
             ${shortcut('멤버', '조직 구성과 권한, 활동 상태를 관리합니다.', 'members', null, actions)}
             ${shortcut('월별현황', '멤버별 공금 납부 상태를 한눈에 확인합니다.', 'fund', 'overview', actions)}
             ${shortcut('공금납부', '본인 또는 관리자 대리 납부를 제출합니다.', 'fund', 'payment', actions)}

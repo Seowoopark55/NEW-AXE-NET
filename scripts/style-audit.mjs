@@ -11,6 +11,7 @@ const opsCss = read('src/modules/fund/operations-console.css');
 const adminCss = read('src/modules/fund/views/admin.css');
 const memberCss = read('src/modules/members/operations-members.css');
 const noticeCss = read('src/modules/notice/notice.css');
+const infoCss = read('src/modules/info/info.css');
 const shellCss = read('src/styles/operations-shell.css');
 const jsText = fs.readdirSync('src/modules/fund/views')
   .filter((name) => name.endsWith('.js'))
@@ -33,7 +34,7 @@ for (const deadMemberList of ['.member-stats', '.member-toolbar--split', '.membe
   }
 }
 
-const cssForImportant = [mainCss, fundCss, opsCss, adminCss, memberCss, noticeCss, shellCss];
+const cssForImportant = [mainCss, fundCss, opsCss, adminCss, memberCss, noticeCss, infoCss, shellCss];
 if (cssForImportant.some((text) => text.includes('!important'))) {
   fail.push('canonical UI CSS still contains !important specificity patches.');
 }
@@ -77,6 +78,7 @@ const cssFiles = [
   'src/modules/home/home.css',
   'src/modules/members/operations-members.css',
   'src/modules/notice/notice.css',
+  'src/modules/info/info.css',
   'src/modules/fund/fund.css',
   'src/modules/fund/operations-console.css',
   'src/modules/fund/views/admin.css',

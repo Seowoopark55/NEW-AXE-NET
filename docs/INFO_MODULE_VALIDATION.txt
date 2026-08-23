@@ -1,0 +1,50 @@
+NEW AXE NET v1.26.0 · INFO MODULE VALIDATION
+==============================================
+
+[DATA]
+- 제작목록: 32건
+- 제작재료: 95건
+- 재료레시피: 2건
+- 퀘스트: 30건 (원본 빈 자리 17행 제외)
+- 가공·재련: 8건
+- 개조서: 207건
+- 스킬랭크: 96건
+- 제작재료 craft_id 미연결: 0건
+- 개조서 최근 거래가 보유: 61건
+- 제작 스킬랭크: 스킬랭크 CSV에 포함됨
+
+[FUNCTION]
+- 정보 상위 메뉴 연결: PASS
+- 제작 / 퀘스트 / 가공·재련 / 개조서 / 스킬랭크 5탭: PASS
+- 제작 목록/상세/재료/재료레시피: PASS (정적 렌더 smoke test)
+- 퀘스트/가공·재련/스킬랭크 정적 렌더: PASS
+- 개조서 필터/상세/최근 거래가 UI: PASS (정적 렌더 smoke test)
+- 개조서 팀원 등록신청 / 내 신청 API 경로: PASS (문법/연결 검사)
+- 개조서 팀원 최근 거래가 갱신 API 경로: PASS (문법/연결 검사)
+- 관리자 신청 승인/반려 / 직접등록 / 수정 / 목록내리기 RPC 연결: PASS (문법/연결 검사)
+
+[CODE]
+- JS/MJS node --check: 43개 PASS
+- 상대경로 import: 85개 검사 / 누락 0
+- CSS 파일: 10개 brace 구조 PASS
+- npm run audit:styles: PASS
+- canonical UI CSS !important: 0
+- exact selector ownership collision: 0
+
+[SQL]
+- 023_info_module.sql delimiter / 함수 $$ 균형 검사: PASS
+- 024_info_data_import.sql transaction marker 검사: PASS
+- 024 데이터는 legacy_key / 원본 id 기준 UPSERT 구조
+
+[BUILD]
+- npm install + vite build 시도: 환경에서 120초 제한으로 npm install 단계 타임아웃
+- 따라서 실제 Vite production build는 이 런타임에서 완료하지 못함
+- 문법 / import / CSS / style audit은 모두 통과
+- 최종 Vite build는 Vercel 배포 로그에서 확인 필요
+
+[DB APPLY ORDER]
+1) 023_info_module.sql
+2) 024_info_data_import.sql
+
+추가 환경변수 없음.
+Apps Script 교체 없음.

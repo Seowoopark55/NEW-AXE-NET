@@ -244,8 +244,9 @@
   .ops-hero { height: 104px; border-radius: 10px; }
   .ops-hero__mark { width: min(64%, 360px); max-height: 72px; }
   .ops-module-rail { min-height: 44px; margin-top: 9px; }
-  .ops-module-nav { padding-inline: 3px; gap: 0; }
-  .ops-module-nav__item { min-width: 82px; height: 43px; padding-inline: 10px; font-size: 12px; }
+  .ops-module-nav { padding-inline: 3px; gap: 0; overflow-x: auto; scrollbar-width: none; }
+  .ops-module-nav::-webkit-scrollbar { display: none; }
+  .ops-module-nav__item { flex: 0 0 auto; min-width: 82px; height: 43px; padding-inline: 10px; font-size: 12px; }
   .ops-main__inner { padding-top: 20px; }
 }
 

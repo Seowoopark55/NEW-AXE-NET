@@ -1,3 +1,56 @@
+# NEW AXE NET v1.26.0 — INFO
+
+v1.24.0에서 확정한 **AXE STYLE 4.0**을 유지하면서 기존 AXE NET의 `정보` 모듈을 Supabase-first로 이관한 버전입니다.
+
+## v1.26.0 핵심
+
+- 상위 메뉴 `홈 / 공지 / 정보 / 멤버 / 공금`
+- 정보 모듈 5개 탭
+  - 제작
+  - 퀘스트
+  - 가공·재련
+  - 개조서
+  - 스킬랭크
+- 실제 AXE NET CSV 7종을 Supabase 데이터로 이관
+- 제작: 분류/검색/재료/재료레시피/요구랭크/성공률
+- 퀘스트: 직업/검색/요구수량/보상
+- 가공·재련: 투입재료→결과/퀘스트 보상
+- 개조서: 접두·접미/분류/부위/검색/상세/최근 거래가
+- 팀원 로그인: 개조서 등록신청, 내 신청 확인, 최근 거래가 갱신
+- 관리자: 개조서 신청 승인/반려, 직접 등록/수정/목록 내리기
+- 스킬랭크: 제작을 포함한 실제 스킬 데이터 통합조회
+- 별도 `제작랭크` 시트는 만들지 않고 `제작목록.craft_rank + 스킬랭크(skill=제작)`를 기준으로 통합
+- 홈 바로가기에 `정보` 추가
+- Apps Script를 정보 모듈의 실시간 데이터 소스로 사용하지 않음
+
+## DB / SQL
+
+**이번 버전은 SQL 2개 적용이 필요합니다.**
+
+1. `supabase/023_info_module.sql`
+2. `supabase/024_info_data_import.sql`
+
+023은 테이블/뷰/RPC를 생성하고, 024는 사용자가 제공한 실제 AXE NET CSV 데이터를 legacy key 기준 UPSERT로 이관합니다.
+
+기존 v1.25에서 `021 + 022`를 이미 적용했다면 다시 실행할 필요 없습니다.
+
+## 적용 순서
+
+1. Supabase SQL Editor에서 `023_info_module.sql` 전체 실행
+2. Supabase SQL Editor에서 `024_info_data_import.sql` 전체 실행
+3. v1.26.0 ZIP 압축 해제
+4. 기존 NEW AXE NET 프로젝트 전체 덮어쓰기
+5. GitHub Desktop Commit / Push
+6. Vercel 자동배포 확인
+7. `정보 → 제작 / 퀘스트 / 가공·재련 / 개조서 / 스킬랭크` 확인
+8. 팀원 로그인으로 개조서 가격설정/등록신청 테스트
+9. 관리자 로그인으로 신청 승인/반려 및 직접 등록/수정 테스트
+
+상세 설계: `docs/INFO_MODULE_1.0.md`
+데이터 검증: `docs/INFO_DATA_VALIDATION.txt`
+
+---
+
 # NEW AXE NET v1.25.0 — NOTICE & OPERATIONS
 
 v1.24.0에서 확정한 **AXE STYLE 4.0**을 유지하면서, 공금 외 첫 일반 운영 모듈인 `공지사항 + 운영기준`을 Supabase-first로 이관한 버전입니다.

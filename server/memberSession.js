@@ -317,7 +317,7 @@ export function normalizeApiError(error) {
     return { status: error.statusCode, message };
   }
 
-  if (lower.includes('member_web_sessions') || lower.includes('relation')) {
+  if (lower.includes('member_web_sessions')) {
     return {
       status: 500,
       message: 'NEW AXE NET 웹 세션 테이블이 준비되지 않았습니다. 016_member_web_sessions.sql 실행 여부를 확인하세요.',

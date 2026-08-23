@@ -66,3 +66,27 @@ export async function submitMemberFundRequest(values) {
   });
   return data.request_id;
 }
+
+export async function submitMemberModbookRequest(values) {
+  const data = await postJson('/api/member-session', {
+    action: 'info_modbook_request_submit',
+    ...values,
+  });
+  return data.request_id;
+}
+
+export async function fetchMemberModbookRequests() {
+  const data = await postJson('/api/member-session', {
+    action: 'info_modbook_my_requests',
+  });
+  return Array.isArray(data.requests) ? data.requests : [];
+}
+
+export async function updateMemberModbookPrice(id, recentPrice) {
+  const data = await postJson('/api/member-session', {
+    action: 'info_modbook_price_update',
+    id,
+    recent_price: recentPrice,
+  });
+  return data.modbook_id;
+}

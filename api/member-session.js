@@ -59,6 +59,107 @@ export default async function handler(req, res) {
       return sendJson(res, 200, { ok: true, profile });
     }
 
+    if (action === 'info_modbook_my_requests') {
+      const { data, error } = await context.client
+        .from('info_modbook_requests')
+        .select('id,type,category,name,parts,option1,option2,option3,success_rate,note,status,review_note,reviewer,reviewed_at,created_at')
+        .eq('member_key', context.member.member_key)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      if (error) throw error;
+      return sendJson(res, 200, { ok: true, requests: data || [] });
+    }
+
+    if (action === 'info_modbook_price_update') {
+      const id = Number(body.id);
+      const rawPrice = String(body.recent_price ?? '').trim().replace(/,/g, '');
+      const recentPrice = rawPrice === '' ? null : Number(rawPrice);
+      if (!Number.isInteger(id) || id <= 0) {
+        return sendJson(res, 400, { ok: false, message: '개조서 정보가 올바르지 않습니다.' });
+      }
+      if (recentPrice !== null && (!Number.isInteger(recentPrice) || recentPrice < 0)) {
+        return sendJson(res, 400, { ok: false, message: '최근 거래가는 0 이상의 정수로 입력하세요.' });
+      }
+      const recentDate = recentPrice === null
+        ? null
+        : new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+
+      const { data, error } = await context.client
+        .from('info_modbooks')
+        .update({
+          recent_price: recentPrice,
+          recent_date: recentDate,
+          price_note: recentPrice === null ? null : context.member.nickname,
+        })
+        .eq('id', id)
+        .eq('active', true)
+        .select('id')
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) return sendJson(res, 404, { ok: false, message: '개조서를 찾을 수 없습니다.' });
+      return sendJson(res, 200, { ok: true, modbook_id: data.id });
+    }
+
+    if (action === 'info_modbook_request_submit') {
+      const type = String(body.type || '').trim();
+      const category = String(body.category || '').trim();
+      const name = String(body.name || '').trim();
+      const parts = String(body.parts || '').trim();
+      const option1 = String(body.option1 || '').trim();
+      const option2 = String(body.option2 || '').trim();
+      const option3 = String(body.option3 || '').trim();
+      const note = String(body.note || '').trim();
+      const successRateText = String(body.success_rate ?? '').trim();
+      const successRate = successRateText ? Number(successRateText) : null;
+
+      if (!['접두', '접미'].includes(type)) {
+        return sendJson(res, 400, { ok: false, message: '개조 위치는 접두 또는 접미 중에서 선택하세요.' });
+      }
+      if (!category || !name) {
+        return sendJson(res, 400, { ok: false, message: '개조서 분류와 이름을 입력하세요.' });
+      }
+      if (!parts) {
+        return sendJson(res, 400, { ok: false, message: '적용 부위를 입력하세요.' });
+      }
+      if (!option1 && !option2 && !option3) {
+        return sendJson(res, 400, { ok: false, message: '개조 옵션을 하나 이상 입력하세요.' });
+      }
+      if (successRate !== null && (!Number.isInteger(successRate) || successRate < 0 || successRate > 100)) {
+        return sendJson(res, 400, { ok: false, message: '성공률은 0~100 사이 정수로 입력하세요.' });
+      }
+      if (name.length > 100 || category.length > 80 || parts.length > 300) {
+        return sendJson(res, 400, { ok: false, message: '입력 내용이 허용 길이를 초과했습니다.' });
+      }
+
+      const { data, error } = await context.client
+        .from('info_modbook_requests')
+        .insert({
+          member_key: context.member.member_key,
+          nickname: context.member.nickname,
+          type,
+          category,
+          name,
+          parts,
+          option1: option1 || null,
+          option2: option2 || null,
+          option3: option3 || null,
+          success_rate: successRate,
+          note: note || null,
+          status: 'pending',
+        })
+        .select('id')
+        .single();
+
+      if (error) {
+        if (error.code === '23505') {
+          return sendJson(res, 409, { ok: false, message: '같은 개조서의 검수대기 신청이 이미 있습니다.' });
+        }
+        throw error;
+      }
+
+      return sendJson(res, 200, { ok: true, request_id: data.id });
+    }
+
     if (action === 'fund_submit') {
       const discordUserId = String(context.member.discord_user_id || '').trim();
       if (!discordUserId) {
