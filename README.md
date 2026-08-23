@@ -1,4 +1,22 @@
-# NEW AXE NET v1.28.1 — ASSETS LEGACY IMPORT
+# NEW AXE NET v1.28.2 — PLIKA ACCOUNT LEGACY IMPORT
+
+## v1.28.2 · 플리카 계좌 CSV 1회 이관
+
+- 사용자 제공 `AXE NET - 플리카계좌.csv` 21건 분석
+- 현재 NEW AXE NET 멤버와 20건 연결 후 `new_axe_net.member_accounts` UPSERT
+- `옥순이 → 이옥순`, `형석 → 김형석` 별칭 연결
+- 현재 멤버 목록에 없는 `조까치` 1건은 임의 연결/멤버 생성 없이 미이관으로 보고
+- 원본 `사용여부` 그대로 유지
+- `member_key` 기준 UPSERT이라 027을 이미 실행했어도 중복 생성 없음
+- Google Sheet / Apps Script 런타임 의존 추가 없음
+
+### 추가 SQL
+
+`supabase/029_plika_accounts_csv_import.sql`
+
+026~028을 이미 적용했다면 **029만 추가 실행**하면 됩니다. 프론트엔드 코드 변경은 없습니다.
+
+---
 
 ## v1.28.1 · 회사자산 / 퇴사자반납 레거시 데이터 1회 이관
 
