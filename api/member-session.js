@@ -63,7 +63,7 @@ function makeTubeId() {
   return `tube_new_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
 }
 
-const TUBE_PUBLIC_COLUMNS = 'tube_id,title,url,youtube_video_id,thumbnail_url,published_at,writer_member_key,writer,writer_badge,content,category,sort_order,views,likes,dislikes,source,source_updated_at,sync_owner,discord_thread_id,discord_sync_status,discord_synced_at,discord_sync_error,discord_archived_by_sync,legacy_backup_id,legacy_backup_status,legacy_backup_synced_at,legacy_backup_error,active,created_at,updated_at';
+const TUBE_PUBLIC_COLUMNS = 'tube_id,title,url,youtube_video_id,thumbnail_url,published_at,writer_member_key,writer,writer_badge,content,category,sort_order,views,likes,dislikes,comment_count,source,source_updated_at,sync_owner,discord_thread_id,discord_sync_status,discord_synced_at,discord_sync_error,discord_archived_by_sync,legacy_backup_id,legacy_backup_status,legacy_backup_synced_at,legacy_backup_error,active,created_at,updated_at';
 
 export default async function handler(req, res) {
   if (!onlyPost(req, res)) return;
@@ -190,6 +190,102 @@ export default async function handler(req, res) {
       });
       if (error) throw error;
       return sendJson(res, 200, { ok: true, result: data || null });
+    }
+
+    if (action === 'tube_comment_save') {
+      const tubeId = String(body.tube_id || '').trim();
+      const commentId = body.comment_id == null || body.comment_id === ''
+        ? null
+        : Number(body.comment_id);
+      const commentBody = normalizeTubeText(body.body, 500);
+
+      if (!tubeId) throw tubeApiError(400, '댓글을 등록할 영상 정보가 없습니다.');
+      if (!commentBody) throw tubeApiError(400, '댓글 내용을 입력하세요.');
+      if (commentId !== null && (!Number.isInteger(commentId) || commentId <= 0)) {
+        throw tubeApiError(400, '댓글 정보가 올바르지 않습니다.');
+      }
+
+      const { data: video, error: videoError } = await context.client
+        .from('tube_videos')
+        .select('tube_id,active')
+        .eq('tube_id', tubeId)
+        .maybeSingle();
+      if (videoError) throw videoError;
+      if (!video || !video.active) throw tubeApiError(404, '댓글을 등록할 영상을 찾을 수 없습니다.');
+
+      let saved = null;
+      if (commentId !== null) {
+        const { data: existing, error: existingError } = await context.client
+          .from('tube_comments')
+          .select('id,tube_id,member_key,active')
+          .eq('id', commentId)
+          .maybeSingle();
+        if (existingError) throw existingError;
+        if (!existing || !existing.active || String(existing.tube_id) !== tubeId) {
+          throw tubeApiError(404, '수정할 댓글을 찾을 수 없습니다.');
+        }
+        if (String(existing.member_key || '') !== String(context.member.member_key || '')) {
+          throw tubeApiError(403, '본인이 작성한 댓글만 수정할 수 있습니다.');
+        }
+
+        const { data, error } = await context.client
+          .from('tube_comments')
+          .update({
+            body: commentBody,
+            author_name: context.member.nickname,
+            author_badge: context.member.badge || null,
+            edited_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', commentId)
+          .select('id,tube_id,member_key,author_name,author_badge,body,edited_at,created_at,updated_at')
+          .single();
+        if (error) throw error;
+        saved = data;
+      } else {
+        const { data, error } = await context.client
+          .from('tube_comments')
+          .insert({
+            tube_id: tubeId,
+            member_key: context.member.member_key,
+            author_name: context.member.nickname,
+            author_badge: context.member.badge || null,
+            body: commentBody,
+            active: true,
+          })
+          .select('id,tube_id,member_key,author_name,author_badge,body,edited_at,created_at,updated_at')
+          .single();
+        if (error) throw error;
+        saved = data;
+      }
+
+      return sendJson(res, 200, { ok: true, comment: saved });
+    }
+
+    if (action === 'tube_comment_delete') {
+      const commentId = Number(body.comment_id);
+      if (!Number.isInteger(commentId) || commentId <= 0) {
+        throw tubeApiError(400, '삭제할 댓글 정보가 올바르지 않습니다.');
+      }
+
+      const { data: existing, error: existingError } = await context.client
+        .from('tube_comments')
+        .select('id,member_key,active')
+        .eq('id', commentId)
+        .maybeSingle();
+      if (existingError) throw existingError;
+      if (!existing || !existing.active) throw tubeApiError(404, '삭제할 댓글을 찾을 수 없습니다.');
+      if (String(existing.member_key || '') !== String(context.member.member_key || '')) {
+        throw tubeApiError(403, '본인이 작성한 댓글만 삭제할 수 있습니다.');
+      }
+
+      const { error } = await context.client
+        .from('tube_comments')
+        .update({ active: false, updated_at: new Date().toISOString() })
+        .eq('id', commentId);
+      if (error) throw error;
+
+      return sendJson(res, 200, { ok: true, comment_id: commentId });
     }
 
     if (action === 'tube_video_save') {

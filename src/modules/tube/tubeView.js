@@ -78,8 +78,16 @@ export function renderTubeView(root, state, actions) {
       ${selected ? renderDetail(selected, {
         reaction: tube.myReactions?.[selected.tube_id] || null,
         isMember,
+        isAdmin,
+        memberKey: state.auth?.member?.member_key || '',
         saving: tube.reactionSavingTubeId === selected.tube_id,
         canManage: canManageVideo(state, selected),
+        comments: tube.commentsByTubeId?.[selected.tube_id] || [],
+        commentsLoading: tube.commentsLoadingTubeId === selected.tube_id,
+        commentSaving: Boolean(tube.commentSaving),
+        commentError: tube.commentError,
+        commentEditingId: tube.commentEditingId,
+        commentDeleteId: tube.commentDeleteId,
       }) : ''}
 
       ${tube.editor?.open ? renderEditor(editing, {
@@ -117,6 +125,7 @@ function renderCard(video, options = {}) {
           <div class="ops-tube-card__meta">
             <span>조회 ${formatNumber(video.views)}</span>
             <span>추천 ${formatNumber(video.likes)}</span>
+            <span>댓글 ${formatNumber(video.comment_count)}</span>
             <time>${formatDate(video.published_at)}</time>
           </div>
         </div>
@@ -165,6 +174,7 @@ function renderDetail(video, options = {}) {
 
           <div class="ops-tube-detail__engagement">
             <span class="ops-tube-view-count"><b>${formatNumber(video.views)}</b> 조회</span>
+            <span class="ops-tube-view-count"><b>${formatNumber(video.comment_count)}</b> 댓글</span>
             <button
               type="button"
               class="ops-tube-reaction ${reaction === 'like' ? 'is-active' : ''}"
@@ -187,9 +197,88 @@ function renderDetail(video, options = {}) {
 
           <p>${h(video.content || '등록된 설명이 없습니다.')}</p>
           ${youtubeUrl ? `<a class="ops-tube-youtube" href="${h(youtubeUrl)}" target="_blank" rel="noopener noreferrer">YouTube에서 보기 ↗</a>` : ''}
+          ${renderComments(video, options)}
         </div>
       </section>
     </div>
+  `;
+}
+
+function renderComments(video, options = {}) {
+  const comments = Array.isArray(options.comments) ? options.comments : [];
+  const isMember = Boolean(options.isMember);
+  const isAdmin = Boolean(options.isAdmin);
+  const memberKey = String(options.memberKey || '');
+  const editingId = options.commentEditingId == null ? null : Number(options.commentEditingId);
+  const deleteId = options.commentDeleteId == null ? null : Number(options.commentDeleteId);
+  const editing = comments.find((item) => Number(item.id) === editingId) || null;
+
+  return `
+    <section class="ops-tube-comments" aria-label="AXE TUBE 댓글">
+      <header class="ops-tube-comments__head">
+        <div>
+          <span>COMMENTS</span>
+          <strong>댓글 ${formatNumber(comments.length)}</strong>
+        </div>
+        <small>멤버 계정으로 작성되며 수정한 댓글에는 표시가 남습니다.</small>
+      </header>
+
+      ${options.commentError ? `<div class="ops-tube-comment-error">${h(options.commentError)}</div>` : ''}
+
+      ${isMember ? `
+        <form class="ops-tube-comment-form ${editing ? 'is-editing' : ''}" data-tube-comment-form>
+          <div class="ops-tube-comment-form__label">
+            <strong>${editing ? '댓글 수정' : '댓글 작성'}</strong>
+            <span>최대 500자</span>
+          </div>
+          <textarea name="comment_body" maxlength="500" rows="3" required placeholder="영상에 대한 댓글을 남겨주세요." ${options.commentSaving ? 'disabled' : ''}>${h(editing?.body || '')}</textarea>
+          <div class="ops-tube-comment-form__actions">
+            ${editing ? `<button type="button" class="ops-tube-comment-action" data-tube-comment-edit-cancel ${options.commentSaving ? 'disabled' : ''}>수정 취소</button>` : ''}
+            <button type="submit" class="ops-tube-comment-submit" ${options.commentSaving ? 'disabled' : ''}>${options.commentSaving ? '저장 중…' : editing ? '수정 저장' : '댓글 등록'}</button>
+          </div>
+        </form>
+      ` : `
+        <button type="button" class="ops-tube-comment-login" data-tube-login>댓글 작성은 멤버 로그인 후 사용할 수 있습니다 →</button>
+      `}
+
+      <div class="ops-tube-comment-list">
+        ${options.commentsLoading
+          ? '<div class="ops-tube-comment-empty">댓글을 불러오는 중입니다.</div>'
+          : comments.length
+            ? comments.map((comment) => {
+                const isOwner = Boolean(memberKey && memberKey === String(comment.member_key || ''));
+                const canEdit = isOwner;
+                const canDelete = isOwner || isAdmin;
+                const confirming = deleteId === Number(comment.id);
+                return `
+                  <article class="ops-tube-comment ${editingId === Number(comment.id) ? 'is-editing' : ''}">
+                    <header>
+                      <div class="ops-tube-comment__author">
+                        <strong>${h(comment.author_name || 'AXE')}</strong>
+                        ${badge(comment.author_badge)}
+                        ${comment.edited_at ? '<span class="ops-tube-comment__edited">수정됨</span>' : ''}
+                      </div>
+                      <time>${formatDateTime(comment.created_at)}</time>
+                    </header>
+                    <p>${h(comment.body || '')}</p>
+                    ${(canEdit || canDelete) ? `
+                      <footer>
+                        ${confirming ? `
+                          <span>이 댓글을 삭제할까요?</span>
+                          <button type="button" class="ops-tube-comment-action ops-tube-comment-action--danger" data-tube-comment-delete-confirm="${h(comment.id)}" ${options.commentSaving ? 'disabled' : ''}>삭제</button>
+                          <button type="button" class="ops-tube-comment-action" data-tube-comment-delete-cancel ${options.commentSaving ? 'disabled' : ''}>취소</button>
+                        ` : `
+                          ${canEdit ? `<button type="button" class="ops-tube-comment-action" data-tube-comment-edit="${h(comment.id)}" ${options.commentSaving ? 'disabled' : ''}>수정</button>` : ''}
+                          ${canDelete ? `<button type="button" class="ops-tube-comment-action ops-tube-comment-action--danger-ghost" data-tube-comment-delete-request="${h(comment.id)}" ${options.commentSaving ? 'disabled' : ''}>삭제</button>` : ''}
+                        `}
+                      </footer>
+                    ` : ''}
+                  </article>
+                `;
+              }).join('')
+            : '<div class="ops-tube-comment-empty">아직 댓글이 없습니다. 첫 댓글을 남겨보세요.</div>'}
+      </div>
+    </section>
   `;
 }
 
@@ -285,7 +374,25 @@ function bindEvents(root, actions) {
     button.addEventListener('click', () => actions.onReact?.(button.dataset.tubeId, button.dataset.tubeReact));
   });
 
-  root.querySelector('[data-tube-login]')?.addEventListener('click', () => actions.onOpenLogin?.());
+  root.querySelectorAll('[data-tube-login]').forEach((button) => {
+    button.addEventListener('click', () => actions.onOpenLogin?.());
+  });
+  root.querySelector('[data-tube-comment-form]')?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    actions.onSaveComment?.(form.get('comment_body'));
+  });
+  root.querySelectorAll('[data-tube-comment-edit]').forEach((button) => {
+    button.addEventListener('click', () => actions.onStartCommentEdit?.(button.dataset.tubeCommentEdit));
+  });
+  root.querySelector('[data-tube-comment-edit-cancel]')?.addEventListener('click', () => actions.onCancelCommentEdit?.());
+  root.querySelectorAll('[data-tube-comment-delete-request]').forEach((button) => {
+    button.addEventListener('click', () => actions.onRequestCommentDelete?.(button.dataset.tubeCommentDeleteRequest));
+  });
+  root.querySelectorAll('[data-tube-comment-delete-confirm]').forEach((button) => {
+    button.addEventListener('click', () => actions.onConfirmCommentDelete?.(button.dataset.tubeCommentDeleteConfirm));
+  });
+  root.querySelector('[data-tube-comment-delete-cancel]')?.addEventListener('click', () => actions.onCancelCommentDelete?.());
   root.querySelector('[data-tube-close]')?.addEventListener('click', () => actions.onCloseVideo?.());
   root.querySelector('[data-tube-modal-backdrop]')?.addEventListener('click', (event) => {
     if (event.target === event.currentTarget) actions.onCloseVideo?.();

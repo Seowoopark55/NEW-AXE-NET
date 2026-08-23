@@ -1,12 +1,16 @@
 import { store } from '../../state/store.js';
 import {
+  deleteMemberTubeComment,
   deleteMemberTubeVideo,
   fetchMemberTubeReactions,
+  saveMemberTubeComment,
   saveMemberTubeVideo,
   setMemberTubeReaction,
 } from '../auth/memberAuthService.js';
 import {
+  deleteAdminTubeComment,
   deleteAdminTubeVideo,
+  fetchTubeComments,
   fetchTubeVideos,
   incrementTubeView,
   saveAdminTubeVideo,
@@ -49,7 +53,16 @@ export async function initTubeModule() {
       const video = store.getState().tube.videos.find((item) => item.tube_id === tubeId);
       if (!video) return;
 
-      updateTube((tube) => ({ ...tube, selectedTubeId: tubeId }));
+      updateTube((tube) => ({
+        ...tube,
+        selectedTubeId: tubeId,
+        commentError: null,
+        commentEditingId: null,
+        commentDeleteId: null,
+      }));
+      loadTubeComments(tubeId).catch((error) => {
+        console.warn('[NEW AXE NET] AXE TUBE comments load failed:', error);
+      });
 
       try {
         const nextViews = await incrementTubeView(tubeId);
@@ -67,7 +80,13 @@ export async function initTubeModule() {
     },
 
     onCloseVideo() {
-      updateTube((tube) => ({ ...tube, selectedTubeId: null }));
+      updateTube((tube) => ({
+        ...tube,
+        selectedTubeId: null,
+        commentError: null,
+        commentEditingId: null,
+        commentDeleteId: null,
+      }));
     },
 
     async onReact(tubeId, reaction) {
@@ -108,6 +127,118 @@ export async function initTubeModule() {
           reactionSavingTubeId: null,
           message: formatTubeError(error),
           messageType: 'error',
+        }));
+      }
+    },
+
+    onStartCommentEdit(commentId) {
+      const state = store.getState();
+      const tubeId = state.tube.selectedTubeId;
+      const comments = state.tube.commentsByTubeId?.[tubeId] || [];
+      const comment = comments.find((item) => Number(item.id) === Number(commentId));
+      if (!comment || !state.auth.member || String(comment.member_key || '') !== String(state.auth.member.member_key || '')) {
+        updateTube((tube) => ({ ...tube, commentError: '본인이 작성한 댓글만 수정할 수 있습니다.' }));
+        return;
+      }
+      updateTube((tube) => ({
+        ...tube,
+        commentEditingId: Number(commentId),
+        commentDeleteId: null,
+        commentError: null,
+      }));
+    },
+
+    onCancelCommentEdit() {
+      updateTube((tube) => ({ ...tube, commentEditingId: null, commentError: null }));
+    },
+
+    async onSaveComment(body) {
+      const state = store.getState();
+      const tubeId = state.tube.selectedTubeId;
+      if (!state.auth.member) {
+        actions.onOpenLogin();
+        return;
+      }
+      if (!tubeId || state.tube.commentSaving) return;
+
+      const text = String(body || '').trim();
+      if (!text) {
+        updateTube((tube) => ({ ...tube, commentError: '댓글 내용을 입력하세요.' }));
+        return;
+      }
+      if (text.length > 500) {
+        updateTube((tube) => ({ ...tube, commentError: '댓글은 500자 이하로 입력하세요.' }));
+        return;
+      }
+
+      updateTube((tube) => ({ ...tube, commentSaving: true, commentError: null }));
+      try {
+        await saveMemberTubeComment(state.tube.commentEditingId, tubeId, text);
+        updateTube((tube) => ({
+          ...tube,
+          commentSaving: false,
+          commentEditingId: null,
+          commentDeleteId: null,
+          commentError: null,
+        }));
+        await loadTubeComments(tubeId);
+      } catch (error) {
+        console.error('[NEW AXE NET] AXE TUBE comment save failed:', error);
+        updateTube((tube) => ({
+          ...tube,
+          commentSaving: false,
+          commentError: formatTubeError(error),
+        }));
+      }
+    },
+
+    onRequestCommentDelete(commentId) {
+      updateTube((tube) => ({
+        ...tube,
+        commentDeleteId: Number(commentId),
+        commentEditingId: tube.commentEditingId === Number(commentId) ? null : tube.commentEditingId,
+        commentError: null,
+      }));
+    },
+
+    onCancelCommentDelete() {
+      updateTube((tube) => ({ ...tube, commentDeleteId: null, commentError: null }));
+    },
+
+    async onConfirmCommentDelete(commentId) {
+      const state = store.getState();
+      const tubeId = state.tube.selectedTubeId;
+      const comments = state.tube.commentsByTubeId?.[tubeId] || [];
+      const comment = comments.find((item) => Number(item.id) === Number(commentId));
+      if (!tubeId || !comment || state.tube.commentSaving) return;
+
+      const isOwner = Boolean(
+        state.auth.member
+        && String(comment.member_key || '') === String(state.auth.member.member_key || '')
+      );
+      if (!state.auth.admin && !isOwner) {
+        updateTube((tube) => ({ ...tube, commentError: '이 댓글을 삭제할 권한이 없습니다.' }));
+        return;
+      }
+
+      updateTube((tube) => ({ ...tube, commentSaving: true, commentError: null }));
+      try {
+        if (state.auth.admin) await deleteAdminTubeComment(commentId);
+        else await deleteMemberTubeComment(commentId);
+        updateTube((tube) => ({
+          ...tube,
+          commentSaving: false,
+          commentDeleteId: null,
+          commentEditingId: null,
+          commentError: null,
+        }));
+        await loadTubeComments(tubeId);
+      } catch (error) {
+        console.error('[NEW AXE NET] AXE TUBE comment delete failed:', error);
+        updateTube((tube) => ({
+          ...tube,
+          commentSaving: false,
+          commentError: formatTubeError(error),
         }));
       }
     },
@@ -345,6 +476,38 @@ async function reloadTubeData(options = {}) {
   return reloadPromise;
 }
 
+async function loadTubeComments(tubeId) {
+  const id = String(tubeId || '').trim();
+  if (!id) return [];
+
+  updateTube((tube) => ({
+    ...tube,
+    commentsLoadingTubeId: id,
+    commentError: null,
+  }));
+
+  try {
+    const comments = await fetchTubeComments(id);
+    updateTube((tube) => ({
+      ...tube,
+      commentsLoadingTubeId: tube.commentsLoadingTubeId === id ? null : tube.commentsLoadingTubeId,
+      commentsByTubeId: { ...tube.commentsByTubeId, [id]: comments },
+      videos: tube.videos.map((item) => item.tube_id === id
+        ? { ...item, comment_count: comments.length }
+        : item),
+      commentError: null,
+    }));
+    return comments;
+  } catch (error) {
+    updateTube((tube) => ({
+      ...tube,
+      commentsLoadingTubeId: tube.commentsLoadingTubeId === id ? null : tube.commentsLoadingTubeId,
+      commentError: formatTubeError(error),
+    }));
+    throw error;
+  }
+}
+
 function updateTube(updater) {
   store.updateState((state) => ({
     ...state,
@@ -420,6 +583,9 @@ function formatTubeError(error) {
   const lower = message.toLowerCase();
   if (lower.includes('sync_owner') || lower.includes('save_tube_video_admin') || lower.includes('deactivate_tube_video_admin')) {
     return 'AXE TUBE Supabase-first DB가 아직 준비되지 않았습니다. 036_tube_supabase_primary.sql을 먼저 적용하세요.';
+  }
+  if (lower.includes('tube_comments') || lower.includes('deactivate_tube_comment_admin')) {
+    return 'AXE TUBE 댓글 DB가 아직 준비되지 않았습니다. 039_tube_comments.sql을 먼저 적용하세요.';
   }
   if (lower.includes('tube_reactions') || lower.includes('set_tube_reaction')) {
     return 'AXE TUBE 추천/비추천 DB가 아직 준비되지 않았습니다. 035_tube_reactions_bridge.sql을 먼저 적용하세요.';

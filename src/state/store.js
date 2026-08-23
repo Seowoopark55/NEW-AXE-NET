@@ -183,6 +183,12 @@ const initialState = {
     selectedTubeId: null,
     myReactions: {},
     reactionSavingTubeId: null,
+    commentsByTubeId: {},
+    commentsLoadingTubeId: null,
+    commentSaving: false,
+    commentError: null,
+    commentEditingId: null,
+    commentDeleteId: null,
     editor: {
       open: false,
       tubeId: null,

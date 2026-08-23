@@ -164,3 +164,22 @@ export async function deleteMemberTubeVideo(tubeId) {
   });
   return data.tube_id || null;
 }
+
+
+export async function saveMemberTubeComment(commentId, tubeId, body) {
+  const data = await postJson('/api/member-session', {
+    action: 'tube_comment_save',
+    comment_id: commentId == null ? null : Number(commentId),
+    tube_id: String(tubeId || '').trim(),
+    body: String(body || '').trim(),
+  });
+  return data.comment || null;
+}
+
+export async function deleteMemberTubeComment(commentId) {
+  const data = await postJson('/api/member-session', {
+    action: 'tube_comment_delete',
+    comment_id: Number(commentId),
+  });
+  return data.comment_id || null;
+}

@@ -376,6 +376,13 @@ export function normalizeApiError(error) {
     };
   }
 
+  if (lower.includes('tube_comments') || lower.includes('deactivate_tube_comment_admin')) {
+    return {
+      status: 500,
+      message: 'AXE TUBE 댓글 데이터베이스가 아직 준비되지 않았습니다. 039_tube_comments.sql 실행 여부를 확인하세요.',
+    };
+  }
+
   if (lower.includes('tube_reactions') || lower.includes('set_tube_reaction')) {
     return {
       status: 500,
