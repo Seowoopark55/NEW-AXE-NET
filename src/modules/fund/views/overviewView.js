@@ -1,10 +1,8 @@
-import './overview.css';
 import {
   escapeHtml,
   formatMonthLabel,
   getKstDateString,
 } from '../fundUtils.js';
-import { renderPageHeader } from '../components/shared.js';
 
 export function renderOverviewView(state) {
   const fund = state.fund;
@@ -14,34 +12,40 @@ export function renderOverviewView(state) {
   const todayKst = getKstDateString();
 
   return `
-    <div class="fund-monthly">
-      ${renderPageHeader(
-        '월별현황',
-        '월별 공금표에서 멤버별 납부·검수·면제 상태를 한 번에 확인합니다.',
-        renderMonthPicker(fund.selectedMonth, fund.periods),
-      )}
+    <div class="ops-monthly">
+      <header class="ops-view-head">
+        <div>
+          <h2>월별현황</h2>
+          <p>멤버별 납부·검수·면제 상태를 한 화면에서 확인합니다.</p>
+        </div>
+        <div class="ops-view-actions">
+          ${renderMonthPicker(fund.selectedMonth, fund.periods)}
+        </div>
+      </header>
 
-      <section class="fund-monthly__summary">
-        <strong class="fund-monthly__summary-title">${formatMonthLabel(fund.selectedMonth)}</strong>
-        <span class="fund-monthly__summary-text">${renderMonthSummary(weeks)}</span>
-      </section>
-
-      <section class="fund-monthly__panel">
-        <div class="fund-monthly__scroll">
-          <table class="fund-monthly__table">
+      <section class="ops-surface ops-monthly__surface">
+        <div class="ops-toolbar">
+          <div class="ops-monthly__meta">
+            <strong>${formatMonthLabel(fund.selectedMonth)}</strong>
+            <span>${renderMonthSummary(weeks)}</span>
+          </div>
+          <span class="ops-toolbar__summary">${members.length}명 · ${weeks.length}개 회차</span>
+        </div>
+        <div class="ops-monthly__scroll">
+          <table class="ops-monthly__table">
             <colgroup>
-              <col class="fund-monthly__col-member" />
-              ${weeks.map(() => '<col class="fund-monthly__col-week" />').join('')}
+              <col class="ops-monthly__col-member" />
+              ${weeks.map(() => '<col class="ops-monthly__col-week" />').join('')}
             </colgroup>
             <thead>
               <tr>
-                <th class="fund-monthly__head-cell fund-monthly__head-cell--member">멤버명</th>
+                <th>멤버명</th>
                 ${weeks.map((week) => {
                   const current = isDateInsideWeek(todayKst, week);
                   return `
-                    <th class="fund-monthly__head-cell ${current ? 'is-current-week' : ''}">
-                      <span class="fund-monthly__week-title">${Number(week.week)}주차</span>
-                      <span class="fund-monthly__week-date">${shortRange(week.period_start, week.period_end)}</span>
+                    <th class="${current ? 'ops-monthly__current' : ''}">
+                      <span class="ops-monthly__week-title">${Number(week.week)}주차</span>
+                      <span class="ops-monthly__week-date">${shortRange(week.period_start, week.period_end)}</span>
                     </th>
                   `;
                 }).join('')}
@@ -50,7 +54,7 @@ export function renderOverviewView(state) {
             <tbody>
               ${members.length
                 ? members.map((member) => renderMemberRow(member, weeks, todayKst)).join('')
-                : `<tr><td colspan="${weeks.length + 1}" class="fund-monthly__empty">공금 대상 멤버가 없습니다.</td></tr>`}
+                : `<tr><td colspan="${weeks.length + 1}" class="ops-empty-cell">공금 대상 멤버가 없습니다.</td></tr>`}
             </tbody>
           </table>
         </div>
@@ -66,14 +70,12 @@ function renderMemberRow(member, weeks, todayKst) {
 
   return `
     <tr>
-      <td class="fund-monthly__member-cell">
-        <span class="fund-monthly__member-name">${escapeHtml(member.nickname)}</span>
-      </td>
+      <td><span class="ops-monthly__member">${escapeHtml(member.nickname)}</span></td>
       ${weeks.map((week) => {
         const cell = cellMap.get(Number(week.week));
         const current = isDateInsideWeek(todayKst, week);
         return `
-          <td class="fund-monthly__status-cell ${current ? 'is-current-week' : ''}">
+          <td class="${current ? 'ops-monthly__current' : ''}">
             ${renderMatrixStatus(cell)}
           </td>
         `;
@@ -83,18 +85,9 @@ function renderMemberRow(member, weeks, todayKst) {
 }
 
 function renderMatrixStatus(cell) {
-  if (!cell) {
-    return '<span class="fund-monthly__status fund-monthly__status--muted">—</span>';
-  }
-
+  if (!cell) return '<span class="ops-status ops-status--muted">—</span>';
   const display = displayStatus(cell);
-  const cls = statusClass(display);
-
-  return `
-    <span class="fund-monthly__status fund-monthly__status--${cls}">
-      ${escapeHtml(display)}
-    </span>
-  `;
+  return `<span class="ops-status ops-status--${statusClass(display)}">${escapeHtml(display)}</span>`;
 }
 
 function displayStatus(cell) {
@@ -104,7 +97,6 @@ function displayStatus(cell) {
     if (cell.payment_account === '공용계좌') return '공용';
     return '완료';
   }
-
   if (cell.status === '검수대기') return '검수';
   return cell.status;
 }
@@ -123,67 +115,40 @@ function statusClass(status) {
 
 function renderMonthPicker(month, periods = []) {
   if (!month) return '';
-
   const months = uniqueMonths(periods);
   const currentValue = `${month.year}-${String(month.month).padStart(2, '0')}`;
 
   if (!months.some((item) => item.value === currentValue)) {
-    months.push({
-      value: currentValue,
-      label: `${month.year}년 ${month.month}월`,
-      year: month.year,
-      month: month.month,
-    });
-    months.sort((a, b) => (
-      b.year - a.year || b.month - a.month
-    ));
+    months.push({ value: currentValue, label: `${month.year}년 ${month.month}월`, year: month.year, month: month.month });
+    months.sort((a, b) => b.year - a.year || b.month - a.month);
   }
 
   return `
-    <label class="fund-monthly__month-select">
-      <select data-fund-month-select>
-        ${months.map((item) => `
-          <option
-            value="${item.value}"
-            ${item.value === currentValue ? 'selected' : ''}
-          >
-            ${item.label}
-          </option>
-        `).join('')}
-      </select>
-    </label>
+    <select class="ops-select" data-fund-month-select aria-label="월 선택">
+      ${months.map((item) => `
+        <option value="${item.value}" ${item.value === currentValue ? 'selected' : ''}>${item.label}</option>
+      `).join('')}
+    </select>
   `;
 }
 
 function uniqueMonths(periods) {
   const map = new Map();
-
   for (const item of periods ?? []) {
     const year = Number(item.year);
     const month = Number(item.month);
     if (!year || !month) continue;
-
     const value = `${year}-${String(month).padStart(2, '0')}`;
-    if (!map.has(value)) {
-      map.set(value, {
-        value,
-        label: `${year}년 ${month}월`,
-        year,
-        month,
-      });
-    }
+    if (!map.has(value)) map.set(value, { value, label: `${year}년 ${month}월`, year, month });
   }
-
-  return [...map.values()].sort(
-    (a, b) => b.year - a.year || b.month - a.month,
-  );
+  return [...map.values()].sort((a, b) => b.year - a.year || b.month - a.month);
 }
 
 function renderMonthSummary(weeks) {
   if (!weeks.length) return '표시할 회차가 없습니다.';
   const first = weeks[0];
   const last = weeks.at(-1);
-  return `${shortRange(first.period_start, first.period_end)}부터 ${shortRange(last.period_start, last.period_end)}까지 ${weeks.length}개 주간 회차를 표시합니다.`;
+  return `${shortRange(first.period_start, first.period_end)} ~ ${shortRange(last.period_start, last.period_end)}`;
 }
 
 function shortRange(start, end) {

@@ -36,19 +36,20 @@ export function renderFundView(root, state, actions = {}) {
   const pendingCount = fund.admin.requests.filter((item) => item.status === 'pending' || item.status === 'hold').length;
 
   root.innerHTML = `
-    <section class="fund-workspace fund-workspace--axe axe-ui-workspace">
-      <div class="fund-page-head">
-        <div class="fund-page-head__copy">
-          <h1>공금관리</h1>
-          <p>증빙 제출, 검수, 기간 면제, 공금내역과 잔액 정합성을 통합 관리합니다.</p>
+    <section class="ops-fund">
+      <header class="ops-fund__header">
+        <div>
+          <span class="ops-fund__kicker">FUND OPERATIONS</span>
+          <h1>공금</h1>
+          <p>납부 현황과 검수, 원장, 운영 설정을 한 곳에서 관리합니다.</p>
         </div>
-        <button class="fund-refresh-button" type="button" data-fund-refresh>새로고침</button>
-      </div>
+        <button class="ops-quiet-button" type="button" data-fund-refresh>새로고침</button>
+      </header>
 
-      ${renderLegacySummary(state, pendingCount)}
+      ${renderOpsSummary(state, pendingCount)}
       ${renderFundNav(safeSection, isAdmin, pendingCount)}
 
-      <div class="fund-workspace__content">
+      <div class="ops-fund__content">
         ${renderSection(safeSection, state)}
       </div>
     </section>
@@ -60,7 +61,7 @@ export function renderFundView(root, state, actions = {}) {
   bindFundEvents(root, state, actions);
 }
 
-function renderLegacySummary(state, pendingCount) {
+function renderOpsSummary(state, pendingCount) {
   const fund = state.fund;
   const balance = fund.summary?.balance ?? {};
   const selectedMonth = fund.selectedMonth;
@@ -75,27 +76,26 @@ function renderLegacySummary(state, pendingCount) {
   const exemptionCount = countActiveExemptionGroups(fund.admin.exemptions ?? []) || Number(fund.monthOverview?.totals?.exempt || 0);
 
   return `
-    <div class="fund-summary-grid fund-summary-grid-premium">
-      <div class="fund-summary-card">
-        <div class="fund-summary-value gold">${formatMoney(balance.public)}</div>
-        <div class="fund-summary-label">공용계좌 계산 잔액</div>
+    <div class="ops-fund-stats" aria-label="공금 요약">
+      <div class="ops-fund-stats__primary">
+        <span>공용계좌</span>
+        <strong>${formatMoney(balance.public)}</strong>
       </div>
-      <div class="fund-summary-card">
-        <div class="fund-summary-value ${pendingCount ? 'warn' : ''}">${pendingCount}</div>
-        <div class="fund-summary-label">전체 검수대기·보류</div>
+      <div class="ops-fund-stats__item ${pendingCount ? 'is-alert' : ''}">
+        <span>검수대기·보류</span>
+        <strong>${pendingCount}</strong>
       </div>
-      <div class="fund-summary-card">
-        <div class="fund-summary-value">${approvedCount}</div>
-        <div class="fund-summary-label">선택월 승인 건</div>
+      <div class="ops-fund-stats__item">
+        <span>선택월 승인</span>
+        <strong>${approvedCount}</strong>
       </div>
-      <div class="fund-summary-card">
-        <div class="fund-summary-value">${exemptionCount}</div>
-        <div class="fund-summary-label">활성 면제</div>
+      <div class="ops-fund-stats__item">
+        <span>활성 면제</span>
+        <strong>${exemptionCount}</strong>
       </div>
     </div>
   `;
 }
-
 
 function countActiveExemptionGroups(rows) {
   const keys = new Set();

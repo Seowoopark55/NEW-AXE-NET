@@ -1,5 +1,6 @@
 import './fund.css';
 import './views/admin.css';
+import './operations-console.css';
 import { store } from '../../state/store.js';
 import {
   approveFundRequest,

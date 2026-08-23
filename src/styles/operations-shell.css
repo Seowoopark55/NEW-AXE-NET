@@ -1,0 +1,169 @@
+/* NEW AXE NET v1.18.0 · Operations Shell
+   Flat, centered application chrome. AXE identity stays in the brand and
+   active accent; work areas remain neutral and data-first.
+*/
+
+.ops-shell {
+  min-height: 100vh;
+  color: #e9e7e2;
+  background:
+    radial-gradient(circle at 50% -220px, rgba(255,178,33,.07), transparent 440px),
+    #090a0c;
+}
+
+.ops-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  min-height: 62px;
+  border-bottom: 1px solid rgba(255,255,255,.075);
+  background: rgba(10,11,13,.94);
+  backdrop-filter: blur(16px);
+}
+
+.ops-topbar__inner {
+  width: min(1180px, calc(100% - 32px));
+  min-height: 62px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.ops-brand {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 172px;
+}
+
+.ops-brand__mark {
+  width: 42px;
+  height: 30px;
+  overflow: hidden;
+  border: 1px solid rgba(255,181,46,.18);
+  border-radius: 7px;
+  background: #0e0f11;
+}
+
+.ops-brand__mark img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ops-brand__copy {
+  display: grid;
+  gap: 1px;
+  line-height: 1;
+}
+
+.ops-brand__copy strong {
+  color: #fff7e8;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .025em;
+}
+
+.ops-brand__copy span {
+  color: #8b682d;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .18em;
+}
+
+.ops-module-nav {
+  align-self: stretch;
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+}
+
+.ops-module-nav__item {
+  position: relative;
+  min-width: 64px;
+  padding: 0 14px;
+  border: 0;
+  color: #8e9197;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.ops-module-nav__item::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 999px 999px 0 0;
+  background: transparent;
+}
+
+.ops-module-nav__item:hover { color: #ddd9d1; }
+.ops-module-nav__item--active { color: #fff5df; }
+.ops-module-nav__item--active::after { background: #ffb52e; }
+
+.ops-topbar__utility {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: 0;
+}
+
+.ops-topbar .status-pill {
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 8.5px;
+  letter-spacing: .05em;
+  background: transparent;
+}
+
+.ops-topbar .status-pill i { width: 5px; height: 5px; }
+
+.ops-main { min-width: 0; }
+
+.ops-main__inner {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 56px;
+}
+
+.ops-main .module-root { min-width: 0; }
+
+@media (max-width: 720px) {
+  .ops-topbar__inner,
+  .ops-main__inner { width: min(100% - 20px, 1180px); }
+  .ops-brand { min-width: 0; }
+  .ops-brand__copy { display: none; }
+  .ops-module-nav { gap: 0; }
+  .ops-module-nav__item { min-width: 54px; padding-inline: 10px; }
+  .ops-topbar__utility .status-pill { display: none; }
+  .ops-main__inner { padding-top: 20px; }
+}
+
+/* Account controls follow the same flat topbar language. */
+.ops-topbar .auth-signed-in {
+  min-height: 30px;
+  padding: 2px 3px 2px 9px;
+  border-radius: 7px;
+  background: transparent;
+}
+.ops-topbar .auth-pill,
+.ops-topbar .auth-login-button,
+.ops-topbar .auth-admin-upgrade,
+.ops-topbar .auth-logout {
+  min-height: 26px;
+  border-radius: 6px;
+  font-size: 9.5px;
+  background: transparent;
+}
+.ops-topbar .auth-signed-in__text span { font-size: 8px; }
+.ops-topbar .auth-signed-in__text strong { font-size: 10.5px; }

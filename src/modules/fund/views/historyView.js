@@ -5,7 +5,6 @@ import {
   ledgerAmountType,
   ledgerSign,
 } from '../fundUtils.js';
-import { renderPageHeader } from '../components/shared.js';
 
 export function renderHistoryView(state) {
   const fund = state.fund;
@@ -25,44 +24,32 @@ export function renderHistoryView(state) {
   const showingDeleted = filters.status === 'cancelled';
 
   return `
-    <div class="fund-admin fund-admin--ledger-wide">
-      ${renderPageHeader(
-        '공금내역',
-        '월별 공금 수입·지출·납부 반영 내역을 확인하고 관리합니다.',
-        `
-          <div class="fund-page-actions fund-ledger-page-actions">
-            ${renderMonthPicker(selectedMonth, fund.periods)}
-            <button class="fund-primary-button" type="button" data-open-entry-creator="transaction">지출/수입 등록</button>
-          </div>
-        `,
-      )}
+    <div class="ops-ledger">
+      <header class="ops-view-head">
+        <div>
+          <h2>공금내역</h2>
+          <p>월별 원장을 조회하고 직접 수입·지출을 등록하거나 기존 내역을 수정합니다.</p>
+        </div>
+        <div class="ops-view-actions">
+          ${renderMonthPicker(selectedMonth, fund.periods)}
+          <button class="ops-primary-button" type="button" data-open-entry-creator="transaction">지출/수입 등록</button>
+        </div>
+      </header>
+
       ${admin.message ? `<div class="fund-inline-success">${escapeHtml(admin.message)}</div>` : ''}
       ${admin.error ? `<div class="fund-inline-error">${escapeHtml(admin.error)}</div>` : ''}
 
-      <section class="fund-ledger-shell">
-        <div class="fund-ledger-filter-panel">
-          <div class="fund-ledger-filter-head">
-            <div>
-              <strong>공금내역 필터</strong>
-              <span>이름, 구분, 계좌를 선택해 월별 내역을 확인합니다.</span>
-            </div>
-            ${deletedCount ? `
-              <button class="fund-ledger-deleted-toggle ${showingDeleted ? 'is-active' : ''}" type="button" data-history-status-toggle="${showingDeleted ? 'active' : 'cancelled'}">
-                ${showingDeleted ? '정상 내역으로' : `삭제 내역 ${deletedCount}건`}
-              </button>
-            ` : ''}
-          </div>
-          <div class="fund-ledger-filter-grid">
-            <label class="fund-ledger-filter-field fund-ledger-filter-field--name">
-              <span>이름</span>
-              <select data-history-filter="person" ${showingDeleted ? 'disabled' : ''}>
+      <section class="ops-surface">
+        <div class="ops-toolbar">
+          <div class="ops-toolbar__group">
+            <label class="ops-filter-label">이름
+              <select class="ops-select" data-history-filter="person" ${showingDeleted ? 'disabled' : ''}>
                 ${option('all', '전체', filters.person)}
                 ${personOptions.map((name) => option(name, name, filters.person)).join('')}
               </select>
             </label>
-            <label class="fund-ledger-filter-field fund-ledger-filter-field--kind">
-              <span>구분</span>
-              <select data-history-filter="type" ${showingDeleted ? 'disabled' : ''}>
+            <label class="ops-filter-label">구분
+              <select class="ops-select" data-history-filter="type" ${showingDeleted ? 'disabled' : ''}>
                 ${option('all', '전체', filters.type)}
                 ${option('payment', '승인반영', filters.type)}
                 ${option('manual', '직접기입', filters.type)}
@@ -71,61 +58,45 @@ export function renderHistoryView(state) {
                 ${option('adjust', '잔액조정', filters.type)}
               </select>
             </label>
-            <label class="fund-ledger-filter-field fund-ledger-filter-field--account">
-              <span>계좌</span>
-              <select data-history-filter="account" ${showingDeleted ? 'disabled' : ''}>
+            <label class="ops-filter-label">계좌
+              <select class="ops-select" data-history-filter="account" ${showingDeleted ? 'disabled' : ''}>
                 ${option('all', '전체', filters.account)}
                 ${option('공용계좌', '공용계좌', filters.account)}
                 ${option('회사잔고', '회사잔고', filters.account)}
                 ${option('분할납부', '분할납부', filters.account)}
               </select>
             </label>
-            <div class="fund-ledger-filter-field fund-ledger-filter-field--reset">
-              <span>초기화</span>
-              <button class="fund-secondary-button fund-ledger-filter-reset" type="button" data-history-filter-reset ${showingDeleted ? 'disabled' : ''}>필터 초기화</button>
-            </div>
+            <button class="ops-secondary-button" type="button" data-history-filter-reset ${showingDeleted ? 'disabled' : ''}>초기화</button>
           </div>
-          <div class="fund-ledger-filter-summary">
-            ${showingDeleted
-              ? `선택월 삭제 내역 ${activeRows.length}건 표시`
-              : `선택월 전체 ${baseRows.length}건 중 ${activeRows.length}건 표시`}
+          <div class="ops-toolbar__group">
+            <span class="ops-toolbar__summary">
+              ${showingDeleted ? `삭제 ${activeRows.length}건` : `${baseRows.length}건 중 ${activeRows.length}건 표시`}
+            </span>
+            ${deletedCount ? `
+              <button class="ops-icon-button ${showingDeleted ? 'is-gold' : ''}" type="button" data-history-status-toggle="${showingDeleted ? 'active' : 'cancelled'}">
+                ${showingDeleted ? '정상내역' : `삭제 ${deletedCount}`}
+              </button>
+            ` : ''}
           </div>
         </div>
 
-        <div class="fund-ledger-table-wrap">
-          <table class="fund-ledger-table">
-            <colgroup>
-              <col class="fund-ledger-col-date" />
-              <col class="fund-ledger-col-type" />
-              <col class="fund-ledger-col-category" />
-              <col class="fund-ledger-col-person" />
-              <col class="fund-ledger-col-period" />
-              <col class="fund-ledger-col-amount" />
-              <col class="fund-ledger-col-direction" />
-              <col class="fund-ledger-col-account" />
-              <col class="fund-ledger-col-evidence" />
-              <col class="fund-ledger-col-memo" />
-              <col class="fund-ledger-col-manage" />
-            </colgroup>
+        <div class="ops-ledger__table-wrap">
+          <table class="ops-ledger__table">
             <thead>
               <tr>
-                <th>날짜</th>
-                <th>구분</th>
-                <th>항목</th>
-                <th>관련자</th>
-                <th>월/주차</th>
-                <th>금액</th>
-                <th>방향</th>
-                <th>계좌</th>
-                <th>증빙</th>
-                <th class="is-left">메모</th>
-                <th>관리</th>
+                <th class="ops-ledger__date">날짜</th>
+                <th class="ops-ledger__entry">내역</th>
+                <th class="ops-ledger__person">관련자 / 주차</th>
+                <th class="ops-ledger__account">계좌</th>
+                <th class="ops-ledger__amount">금액</th>
+                <th class="ops-ledger__evidence">증빙</th>
+                <th class="ops-ledger__manage">관리</th>
               </tr>
             </thead>
             <tbody>
               ${activeRows.length
                 ? activeRows.map(renderLedgerRow).join('')
-                : '<tr><td colspan="11"><div class="fund-empty-state fund-ledger-empty">조건에 맞는 공금내역이 없습니다.</div></td></tr>'}
+                : '<tr><td colspan="7" class="ops-empty-cell">조건에 맞는 공금내역이 없습니다.</td></tr>'}
             </tbody>
           </table>
         </div>
@@ -138,35 +109,42 @@ function renderLedgerRow(item) {
   const deleted = item.status === 'cancelled';
   const type = item.ledger_type || entryTypeLabel(item);
   const category = item.category || '기타';
-  const nickname = item.nickname || '';
+  const nickname = item.nickname || '—';
   const period = item.year && item.month
     ? `${Number(item.month)}월${item.week ? ` ${Number(item.week)}주차` : ''}`
     : '—';
-  const evidence = item.evidence_url
-    ? `<button class="fund-ledger-evidence" type="button" data-evidence-preview="${escapeHtml(item.evidence_url)}" data-evidence-label="${escapeHtml(category)} 증빙">보기</button>`
-    : '<span class="fund-ledger-muted">—</span>';
+  const memo = String(item.memo || '').trim();
+  const sub = [type, item.direction || '', memo].filter(Boolean).join(' · ');
+  const isOut = ledgerAmountType(item) === 'out';
 
   return `
     <tr class="${deleted ? 'is-deleted' : ''}">
-      <td>${formatDate(item.ledger_date)}</td>
-      <td class="fund-ledger-type-cell">
-        <span>${escapeHtml(type)}</span>
-        ${ledgerKindBadge(item)}
+      <td class="ops-ledger__date">${formatDate(item.ledger_date)}</td>
+      <td class="ops-ledger__entry" title="${escapeHtml(sub)}">
+        <div class="ops-ledger__main">
+          <span>${escapeHtml(category)}</span>
+          ${ledgerKindBadge(item)}
+        </div>
+        <div class="ops-ledger__sub">${escapeHtml(sub || '—')}</div>
       </td>
-      <td>${escapeHtml(category)}</td>
-      <td>${escapeHtml(nickname || '—')}</td>
-      <td>${escapeHtml(period)}</td>
-      <td class="fund-ledger-money fund-money--${ledgerAmountType(item)}">${ledgerSign(item)}${formatMoney(Math.abs(Number(item.amount ?? 0)))}</td>
-      <td>${escapeHtml(item.direction || '—')}</td>
-      <td>${escapeHtml(item.account || '—')}</td>
-      <td>${evidence}</td>
-      <td class="is-left fund-ledger-memo" title="${escapeHtml(item.memo || '')}">${escapeHtml(item.memo || '') || '—'}</td>
-      <td>
+      <td class="ops-ledger__person">
+        <strong>${escapeHtml(nickname)}</strong>
+        <span>${escapeHtml(period)}</span>
+      </td>
+      <td class="ops-ledger__account"><span>${escapeHtml(item.account || '—')}</span></td>
+      <td class="ops-ledger__amount"><span class="ops-ledger__money ${isOut ? 'is-out' : ''}">${ledgerSign(item)}${formatMoney(Math.abs(Number(item.amount ?? 0)))}</span></td>
+      <td class="ops-ledger__evidence">
+        ${item.evidence_url
+          ? `<button class="ops-icon-button is-gold" type="button" data-evidence-preview="${escapeHtml(item.evidence_url)}" data-evidence-label="${escapeHtml(category)} 증빙">보기</button>`
+          : '<span class="ops-toolbar__summary">—</span>'}
+      </td>
+      <td class="ops-ledger__manage">
         ${deleted
-          ? `<button class="fund-secondary-button fund-secondary-button--small" type="button" data-restore-ledger="${item.id}">복구</button>`
-          : `<button class="fund-secondary-button fund-secondary-button--small" type="button" data-edit-ledger="${item.id}">수정</button>`}
+          ? `<button class="ops-icon-button" type="button" data-restore-ledger="${item.id}">복구</button>`
+          : `<button class="ops-icon-button" type="button" data-edit-ledger="${item.id}">수정</button>`}
       </td>
-    </tr>`;
+    </tr>
+  `;
 }
 
 function filterLedger(items, filters, selectedMonth) {
@@ -205,17 +183,12 @@ function passType(item, type) {
   return true;
 }
 
-function isManualLedger(item) {
-  return !item.request_id;
-}
-
-function isApprovalLedger(item) {
-  return Boolean(item.request_id) || (item.entry_type === 'payment' && !isManualLedger(item));
-}
+function isManualLedger(item) { return !item.request_id; }
+function isApprovalLedger(item) { return Boolean(item.request_id) || (item.entry_type === 'payment' && !isManualLedger(item)); }
 
 function ledgerKindBadge(item) {
-  if (isManualLedger(item)) return '<span class="fund-ledger-kind-badge is-manual">직접기입</span>';
-  if (isApprovalLedger(item)) return '<span class="fund-ledger-kind-badge is-payment">승인반영</span>';
+  if (isManualLedger(item)) return '<span class="ops-kind ops-kind--manual">직접</span>';
+  if (isApprovalLedger(item)) return '<span class="ops-kind ops-kind--payment">승인</span>';
   return '';
 }
 
@@ -241,11 +214,10 @@ function renderMonthPicker(month, periods = []) {
     months.sort((a, b) => b.year - a.year || b.month - a.month);
   }
   return `
-    <label class="fund-ledger-month-select">
-      <select data-fund-month-select>
-        ${months.map((item) => option(item.value, item.label, value)).join('')}
-      </select>
-    </label>`;
+    <select class="ops-select" data-fund-month-select aria-label="월 선택">
+      ${months.map((item) => option(item.value, item.label, value)).join('')}
+    </select>
+  `;
 }
 
 function uniqueMonths(periods) {

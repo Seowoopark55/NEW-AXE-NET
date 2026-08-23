@@ -23,26 +23,26 @@ export function renderFundNav(section, isAdmin, pendingCount = 0) {
   ];
 
   return `
-    <div class="fund-tabs" aria-label="공금 메뉴">
+    <nav class="ops-fund-nav" aria-label="공금 메뉴">
       ${items.map(([value, label]) => renderItem(
         value,
         label,
         section,
         value === 'review' && pendingCount > 0 ? pendingCount : null,
       )).join('')}
-    </div>
+    </nav>
   `;
 }
 
 function renderItem(value, label, section, count = null) {
   return `
     <button
-      class="${section === value ? 'active' : ''}"
+      class="ops-fund-nav__item ${section === value ? 'is-active' : ''}"
       type="button"
       data-fund-section="${escapeHtml(value)}"
     >
       <span>${escapeHtml(label)}</span>
-      ${count !== null ? `<b class="fund-tab-count">${count}</b>` : ''}
+      ${count !== null ? `<b>${count}</b>` : ''}
     </button>
   `;
 }
