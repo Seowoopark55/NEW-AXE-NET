@@ -362,10 +362,24 @@ export function normalizeApiError(error) {
     };
   }
 
-  if (lower.includes('tube_reactions') || lower.includes('set_tube_reaction') || lower.includes('tube_videos')) {
+  if (lower.includes('sync_owner') || lower.includes('save_tube_video_admin') || lower.includes('deactivate_tube_video_admin')) {
+    return {
+      status: 500,
+      message: 'AXE TUBE Supabase-first 데이터베이스가 아직 준비되지 않았습니다. 036_tube_supabase_primary.sql 실행 여부를 확인하세요.',
+    };
+  }
+
+  if (lower.includes('tube_reactions') || lower.includes('set_tube_reaction')) {
     return {
       status: 500,
       message: 'AXE TUBE 반응 데이터베이스가 아직 준비되지 않았습니다. 035_tube_reactions_bridge.sql 실행 여부를 확인하세요.',
+    };
+  }
+
+  if (lower.includes('tube_videos')) {
+    return {
+      status: 500,
+      message: 'AXE TUBE 데이터베이스가 아직 준비되지 않았습니다. 033~036 SQL 적용 상태를 확인하세요.',
     };
   }
 

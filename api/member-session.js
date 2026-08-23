@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import {
   clearMemberSessionCookie,
   getSessionToken,
@@ -14,6 +15,55 @@ import {
 } from '../server/memberSession.js';
 
 const ALLOWED_PAYMENT_MODES = new Set(['공용계좌', '회사잔고', '분할납부']);
+
+
+function tubeApiError(statusCode, message) {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  return error;
+}
+
+function normalizeTubeText(value, maxLength) {
+  return String(value ?? '')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .trim()
+    .slice(0, maxLength);
+}
+
+function parseYoutubeUrl(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+
+  try {
+    const url = new URL(raw);
+    const host = url.hostname.toLowerCase().replace(/^www\./, '');
+    let videoId = '';
+
+    if (host === 'youtu.be') {
+      videoId = url.pathname.split('/').filter(Boolean)[0] || '';
+    } else if (host === 'youtube.com' || host.endsWith('.youtube.com')) {
+      if (url.pathname === '/watch') videoId = url.searchParams.get('v') || '';
+      const parts = url.pathname.split('/').filter(Boolean);
+      if (['shorts', 'embed', 'live'].includes(parts[0])) videoId = parts[1] || '';
+    }
+
+    if (!/^[A-Za-z0-9_-]{6,20}$/.test(videoId)) return null;
+    return {
+      videoId,
+      url: `https://www.youtube.com/watch?v=${videoId}`,
+      thumbnailUrl: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function makeTubeId() {
+  return `tube_new_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+}
+
+const TUBE_PUBLIC_COLUMNS = 'tube_id,title,url,youtube_video_id,thumbnail_url,published_at,writer_member_key,writer,writer_badge,content,category,sort_order,views,likes,dislikes,source,source_updated_at,sync_owner,active,created_at,updated_at';
 
 export default async function handler(req, res) {
   if (!onlyPost(req, res)) return;
@@ -140,6 +190,112 @@ export default async function handler(req, res) {
       });
       if (error) throw error;
       return sendJson(res, 200, { ok: true, result: data || null });
+    }
+
+    if (action === 'tube_video_save') {
+      const tubeId = String(body.tube_id || '').trim();
+      const title = normalizeTubeText(body.title, 100);
+      const content = normalizeTubeText(body.content, 1500);
+      const category = normalizeTubeText(body.category, 50) || '일반';
+      const youtube = parseYoutubeUrl(body.url);
+
+      if (!title) throw tubeApiError(400, '영상 제목을 입력하세요.');
+      if (!youtube) throw tubeApiError(400, '올바른 YouTube 영상 링크를 입력하세요.');
+
+      let saved = null;
+
+      if (tubeId) {
+        const { data: existing, error: existingError } = await context.client
+          .from('tube_videos')
+          .select('tube_id,writer_member_key,active')
+          .eq('tube_id', tubeId)
+          .maybeSingle();
+        if (existingError) throw existingError;
+        if (!existing) throw tubeApiError(404, '수정할 영상을 찾을 수 없습니다.');
+        if (String(existing.writer_member_key || '') !== String(context.member.member_key || '')) {
+          throw tubeApiError(403, '본인이 등록한 영상만 수정할 수 있습니다.');
+        }
+
+        const { data, error } = await context.client
+          .from('tube_videos')
+          .update({
+            title,
+            url: youtube.url,
+            youtube_video_id: youtube.videoId,
+            thumbnail_url: youtube.thumbnailUrl,
+            writer_member_key: context.member.member_key,
+            writer: context.member.nickname,
+            writer_badge: context.member.badge || null,
+            content: content || null,
+            category,
+            sync_owner: 'supabase',
+            active: true,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('tube_id', tubeId)
+          .select(TUBE_PUBLIC_COLUMNS)
+          .single();
+        if (error) throw error;
+        saved = data;
+      } else {
+        const newTubeId = makeTubeId();
+        const now = new Date().toISOString();
+        const { data, error } = await context.client
+          .from('tube_videos')
+          .insert({
+            tube_id: newTubeId,
+            title,
+            url: youtube.url,
+            youtube_video_id: youtube.videoId,
+            thumbnail_url: youtube.thumbnailUrl,
+            published_at: now,
+            writer_member_key: context.member.member_key,
+            writer: context.member.nickname,
+            writer_badge: context.member.badge || null,
+            content: content || null,
+            category,
+            views: 0,
+            likes: 0,
+            dislikes: 0,
+            source: 'new_axe_net',
+            sync_owner: 'supabase',
+            active: true,
+          })
+          .select(TUBE_PUBLIC_COLUMNS)
+          .single();
+        if (error) throw error;
+        saved = data;
+      }
+
+      return sendJson(res, 200, { ok: true, video: saved });
+    }
+
+    if (action === 'tube_video_delete') {
+      const tubeId = String(body.tube_id || '').trim();
+      if (!tubeId) throw tubeApiError(400, '삭제할 영상 정보가 없습니다.');
+
+      const { data: existing, error: existingError } = await context.client
+        .from('tube_videos')
+        .select('tube_id,writer_member_key,active')
+        .eq('tube_id', tubeId)
+        .maybeSingle();
+      if (existingError) throw existingError;
+      if (!existing) throw tubeApiError(404, '삭제할 영상을 찾을 수 없습니다.');
+      if (String(existing.writer_member_key || '') !== String(context.member.member_key || '')) {
+        throw tubeApiError(403, '본인이 등록한 영상만 삭제할 수 있습니다.');
+      }
+
+      const { error } = await context.client
+        .from('tube_videos')
+        .update({
+          active: false,
+          sync_owner: 'supabase',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('tube_id', tubeId);
+      if (error) throw error;
+
+      return sendJson(res, 200, { ok: true, tube_id: tubeId });
     }
 
     if (action === 'fund_profile') {

@@ -144,3 +144,23 @@ export async function setMemberTubeReaction(tubeId, reaction) {
   return data.result || null;
 }
 
+
+export async function saveMemberTubeVideo(values) {
+  const data = await postJson('/api/member-session', {
+    action: 'tube_video_save',
+    tube_id: String(values?.tube_id || '').trim() || null,
+    title: String(values?.title || '').trim(),
+    url: String(values?.url || '').trim(),
+    content: String(values?.content || '').trim(),
+    category: String(values?.category || '').trim() || '일반',
+  });
+  return data.video || null;
+}
+
+export async function deleteMemberTubeVideo(tubeId) {
+  const data = await postJson('/api/member-session', {
+    action: 'tube_video_delete',
+    tube_id: String(tubeId || '').trim(),
+  });
+  return data.tube_id || null;
+}

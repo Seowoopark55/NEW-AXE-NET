@@ -1,0 +1,12 @@
+NEW AXE NET v1.32.0 · AXE TUBE Supabase-first validation
+
+PASS · JS syntax
+PASS · relative import path check
+PASS · AXE style audit
+PASS · member write path uses server-side member session/service-role
+PASS · admin write path uses security-definer admin RPC
+PASS · edit/delete promotes sync_owner to supabase
+PASS · BOT Mirror V3 protects sync_owner=supabase metadata/active from legacy overwrite
+PASS · legacy metric delta bridge remains enabled
+
+Production Vite build is left to Vercel because node_modules are not installed in this artifact environment.

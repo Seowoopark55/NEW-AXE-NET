@@ -2,10 +2,15 @@ export function renderTubeView(root, state, actions) {
   const tube = state.tube;
   const videos = filterVideos(tube.videos || [], tube.filters || {});
   const selected = (tube.videos || []).find((item) => item.tube_id === tube.selectedTubeId) || null;
+  const editing = tube.editor?.tubeId
+    ? (tube.videos || []).find((item) => item.tube_id === tube.editor.tubeId) || null
+    : null;
   const categories = [...new Set((tube.videos || []).map((item) => String(item.category || '일반').trim() || '일반'))]
     .sort((a, b) => a.localeCompare(b, 'ko'));
   const totals = aggregate(tube.videos || []);
   const isMember = Boolean(state.auth?.member);
+  const isAdmin = Boolean(state.auth?.admin);
+  const canCreate = isMember || isAdmin;
 
   root.innerHTML = `
     <section class="ops-tube">
@@ -15,17 +20,20 @@ export function renderTubeView(root, state, actions) {
           <h1>AXE TUBE</h1>
           <p>AXE 활동 영상과 게임 플레이를 유튜브형 피드로 모아봅니다.</p>
         </div>
-        <button class="ops-tube-btn" type="button" data-tube-refresh ${tube.loading ? 'disabled' : ''}>
-          ${tube.loading ? '불러오는 중…' : '새로고침'}
-        </button>
+        <div class="ops-tube__head-actions">
+          ${canCreate ? '<button class="ops-tube-btn ops-tube-btn--primary" type="button" data-tube-new>+ 영상 등록</button>' : ''}
+          <button class="ops-tube-btn" type="button" data-tube-refresh ${tube.loading ? 'disabled' : ''}>
+            ${tube.loading ? '불러오는 중…' : '새로고침'}
+          </button>
+        </div>
       </header>
 
       ${tube.error ? `<div class="ops-tube-alert ops-tube-alert--error">${h(tube.error)}</div>` : ''}
-      ${tube.message ? `<div class="ops-tube-alert ops-tube-alert--error">${h(tube.message)}</div>` : ''}
+      ${tube.message ? `<div class="ops-tube-alert ${tube.messageType === 'success' ? 'ops-tube-alert--success' : tube.messageType === 'error' ? 'ops-tube-alert--error' : ''}">${h(tube.message)}</div>` : ''}
       ${tube.loading && !tube.initialized ? '<div class="ops-tube-loading">AXE TUBE 데이터를 불러오는 중입니다.</div>' : ''}
 
       <section class="ops-tube-summary" aria-label="AXE TUBE 요약">
-        ${summary('영상', `${totals.count}개`, '현재 동기화된 영상')}
+        ${summary('영상', `${totals.count}개`, '현재 활성 영상')}
         ${summary('조회', formatNumber(totals.views), '기존 + NEW AXE NET')}
         ${summary('추천', formatNumber(totals.likes), '기존 + 멤버 추천')}
         ${summary('분류', `${totals.categories}개`, '영상 카테고리')}
@@ -56,12 +64,14 @@ export function renderTubeView(root, state, actions) {
         </div>
 
         <div class="ops-tube-note">
-          <strong>병행 운영 중</strong>
-          <span>영상 등록·수정은 기존 AXE TUBE / Discord 흐름을 유지합니다. 조회·추천·비추천은 기존 카운터와 NEW AXE NET 활동을 합산해 보존합니다.</span>
+          <strong>Supabase-first</strong>
+          <span>NEW AXE NET에서 영상 등록·수정·내리기가 가능합니다. 기존 Discord / Apps Script에서 등록된 영상도 Shadow Mirror로 계속 들어옵니다.</span>
         </div>
 
         ${videos.length
-          ? `<div class="ops-tube-grid">${videos.map(renderCard).join('')}</div>`
+          ? `<div class="ops-tube-grid">${videos.map((video) => renderCard(video, {
+              canManage: canManageVideo(state, video),
+            })).join('')}</div>`
           : '<div class="ops-tube-empty">조건에 맞는 영상이 없습니다.</div>'}
       </section>
 
@@ -69,6 +79,15 @@ export function renderTubeView(root, state, actions) {
         reaction: tube.myReactions?.[selected.tube_id] || null,
         isMember,
         saving: tube.reactionSavingTubeId === selected.tube_id,
+        canManage: canManageVideo(state, selected),
+      }) : ''}
+
+      ${tube.editor?.open ? renderEditor(editing, {
+        saving: Boolean(tube.editor.saving),
+        error: tube.editor.error,
+        confirmDelete: Boolean(tube.editor.confirmDelete),
+        currentWriter: editing?.writer || state.auth?.member?.nickname || state.auth?.admin?.nickname || 'AXE',
+        draft: tube.editor.draft || null,
       }) : ''}
     </section>
   `;
@@ -76,29 +95,33 @@ export function renderTubeView(root, state, actions) {
   bindEvents(root, actions);
 }
 
-function renderCard(video) {
+function renderCard(video, options = {}) {
   const thumbnail = getThumbnail(video);
   return `
-    <button class="ops-tube-card" type="button" data-tube-open="${h(video.tube_id)}">
-      <div class="ops-tube-card__thumb">
-        <img src="${h(thumbnail)}" alt="${h(video.title || 'AXE TUBE')}" loading="lazy" />
-        <span class="ops-tube-card__play" aria-hidden="true">▶</span>
-        <span class="ops-tube-card__category">${h(video.category || '일반')}</span>
-      </div>
-      <div class="ops-tube-card__body">
-        <h2>${h(video.title || '제목 없음')}</h2>
-        <div class="ops-tube-card__writer">
-          <strong>${h(video.writer || 'AXE')}</strong>
-          ${badge(video.writer_badge)}
+    <article class="ops-tube-card-wrap">
+      <button class="ops-tube-card" type="button" data-tube-open="${h(video.tube_id)}">
+        <div class="ops-tube-card__thumb">
+          <img src="${h(thumbnail)}" alt="${h(video.title || 'AXE TUBE')}" loading="lazy" />
+          <span class="ops-tube-card__play" aria-hidden="true">▶</span>
+          <span class="ops-tube-card__category">${h(video.category || '일반')}</span>
         </div>
-        <p>${h(compact(video.content || '등록된 설명이 없습니다.', 96))}</p>
-        <div class="ops-tube-card__meta">
-          <span>조회 ${formatNumber(video.views)}</span>
-          <span>추천 ${formatNumber(video.likes)}</span>
-          <time>${formatDate(video.published_at)}</time>
+        <div class="ops-tube-card__body">
+          <h2>${h(video.title || '제목 없음')}</h2>
+          <div class="ops-tube-card__writer">
+            <strong>${h(video.writer || 'AXE')}</strong>
+            ${badge(video.writer_badge)}
+            ${syncBadge(video.sync_owner)}
+          </div>
+          <p>${h(compact(video.content || '등록된 설명이 없습니다.', 96))}</p>
+          <div class="ops-tube-card__meta">
+            <span>조회 ${formatNumber(video.views)}</span>
+            <span>추천 ${formatNumber(video.likes)}</span>
+            <time>${formatDate(video.published_at)}</time>
+          </div>
         </div>
-      </div>
-    </button>
+      </button>
+      ${options.canManage ? `<button class="ops-tube-card-manage" type="button" data-tube-edit="${h(video.tube_id)}" aria-label="${h(video.title)} 수정">수정</button>` : ''}
+    </article>
   `;
 }
 
@@ -120,7 +143,10 @@ function renderDetail(video, options = {}) {
             <span>AXE TUBE</span>
             <h2>${h(video.title || '제목 없음')}</h2>
           </div>
-          <button type="button" data-tube-close aria-label="상세 닫기">×</button>
+          <div class="ops-tube-detail__header-actions">
+            ${options.canManage ? `<button class="ops-tube-detail__edit" type="button" data-tube-edit="${h(video.tube_id)}">수정</button>` : ''}
+            <button type="button" data-tube-close aria-label="상세 닫기">×</button>
+          </div>
         </header>
         <div class="ops-tube-detail__player">${player}</div>
         <div class="ops-tube-detail__body">
@@ -128,6 +154,7 @@ function renderDetail(video, options = {}) {
             <div>
               <strong>${h(video.writer || 'AXE')}</strong>
               ${badge(video.writer_badge)}
+              ${syncBadge(video.sync_owner)}
               <span>${h(video.category || '일반')}</span>
             </div>
             <time>${formatDateTime(video.published_at)}</time>
@@ -163,8 +190,77 @@ function renderDetail(video, options = {}) {
   `;
 }
 
+function renderEditor(video, options = {}) {
+  const isEdit = Boolean(video);
+  const draft = options.draft || {};
+  const value = (key, fallback = '') => Object.prototype.hasOwnProperty.call(draft, key) ? draft[key] : fallback;
+  return `
+    <div class="ops-tube-editor-backdrop" data-tube-editor-backdrop>
+      <form class="ops-tube-editor" data-tube-editor-form>
+        <header>
+          <div>
+            <span>AXE TUBE · ${isEdit ? 'EDIT' : 'UPLOAD'}</span>
+            <h2>${isEdit ? '영상 정보 수정' : '새 영상 등록'}</h2>
+            <p>${isEdit ? '저장하는 순간 이 영상은 NEW AXE NET 기준으로 관리됩니다.' : 'YouTube 링크를 기준으로 썸네일과 재생 정보를 자동 연결합니다.'}</p>
+          </div>
+          <button type="button" data-tube-editor-close aria-label="편집창 닫기">×</button>
+        </header>
+
+        <div class="ops-tube-editor__body">
+          ${options.error ? `<div class="ops-tube-alert ops-tube-alert--error">${h(options.error)}</div>` : ''}
+          <div class="ops-tube-editor__meta">
+            <span>등록자</span>
+            <strong>${h(options.currentWriter || 'AXE')}</strong>
+            ${video ? syncBadge(video.sync_owner) : '<span class="ops-tube-sync ops-tube-sync--new">NEW</span>'}
+          </div>
+
+          <label class="ops-tube-editor__field ops-tube-editor__field--wide">
+            <span>영상 제목</span>
+            <input name="title" maxlength="100" required value="${h(value('title', video?.title || ''))}" placeholder="영상 제목" ${options.saving ? 'disabled' : ''} />
+          </label>
+
+          <label class="ops-tube-editor__field ops-tube-editor__field--wide">
+            <span>YouTube 링크</span>
+            <input name="url" required value="${h(value('url', video?.url || ''))}" placeholder="https://youtu.be/... 또는 youtube.com/watch?v=..." ${options.saving ? 'disabled' : ''} />
+          </label>
+
+          <label class="ops-tube-editor__field">
+            <span>분류</span>
+            <input name="category" maxlength="50" value="${h(value('category', video?.category || '일반'))}" placeholder="일반" ${options.saving ? 'disabled' : ''} />
+          </label>
+
+          <label class="ops-tube-editor__field ops-tube-editor__field--wide">
+            <span>설명</span>
+            <textarea name="content" maxlength="1500" rows="6" placeholder="영상 설명 또는 태그" ${options.saving ? 'disabled' : ''}>${h(value('content', video?.content || ''))}</textarea>
+          </label>
+
+          ${isEdit && String(video.sync_owner || '') !== 'supabase'
+            ? '<div class="ops-tube-editor__takeover"><strong>기존 미러 영상</strong><span>이 영상을 저장하거나 내리면 이후 메타데이터는 NEW AXE NET이 우선합니다. 기존 Shadow Mirror가 다시 덮어쓰지 않습니다.</span></div>'
+            : ''}
+        </div>
+
+        <footer>
+          <div class="ops-tube-editor__danger">
+            ${isEdit && !options.confirmDelete ? `<button type="button" class="ops-tube-btn ops-tube-btn--danger-ghost" data-tube-delete-request ${options.saving ? 'disabled' : ''}>영상 내리기</button>` : ''}
+            ${isEdit && options.confirmDelete ? `
+              <span>정말 목록에서 내릴까요?</span>
+              <button type="button" class="ops-tube-btn ops-tube-btn--danger" data-tube-delete-confirm ${options.saving ? 'disabled' : ''}>내리기 확인</button>
+              <button type="button" class="ops-tube-btn" data-tube-delete-cancel ${options.saving ? 'disabled' : ''}>취소</button>
+            ` : ''}
+          </div>
+          <div class="ops-tube-editor__actions">
+            <button type="button" class="ops-tube-btn" data-tube-editor-close ${options.saving ? 'disabled' : ''}>취소</button>
+            <button type="submit" class="ops-tube-btn ops-tube-btn--primary" ${options.saving ? 'disabled' : ''}>${options.saving ? '저장 중…' : isEdit ? '변경 저장' : '영상 등록'}</button>
+          </div>
+        </footer>
+      </form>
+    </div>
+  `;
+}
+
 function bindEvents(root, actions) {
   root.querySelector('[data-tube-refresh]')?.addEventListener('click', () => actions.onRefresh?.());
+  root.querySelector('[data-tube-new]')?.addEventListener('click', () => actions.onOpenEditor?.());
 
   root.querySelectorAll('[data-tube-filter]').forEach((element) => {
     const eventName = element.tagName === 'INPUT' ? 'input' : 'change';
@@ -173,6 +269,13 @@ function bindEvents(root, actions) {
 
   root.querySelectorAll('[data-tube-open]').forEach((button) => {
     button.addEventListener('click', () => actions.onOpenVideo?.(button.dataset.tubeOpen));
+  });
+
+  root.querySelectorAll('[data-tube-edit]').forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      actions.onOpenEditor?.(button.dataset.tubeEdit);
+    });
   });
 
   root.querySelectorAll('[data-tube-react]').forEach((button) => {
@@ -184,6 +287,32 @@ function bindEvents(root, actions) {
   root.querySelector('[data-tube-modal-backdrop]')?.addEventListener('click', (event) => {
     if (event.target === event.currentTarget) actions.onCloseVideo?.();
   });
+
+  root.querySelectorAll('[data-tube-editor-close]').forEach((button) => {
+    button.addEventListener('click', () => actions.onCloseEditor?.());
+  });
+  root.querySelector('[data-tube-editor-backdrop]')?.addEventListener('click', (event) => {
+    if (event.target === event.currentTarget) actions.onCloseEditor?.();
+  });
+  root.querySelector('[data-tube-editor-form]')?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    actions.onSaveVideo?.({
+      title: form.get('title'),
+      url: form.get('url'),
+      category: form.get('category'),
+      content: form.get('content'),
+    });
+  });
+  root.querySelector('[data-tube-delete-request]')?.addEventListener('click', () => actions.onRequestDelete?.());
+  root.querySelector('[data-tube-delete-confirm]')?.addEventListener('click', () => actions.onConfirmDelete?.());
+  root.querySelector('[data-tube-delete-cancel]')?.addEventListener('click', () => actions.onCancelDelete?.());
+}
+
+function canManageVideo(state, video) {
+  if (state.auth?.admin) return true;
+  const memberKey = String(state.auth?.member?.member_key || '');
+  return Boolean(memberKey && memberKey === String(video?.writer_member_key || ''));
 }
 
 function filterVideos(videos, filters) {
@@ -215,6 +344,10 @@ function summary(label, value, sub) {
   return `<div class="ops-tube-summary__card"><span>${h(label)}</span><strong>${h(value)}</strong><small>${h(sub)}</small></div>`;
 }
 
+function option(value, label, selected) {
+  return `<option value="${h(value)}" ${String(value) === String(selected) ? 'selected' : ''}>${h(label)}</option>`;
+}
+
 function badge(value) {
   const raw = String(value || '').trim().toLowerCase();
   if (!raw) return '';
@@ -222,16 +355,22 @@ function badge(value) {
   return `<span class="ops-tube-badge ops-tube-badge--${h(raw)}">${h(label)}</span>`;
 }
 
+function syncBadge(value) {
+  const owner = String(value || '').toLowerCase();
+  if (owner === 'supabase') return '<span class="ops-tube-sync ops-tube-sync--new">NEW 관리</span>';
+  return '<span class="ops-tube-sync">기존 미러</span>';
+}
+
 function getThumbnail(video) {
   const direct = String(video.thumbnail_url || '').trim();
   if (direct) return direct;
-  const id = safeYoutubeId(video.youtube_video_id || extractYoutubeId(video.url));
-  return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : '/assets/axe-brand-mark.webp';
+  const videoId = safeYoutubeId(video.youtube_video_id || extractYoutubeId(video.url));
+  return videoId ? `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg` : '/assets/axe-hero-premium.webp';
 }
 
 function normalizeYoutubeUrl(url, videoId) {
   const raw = String(url || '').trim();
-  if (/^https:\/\//i.test(raw)) return raw;
+  if (/^https?:\/\//i.test(raw)) return raw;
   return videoId ? `https://www.youtube.com/watch?v=${videoId}` : '';
 }
 
@@ -247,7 +386,9 @@ function extractYoutubeId(url) {
       const parts = parsed.pathname.split('/').filter(Boolean);
       if (['shorts', 'embed', 'live'].includes(parts[0])) return parts[1] || '';
     }
-  } catch (_) {}
+  } catch {
+    return '';
+  }
   return '';
 }
 
@@ -256,13 +397,9 @@ function safeYoutubeId(value) {
   return /^[A-Za-z0-9_-]{6,20}$/.test(id) ? id : '';
 }
 
-function option(value, label, selected) {
-  return `<option value="${h(value)}" ${String(selected) === String(value) ? 'selected' : ''}>${h(label)}</option>`;
-}
-
-function compact(value, max) {
+function compact(value, length) {
   const text = String(value || '').replace(/\s+/g, ' ').trim();
-  return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+  return text.length > length ? `${text.slice(0, Math.max(0, length - 1))}…` : text;
 }
 
 function normalize(value) {
