@@ -48,6 +48,25 @@ const initialState = {
     },
   },
 
+  notice: {
+    initialized: false,
+    loading: false,
+    error: null,
+    tab: 'general',
+    notices: [],
+    operations: [],
+    selectedNoticeId: null,
+    selectedOperationId: null,
+    operationCategory: 'all',
+    editor: {
+      open: false,
+      kind: 'notice',
+      itemId: null,
+      saving: false,
+      error: null,
+    },
+  },
+
   fund: {
     initialized: false,
     loading: false,

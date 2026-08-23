@@ -31,6 +31,7 @@ export function renderAppShell(root) {
           <div class="ops-module-rail">
             <nav class="ops-module-nav" aria-label="주요 메뉴">
               <button class="ops-module-nav__item" type="button" data-nav-module="home">홈</button>
+              <button class="ops-module-nav__item" type="button" data-nav-module="notice">공지</button>
               <button class="ops-module-nav__item" type="button" data-nav-module="members">멤버</button>
               <button class="ops-module-nav__item" type="button" data-nav-module="fund">공금</button>
             </nav>

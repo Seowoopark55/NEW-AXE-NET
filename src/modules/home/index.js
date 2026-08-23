@@ -19,6 +19,26 @@ export function initHomeModule() {
         }));
       },
 
+      onOpenNotice(noticeId = null) {
+        const notices = store.getState().notice?.notices ?? [];
+        const target = notices.find((item) => Number(item.id) === Number(noticeId)) ?? null;
+        const tab = target?.notice_type === '패치노트' ? 'patch' : 'general';
+
+        store.updateState((state) => ({
+          ...state,
+          ui: {
+            ...state.ui,
+            activeModule: 'notice',
+          },
+          notice: {
+            ...state.notice,
+            tab,
+            selectedNoticeId: target ? Number(target.id) : null,
+            selectedOperationId: null,
+          },
+        }));
+      },
+
       onOpenFundSection(section) {
         const current = store.getState();
         const adminOnly = new Set(['review', 'history', 'balance', 'feeRules', 'exemptions', 'integrity', 'fundMembers']);

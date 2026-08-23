@@ -1,3 +1,56 @@
+# NEW AXE NET v1.25.0 — NOTICE & OPERATIONS
+
+v1.24.0에서 확정한 **AXE STYLE 4.0**을 유지하면서, 공금 외 첫 일반 운영 모듈인 `공지사항 + 운영기준`을 Supabase-first로 이관한 버전입니다.
+
+## v1.25.0 핵심
+
+- 상위 메뉴 `홈 / 공지 / 멤버 / 공금`
+- 공지 모듈 3개 탭
+  - 일반공지
+  - 패치노트
+  - 운영기준
+- 일반공지 / 패치노트
+  - 중요 공지 우선 표시
+  - 제목 / 작성일 / 작성자 compact 목록
+  - 상세보기
+  - 관리자 등록 / 수정 / 삭제
+- 운영기준
+  - 기존 AXE NET의 `분류 → 목록 → 상세` 흐름 유지
+  - `category / title / content / order` 구조를 Supabase로 정리
+  - 관리자 등록 / 수정 / 목록 내리기
+- 홈 화면에 `최근 공지` 연결
+- UI는 새로 넓히지 않고 700~780px content-driven workspace 사용
+- Apps Script를 실시간 데이터 소스로 사용하지 않음
+- 기존 AXE NET 데이터 이관용 CSV 템플릿 포함
+- Supabase migration: `021_notice_operations.sql`
+
+## DB / SQL
+
+**이번 버전은 SQL 적용이 필요합니다.**
+
+Supabase SQL Editor에서 아래 파일을 전체 실행하세요.
+
+`supabase/021_notice_operations.sql`
+
+기존 공지/운영기준 실제 행 데이터는 이 패키지에 임의로 생성하지 않았습니다. 기존 시트 데이터를 옮길 때는 아래 템플릿을 사용합니다.
+
+- `supabase/data/notices_import_template.csv`
+- `supabase/data/operation_rules_import_template.csv`
+
+자세한 필드 매핑: `docs/NOTICE_OPERATIONS_1.0.md`
+
+## 적용 순서
+
+1. Supabase SQL Editor에서 `021_notice_operations.sql` 전체 실행
+2. v1.25.0 ZIP 압축 해제
+3. 기존 NEW AXE NET 프로젝트 전체 덮어쓰기
+4. GitHub Desktop Commit / Push
+5. Vercel 자동배포 확인
+6. `공지 → 일반공지 / 패치노트 / 운영기준` 확인
+7. 관리자 로그인 후 공지 및 운영기준 등록/수정 테스트
+
+---
+
 # NEW AXE NET v1.24.0 — AXE STYLE STRUCTURAL REBASE
 
 이번 버전은 화면별 여백을 다시 덧대는 패치가 아니라, 반복되던 **넓은 빈 공간의 구조적 원인을 제거하는 CSS/레이아웃 리베이스**입니다.

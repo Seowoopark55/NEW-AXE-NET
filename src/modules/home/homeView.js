@@ -13,6 +13,10 @@ export function renderHomeView(root, state, actions = {}) {
   const balance = summary.balance ?? {};
   const period = summary.period ?? fund.selectedPeriod ?? null;
   const recentLedger = Array.isArray(fund.recentLedger) ? fund.recentLedger.slice(0, 6) : [];
+  const recentNotices = (state.notice?.notices ?? [])
+    .slice()
+    .sort((a, b) => Number(Boolean(b.important)) - Number(Boolean(a.important)) || dateValue(b.published_at) - dateValue(a.published_at))
+    .slice(0, 4);
   const pendingCount = state.auth?.admin
     ? (fund.admin?.requests ?? []).filter((item) => item.status === 'pending' || item.status === 'hold').length
     : null;
@@ -69,6 +73,7 @@ export function renderHomeView(root, state, actions = {}) {
             </div>
           </div>
           <div class="ops-home-shortcuts">
+            ${shortcut('공지사항', '주요 공지와 운영기준을 확인합니다.', 'notice', null, actions)}
             ${shortcut('멤버', '조직 구성과 권한, 활동 상태를 관리합니다.', 'members', null, actions)}
             ${shortcut('월별현황', '멤버별 공금 납부 상태를 한눈에 확인합니다.', 'fund', 'overview', actions)}
             ${shortcut('공금납부', '본인 또는 관리자 대리 납부를 제출합니다.', 'fund', 'payment', actions)}
@@ -102,6 +107,21 @@ export function renderHomeView(root, state, actions = {}) {
           </div>
         </section>
       </div>
+
+      <section class="ops-home-panel ops-home-panel--notices">
+        <div class="ops-home-panel__head">
+          <div>
+            <h2>최근 공지</h2>
+            <p>중요 공지와 최근 업데이트를 먼저 확인합니다.</p>
+          </div>
+          <button class="ops-home-link" type="button" data-home-module="notice">공지사항 보기</button>
+        </div>
+        <div class="ops-home-notices">
+          ${recentNotices.length
+            ? recentNotices.map(renderRecentNoticeRow).join('')
+            : '<div class="ops-home-empty">등록된 공지사항이 없습니다.</div>'}
+        </div>
+      </section>
 
       <section class="ops-home-panel ops-home-panel--recent">
         <div class="ops-home-panel__head">
@@ -162,6 +182,18 @@ function renderRecentLedgerRow(item) {
   `;
 }
 
+function renderRecentNoticeRow(item) {
+  return `
+    <button class="ops-home-notice-row" type="button" data-home-notice-id="${Number(item.id)}">
+      <span class="ops-home-notice-row__title">
+        ${item.important ? '<em>중요</em>' : ''}
+        <strong>${escapeHtml(item.title || '제목 없음')}</strong>
+      </span>
+      <time>${escapeHtml(shortDate(item.published_at))}</time>
+    </button>
+  `;
+}
+
 function bindHomeEvents(root, actions) {
   root.querySelectorAll('[data-home-module]').forEach((button) => {
     button.addEventListener('click', () => actions.onOpenModule?.(button.dataset.homeModule));
@@ -169,6 +201,10 @@ function bindHomeEvents(root, actions) {
 
   root.querySelectorAll('[data-home-fund-section]').forEach((button) => {
     button.addEventListener('click', () => actions.onOpenFundSection?.(button.dataset.homeFundSection));
+  });
+
+  root.querySelectorAll('[data-home-notice-id]').forEach((button) => {
+    button.addEventListener('click', () => actions.onOpenNotice?.(button.dataset.homeNoticeId));
   });
 }
 
@@ -185,6 +221,11 @@ function countMembers(items) {
 function periodLabel(period) {
   if (!period?.year || !period?.month || !period?.week) return '현재 회차';
   return `${Number(period.year)}년 ${Number(period.month)}월 ${Number(period.week)}주차`;
+}
+
+function dateValue(value) {
+  const time = new Date(value || 0).getTime();
+  return Number.isNaN(time) ? 0 : time;
 }
 
 function shortDate(value) {

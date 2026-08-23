@@ -232,3 +232,45 @@
   .ops-home-shortcut { border-right: 0; }
   .ops-home-recent__row { grid-template-columns: 48px minmax(0,1fr) 92px; gap: 8px; }
 }
+
+/* v1.25 · recent notices ------------------------------------------------- */
+.ops-home-panel--notices { margin-top: 12px; }
+.ops-home-notices { display: grid; }
+.ops-home-notice-row {
+  width: 100%;
+  min-height: 44px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 72px;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 13px;
+  border: 0;
+  border-bottom: 1px solid rgba(255,255,255,.05);
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.ops-home-notice-row:last-child { border-bottom: 0; }
+.ops-home-notice-row:hover { background: rgba(255,181,46,.022); }
+.ops-home-notice-row__title { min-width: 0; display: flex; align-items: center; gap: 7px; }
+.ops-home-notice-row__title em {
+  flex: 0 0 auto;
+  padding: 2px 5px;
+  border: 1px solid rgba(255,95,86,.22);
+  border-radius: 5px;
+  color: #ff897f;
+  font-size: 8px;
+  font-style: normal;
+  font-weight: 900;
+}
+.ops-home-notice-row__title strong {
+  min-width: 0;
+  overflow: hidden;
+  color: #dedad2;
+  font-size: 10.8px;
+  font-weight: 850;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ops-home-notice-row time { color: #70747a; font-size: 9.3px; text-align: right; font-variant-numeric: tabular-nums; }

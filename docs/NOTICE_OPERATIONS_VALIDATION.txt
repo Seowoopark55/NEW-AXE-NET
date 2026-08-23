@@ -1,0 +1,41 @@
+NEW AXE NET v1.25.0 · NOTICE & OPERATIONS VALIDATION
+Date: 2026-08-23
+
+1. JavaScript / MJS syntax
+- node --check: PASS
+- Checked: 40 files under src / api / server / scripts
+
+2. Relative imports
+- PASS
+- Checked: 78 relative imports
+- Missing import targets: 0
+
+3. CSS structure
+- Brace balance: PASS
+- Checked: 9 CSS files
+
+4. Canonical style audit
+- npm run audit:styles: PASS
+- fund style isolation: PASS
+- obsolete shell CSS removal: PASS
+- legacy table CSS removal: PASS
+- !important specificity patches: 0
+- duplicate exact selector ownership across canonical UI styles: 0
+- fixed content-driven desktop row columns preserved
+
+5. v1.25 module checks
+- notice module registered in app bootstrap
+- primary navigation includes 공지
+- home recent-notice panel wired to notice detail
+- public read paths use notices_app / operation_rules_app
+- admin mutations use save/delete RPCs
+- actual legacy Sheet rows are not fabricated; CSV import templates included
+
+6. Build command
+- npm run build was not executed in this container because node_modules/.bin/vite is not installed.
+- This is an environment dependency-availability limitation, not a detected source syntax/import/style failure.
+
+7. Database migration
+- Required migration: supabase/021_notice_operations.sql
+- SQL was statically reviewed against prior NEW AXE NET schema conventions.
+- A live PostgreSQL/Supabase execution was not available in this environment; apply in Supabase SQL Editor before deploying the UI.
