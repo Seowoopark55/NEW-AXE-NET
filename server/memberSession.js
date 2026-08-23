@@ -362,6 +362,13 @@ export function normalizeApiError(error) {
     };
   }
 
+  if (lower.includes('member_accounts') || lower.includes('member_account_requests') || lower.includes('company_assets') || lower.includes('company_asset_returns')) {
+    return {
+      status: 500,
+      message: '자산·계좌 데이터베이스가 아직 준비되지 않았습니다. 026_assets_plika.sql 실행 여부를 확인하세요.',
+    };
+  }
+
   if (lower.includes('member_web_sessions')) {
     return {
       status: 500,

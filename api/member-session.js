@@ -59,6 +59,89 @@ export default async function handler(req, res) {
       return sendJson(res, 200, { ok: true, profile });
     }
 
+    if (action === 'asset_plika_accounts') {
+      const { data: accountRows, error: accountError } = await context.client
+        .from('member_accounts')
+        .select('id,member_key,account,note,sort_order,updated_at')
+        .eq('enabled', true)
+        .order('sort_order', { ascending: true })
+        .order('id', { ascending: true })
+        .limit(1000);
+      if (accountError) throw accountError;
+
+      const keys = [...new Set((accountRows || []).map((row) => row.member_key).filter(Boolean))];
+      let memberRows = [];
+      if (keys.length) {
+        const { data, error } = await context.client
+          .from('members')
+          .select('member_key,nickname,status,sort_order')
+          .in('member_key', keys);
+        if (error) throw error;
+        memberRows = data || [];
+      }
+
+      const memberMap = new Map(memberRows.map((row) => [row.member_key, row]));
+      const accounts = (accountRows || [])
+        .map((row) => ({
+          ...row,
+          nickname: memberMap.get(row.member_key)?.nickname || row.member_key,
+          member_status: memberMap.get(row.member_key)?.status || null,
+          member_sort_order: Number(memberMap.get(row.member_key)?.sort_order || 0),
+        }))
+        .filter((row) => row.member_status === 'active')
+        .sort((a, b) => a.member_sort_order - b.member_sort_order
+          || Number(a.sort_order || 0) - Number(b.sort_order || 0)
+          || String(a.nickname || '').localeCompare(String(b.nickname || ''), 'ko'));
+
+      return sendJson(res, 200, { ok: true, accounts });
+    }
+
+    if (action === 'asset_plika_my_requests') {
+      const { data, error } = await context.client
+        .from('member_account_requests')
+        .select('id,account,note,status,reviewer,review_note,reviewed_at,created_at')
+        .eq('member_key', context.member.member_key)
+        .order('created_at', { ascending: false })
+        .limit(30);
+      if (error) throw error;
+      return sendJson(res, 200, { ok: true, requests: data || [] });
+    }
+
+    if (action === 'asset_plika_request_submit') {
+      const account = String(body.account || '').trim();
+      const note = String(body.note || '').trim();
+      if (!account) {
+        return sendJson(res, 400, { ok: false, message: '계좌번호를 입력하세요.' });
+      }
+      if (account.length > 100) {
+        return sendJson(res, 400, { ok: false, message: '계좌번호가 너무 깁니다.' });
+      }
+      if (note.length > 500) {
+        return sendJson(res, 400, { ok: false, message: '메모는 500자 이하로 입력하세요.' });
+      }
+
+      const { data, error } = await context.client
+        .from('member_account_requests')
+        .insert({
+          member_key: context.member.member_key,
+          nickname: context.member.nickname,
+          account,
+          note: note || null,
+          status: 'pending',
+        })
+        .select('id')
+        .single();
+
+      if (error) {
+        if (error.code === '23505') {
+          return sendJson(res, 409, { ok: false, message: '이미 검수대기 중인 계좌 신청이 있습니다.' });
+        }
+        throw error;
+      }
+
+      return sendJson(res, 200, { ok: true, request_id: data.id });
+    }
+
     if (action === 'info_modbook_my_requests') {
       const { data, error } = await context.client
         .from('info_modbook_requests')

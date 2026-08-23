@@ -1,3 +1,46 @@
+# NEW AXE NET v1.28.0 — ASSETS & PLIKA
+
+## v1.28.0 · 자산·계좌 Supabase-native 모듈
+
+- 상위 메뉴 `자산·계좌` 추가
+- 일반 멤버: 플리카 계좌 검색/복사, 본인 계좌 등록·변경 신청, 내 신청 확인
+- 관리자: 계좌 직접 등록/수정/사용중지, 신청 승인/반려
+- 관리자: 회사 자산 현황 등록/수정/목록 내리기
+- 관리자: 퇴사자·자산 반납내역 등록/수정/목록 내리기
+- 계좌번호는 anon 공개 금지. 멤버 로그인 또는 관리자 인증 후에만 조회
+- 일반 멤버 계좌 경로는 HttpOnly member session + Vercel 서버를 사용
+- 관리자 조회/쓰기는 Supabase Auth + `new_axe_net.is_admin()` 검증
+- Google Sheet / Apps Script는 자산·계좌 런타임 경로에 사용하지 않음
+
+## DB / SQL
+
+필수:
+
+`supabase/026_assets_plika.sql`
+
+선택(기존 플리카 계좌 1회 이관):
+
+`supabase/027_plika_legacy_import_optional.sql`
+
+027은 기존 `public.member_accounts`가 있을 때만 읽어서 NEW schema로 한 번 복사합니다. `public`을 수정하지 않으며 NEW AXE NET 런타임이 public에 의존하게 만들지 않습니다.
+
+기존 Google Sheet 회사자산/반납 행은 이번 버전에서 fallback으로 연결하지 않습니다. 필요한 기존 행은 다음 1회성 import 단계에서 `new_axe_net`로 옮깁니다.
+
+## 적용 순서
+
+1. Supabase SQL Editor에서 `026_assets_plika.sql` 전체 실행
+2. 기존 플리카 데이터를 바로 가져올 경우에만 `027_plika_legacy_import_optional.sql` 실행
+3. v1.28.0 소스를 기존 NEW AXE NET 프로젝트에 전체 덮어쓰기
+4. GitHub Commit / Push
+5. Vercel 자동 배포 확인
+6. 일반 멤버 로그인 → 플리카 조회/복사/신청 테스트
+7. 관리자 로그인 → 승인/계좌관리/회사자산/반납내역 테스트
+
+상세 설계: `docs/ASSETS_PLIKA_1.0.md`
+검증 체크리스트: `docs/ASSETS_PLIKA_VALIDATION.txt`
+
+---
+
 # NEW AXE NET v1.27.4
 
 ## 로그인 자동완성 교차 주입 보정

@@ -116,6 +116,33 @@ const initialState = {
     },
   },
 
+  assets: {
+    initialized: false,
+    loading: false,
+    error: null,
+    message: null,
+    tab: 'accounts',
+    accounts: [],
+    ownRequests: [],
+    companyAssets: [],
+    returns: [],
+    adminRequests: [],
+    filters: {
+      accountSearch: '',
+      assetSearch: '',
+      assetCategory: 'all',
+      assetStatus: 'all',
+      returnSearch: '',
+      returnStatus: 'all',
+    },
+    modal: {
+      type: null,
+      itemId: null,
+      saving: false,
+      error: null,
+    },
+  },
+
   fund: {
     initialized: false,
     loading: false,

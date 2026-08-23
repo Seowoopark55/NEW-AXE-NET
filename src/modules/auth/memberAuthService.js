@@ -90,3 +90,23 @@ export async function updateMemberModbookPrice(id, recentPrice) {
   });
   return data.modbook_id;
 }
+
+export async function fetchMemberAccounts() {
+  const data = await postJson('/api/member-session', { action: 'asset_plika_accounts' });
+  return Array.isArray(data.accounts) ? data.accounts : [];
+}
+
+export async function fetchMemberAccountRequests() {
+  const data = await postJson('/api/member-session', { action: 'asset_plika_my_requests' });
+  return Array.isArray(data.requests) ? data.requests : [];
+}
+
+export async function submitMemberAccountRequest(values) {
+  const data = await postJson('/api/member-session', {
+    action: 'asset_plika_request_submit',
+    account: String(values.account || '').trim(),
+    note: String(values.note || '').trim(),
+  });
+  return data.request_id;
+}
+
