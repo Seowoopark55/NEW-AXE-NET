@@ -65,7 +65,7 @@ export function renderTubeView(root, state, actions) {
 
         <div class="ops-tube-note">
           <strong>Supabase-first</strong>
-          <span>NEW AXE NET에서 영상 등록·수정·내리기가 가능합니다. 기존 Discord / Apps Script에서 등록된 영상도 Shadow Mirror로 계속 들어옵니다.</span>
+          <span>NEW AXE NET이 AXE TUBE의 기준 원본입니다. Discord 등록도 Supabase에 먼저 저장되고, 기존 Apps Script / Sheet는 백업 경로로 유지됩니다.</span>
         </div>
 
         ${videos.length
@@ -157,6 +157,7 @@ function renderDetail(video, options = {}) {
               ${badge(video.writer_badge)}
               ${syncBadge(video.sync_owner)}
               ${discordSyncBadge(video.discord_sync_status)}
+              ${legacyBackupBadge(video.legacy_backup_status)}
               <span>${h(video.category || '일반')}</span>
             </div>
             <time>${formatDateTime(video.published_at)}</time>
@@ -213,7 +214,7 @@ function renderEditor(video, options = {}) {
           <div class="ops-tube-editor__meta">
             <span>등록자</span>
             <strong>${h(options.currentWriter || 'AXE')}</strong>
-            ${video ? `${syncBadge(video.sync_owner)}${discordSyncBadge(video.discord_sync_status)}` : '<span class="ops-tube-sync ops-tube-sync--new">NEW</span><span class="ops-tube-sync ops-tube-sync--pending">Discord 대기</span>'}
+            ${video ? `${syncBadge(video.sync_owner)}${discordSyncBadge(video.discord_sync_status)}${legacyBackupBadge(video.legacy_backup_status)}` : '<span class="ops-tube-sync ops-tube-sync--new">NEW</span><span class="ops-tube-sync ops-tube-sync--pending">Discord 대기</span>'}
           </div>
 
           <label class="ops-tube-editor__field ops-tube-editor__field--wide">
@@ -370,6 +371,16 @@ function discordSyncBadge(value) {
   if (status === 'archived') return '<span class="ops-tube-sync ops-tube-sync--archived">Discord 보관</span>';
   if (status === 'error') return '<span class="ops-tube-sync ops-tube-sync--error">Discord 오류</span>';
   return '<span class="ops-tube-sync ops-tube-sync--pending">Discord 대기</span>';
+}
+
+function legacyBackupBadge(value) {
+  const status = String(value || 'none').toLowerCase();
+  if (status === 'legacy_source') return '<span class="ops-tube-sync ops-tube-sync--legacy">기존 원본</span>';
+  if (status === 'synced') return '<span class="ops-tube-sync ops-tube-sync--backup">Sheet 백업</span>';
+  if (status === 'pending') return '<span class="ops-tube-sync ops-tube-sync--pending">Sheet 백업 대기</span>';
+  if (status === 'error') return '<span class="ops-tube-sync ops-tube-sync--error">Sheet 백업 오류</span>';
+  if (status === 'deleted') return '<span class="ops-tube-sync ops-tube-sync--archived">Sheet 삭제 반영</span>';
+  return '';
 }
 
 function getThumbnail(video) {

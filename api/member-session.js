@@ -63,7 +63,7 @@ function makeTubeId() {
   return `tube_new_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
 }
 
-const TUBE_PUBLIC_COLUMNS = 'tube_id,title,url,youtube_video_id,thumbnail_url,published_at,writer_member_key,writer,writer_badge,content,category,sort_order,views,likes,dislikes,source,source_updated_at,sync_owner,discord_thread_id,discord_sync_status,discord_synced_at,discord_sync_error,discord_archived_by_sync,active,created_at,updated_at';
+const TUBE_PUBLIC_COLUMNS = 'tube_id,title,url,youtube_video_id,thumbnail_url,published_at,writer_member_key,writer,writer_badge,content,category,sort_order,views,likes,dislikes,source,source_updated_at,sync_owner,discord_thread_id,discord_sync_status,discord_synced_at,discord_sync_error,discord_archived_by_sync,legacy_backup_id,legacy_backup_status,legacy_backup_synced_at,legacy_backup_error,active,created_at,updated_at';
 
 export default async function handler(req, res) {
   if (!onlyPost(req, res)) return;
