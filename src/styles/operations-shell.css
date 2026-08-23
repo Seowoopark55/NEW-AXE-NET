@@ -65,9 +65,9 @@
 .ops-topbar .auth-signed-in__text strong { font-size: 10.5px; }
 
 /* Banner + primary navigation --------------------------------------------
-   The hero is a standalone brand object. The category navigation below is
-   deliberately separated by physical spacing, its own border and radius.
-   This prevents the old "tabs inside the banner box" visual coupling.
+   v1.21.2: the hero is deliberately quieter than the previous generated
+   banner. The original AXE artwork is framed by CSS, not stretched to fill
+   the strip. Navigation remains a completely separate site layer.
 */
 .ops-sitehead {
   background: transparent;
@@ -81,78 +81,136 @@
 .ops-hero {
   position: relative;
   isolation: isolate;
+  display: grid;
+  place-items: center;
   width: 100%;
-  height: 160px;
+  height: 142px;
   overflow: hidden;
   padding: 0;
-  border: 1px solid rgba(226,157,37,.20);
-  border-radius: 13px;
+  border: 1px solid rgba(255,181,46,.13);
+  border-radius: 12px;
   color: inherit;
   background:
-    linear-gradient(180deg, rgba(3,4,5,.01), rgba(3,4,5,.12)),
-    url('/assets/axe-hero-premium.webp') center center / cover no-repeat;
+    radial-gradient(ellipse at 50% 48%, rgba(205,132,24,.12) 0%, rgba(82,48,12,.05) 30%, transparent 61%),
+    linear-gradient(180deg, #0b0c0e 0%, #070809 100%);
   box-shadow:
-    0 12px 34px rgba(0,0,0,.20),
-    inset 0 1px rgba(255,255,255,.025);
+    0 16px 36px rgba(0,0,0,.24),
+    inset 0 1px rgba(255,255,255,.022),
+    inset 0 -1px rgba(255,181,46,.035);
   appearance: none;
   cursor: pointer;
-  transition: border-color .15s ease, filter .15s ease, transform .15s ease;
+  transition: border-color .16s ease, transform .16s ease, box-shadow .16s ease;
 }
+
+/* Atmospheric artwork stays subtle and only provides texture/depth. */
+.ops-hero::before {
+  content: "";
+  position: absolute;
+  inset: -18% -5%;
+  z-index: 0;
+  background: url('/assets/axe-brand-hero.webp') center 52% / cover no-repeat;
+  filter: saturate(.72) contrast(1.08) brightness(.34) blur(.2px);
+  opacity: .62;
+  pointer-events: none;
+}
+
 .ops-hero::after {
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 1;
   border-radius: inherit;
   background:
-    linear-gradient(90deg, rgba(0,0,0,.16), transparent 16%, transparent 84%, rgba(0,0,0,.16)),
-    linear-gradient(180deg, rgba(255,255,255,.015), rgba(0,0,0,.08));
+    linear-gradient(90deg,
+      rgba(5,6,7,.94) 0%,
+      rgba(5,6,7,.60) 15%,
+      rgba(5,6,7,.16) 34%,
+      rgba(5,6,7,.16) 66%,
+      rgba(5,6,7,.60) 85%,
+      rgba(5,6,7,.94) 100%),
+    linear-gradient(180deg, rgba(255,255,255,.012), transparent 48%, rgba(0,0,0,.19));
   pointer-events: none;
 }
+
+.ops-hero__mark {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: clamp(360px, 46%, 515px);
+  max-height: 96px;
+  object-fit: contain;
+  opacity: .93;
+  filter:
+    saturate(.88)
+    contrast(1.04)
+    brightness(.94)
+    drop-shadow(0 8px 22px rgba(0,0,0,.46))
+    drop-shadow(0 0 14px rgba(235,154,28,.10));
+  transform: translateY(-1px);
+  transition: opacity .16s ease, filter .16s ease, transform .16s ease;
+  pointer-events: none;
+}
+
 .ops-hero:hover {
-  border-color: rgba(255,181,46,.32);
-  filter: brightness(1.035);
+  border-color: rgba(255,181,46,.23);
+  box-shadow:
+    0 18px 40px rgba(0,0,0,.26),
+    inset 0 1px rgba(255,255,255,.028),
+    inset 0 -1px rgba(255,181,46,.055);
+}
+.ops-hero:hover .ops-hero__mark {
+  opacity: .98;
+  filter:
+    saturate(.92)
+    contrast(1.05)
+    brightness(.98)
+    drop-shadow(0 8px 24px rgba(0,0,0,.50))
+    drop-shadow(0 0 18px rgba(235,154,28,.14));
 }
 .ops-hero:active { transform: translateY(1px); }
 .ops-hero:focus-visible {
-  outline: 2px solid rgba(255,181,46,.55);
+  outline: 2px solid rgba(255,181,46,.46);
   outline-offset: 3px;
 }
 
+/* Category navigation is intentionally detached from the artwork. It reads
+   as site navigation, not as a footer inside the banner card. */
 .ops-module-rail {
-  height: 50px;
+  min-height: 48px;
   display: flex;
   align-items: stretch;
-  margin-top: 10px;
-  border: 1px solid rgba(255,255,255,.075);
-  border-radius: 10px;
-  background: #0d0f12;
-  box-shadow: 0 10px 24px rgba(0,0,0,.12);
+  margin-top: 12px;
+  border-top: 1px solid rgba(255,255,255,.065);
+  border-bottom: 1px solid rgba(255,255,255,.065);
+  background: rgba(12,14,17,.72);
+  box-shadow: none;
 }
 .ops-module-nav {
   width: 100%;
   display: flex;
   align-items: stretch;
-  padding: 0 12px;
-  gap: 10px;
+  padding: 0 8px;
+  gap: 2px;
 }
 .ops-module-nav__item {
   position: relative;
-  min-width: 92px;
-  height: 49px;
-  padding: 0 14px;
+  min-width: 100px;
+  height: 47px;
+  padding: 0 18px;
   border: 0;
-  color: #8d9197;
+  color: #8f939a;
   background: transparent;
   font-size: 12.5px;
-  font-weight: 850;
+  font-weight: 820;
+  letter-spacing: -.01em;
   cursor: pointer;
   transition: color .15s ease, background .15s ease;
 }
 .ops-module-nav__item::after {
   content: "";
   position: absolute;
-  left: 14px;
-  right: 14px;
+  left: 18px;
+  right: 18px;
   bottom: -1px;
   height: 2px;
   border-radius: 999px 999px 0 0;
@@ -161,10 +219,10 @@
   transition: transform .15s ease;
 }
 .ops-module-nav__item:hover {
-  color: #e2ded6;
-  background: rgba(255,255,255,.016);
+  color: #e4e0d8;
+  background: rgba(255,255,255,.012);
 }
-.ops-module-nav__item--active { color: #fff3da; }
+.ops-module-nav__item--active { color: #fff2d5; }
 .ops-module-nav__item--active::after { transform: scaleX(1); }
 
 /* Workspace -------------------------------------------------------------- */
@@ -183,10 +241,11 @@
   .ops-brand__copy { display: none; }
   .ops-topbar__utility .status-pill { display: none; }
   .ops-sitehead__inner { padding-top: 10px; }
-  .ops-hero { height: 112px; border-radius: 10px; }
-  .ops-module-rail { height: 46px; margin-top: 8px; border-radius: 9px; }
-  .ops-module-nav { padding-inline: 5px; gap: 2px; }
-  .ops-module-nav__item { min-width: 78px; height: 45px; padding-inline: 9px; font-size: 12px; }
+  .ops-hero { height: 104px; border-radius: 10px; }
+  .ops-hero__mark { width: min(64%, 360px); max-height: 72px; }
+  .ops-module-rail { min-height: 44px; margin-top: 9px; }
+  .ops-module-nav { padding-inline: 3px; gap: 0; }
+  .ops-module-nav__item { min-width: 82px; height: 43px; padding-inline: 10px; font-size: 12px; }
   .ops-main__inner { padding-top: 20px; }
 }
 

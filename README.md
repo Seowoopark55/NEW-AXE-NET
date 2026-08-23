@@ -1,3 +1,16 @@
+# NEW AXE NET v1.21.2
+
+## Banner refinement
+
+- Replaced the oversized generated hero presentation with the original AXE artwork framed by CSS.
+- Removed all banner copy; the hero is image-only and still links to Home.
+- Reduced hero height and controlled emblem scale for a cleaner premium look.
+- Added subtle side falloff, vignette and gold framing in CSS instead of baking decoration into the image.
+- Kept Home / 멤버 / 공금 as an independent navigation layer, now separated with its own top/bottom rules rather than a rounded banner-attached box.
+- No database migration is required.
+
+---
+
 # NEW AXE NET v1.21.1 — Premium Banner & Navigation Separation
 
 ## v1.21.1 변경점

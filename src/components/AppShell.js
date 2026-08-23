@@ -24,7 +24,9 @@ export function renderAppShell(root) {
 
       <section class="ops-sitehead" aria-label="NEW AXE NET 배너와 주요 메뉴">
         <div class="ops-sitehead__inner">
-          <button class="ops-hero ops-home-trigger" type="button" data-nav-home aria-label="운영 홈으로 이동" title="홈으로 이동"></button>
+          <button class="ops-hero ops-home-trigger" type="button" data-nav-home aria-label="운영 홈으로 이동" title="홈으로 이동">
+            <img class="ops-hero__mark" src="/assets/axe-brand-mark.webp" alt="" aria-hidden="true" />
+          </button>
 
           <div class="ops-module-rail">
             <nav class="ops-module-nav" aria-label="주요 메뉴">
