@@ -1,12 +1,21 @@
 export function renderAuthView(root, auth, actions = {}) {
   if (!root) return;
 
+  // Auth state updates re-render this root. Preserve the in-flight form values so
+  // the browser password manager cannot briefly replace a member nickname with
+  // a saved admin e-mail while the login button changes to "확인 중...".
+  const memberDraft = readFormDraft(root.querySelector('[data-member-login-form]'), ['nickname', 'password']);
+  const adminDraft = readFormDraft(root.querySelector('[data-admin-login-form]'), ['email', 'password']);
+
   root.innerHTML = `
     <div class="auth-control">
       ${renderAuthButton(auth)}
     </div>
     ${auth.loginOpen ? renderLoginModal(auth) : ''}
   `;
+
+  restoreFormDraft(root.querySelector('[data-member-login-form]'), memberDraft);
+  restoreFormDraft(root.querySelector('[data-admin-login-form]'), adminDraft);
 
   root.querySelector('[data-open-login]')?.addEventListener('click', () => {
     actions.onOpenLogin?.('member');
@@ -134,7 +143,7 @@ function renderMemberLoginForm(auth) {
         <span>닉네임</span>
         <input
           name="nickname"
-          autocomplete="username"
+          autocomplete="nickname"
           autocapitalize="off"
           spellcheck="false"
           placeholder="AXE NET 닉네임"
@@ -185,6 +194,25 @@ function renderAdminLoginForm(auth) {
       </button>
     </form>
   `;
+}
+
+
+function readFormDraft(form, fields) {
+  if (!form) return null;
+  const draft = {};
+  for (const field of fields) {
+    const input = form.elements?.namedItem(field);
+    if (input && typeof input.value === 'string') draft[field] = input.value;
+  }
+  return draft;
+}
+
+function restoreFormDraft(form, draft) {
+  if (!form || !draft) return;
+  for (const [field, value] of Object.entries(draft)) {
+    const input = form.elements?.namedItem(field);
+    if (input && typeof input.value === 'string') input.value = value;
+  }
 }
 
 function escapeHtml(value) {

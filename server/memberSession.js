@@ -28,7 +28,7 @@ export function getServiceClient() {
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !serviceRoleKey) {
-    throw new Error('서버 환경변수 VITE_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY를 확인하세요.');
+    throw new Error('서버 환경변수 SUPABASE_URL(또는 VITE_SUPABASE_URL) / SUPABASE_SERVICE_ROLE_KEY를 확인하세요.');
   }
 
   serviceClient = createClient(url, serviceRoleKey, {

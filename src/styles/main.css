@@ -385,8 +385,10 @@ button { -webkit-tap-highlight-color: transparent; }
   left: 50%;
   z-index: 91;
   width: min(450px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
   transform: translate(-50%, -50%);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
   border: 1px solid rgba(255,179,33,.18);
   border-radius: 17px;
   background: linear-gradient(180deg, #17191d, #111317);
@@ -893,5 +895,26 @@ button { -webkit-tap-highlight-color: transparent; }
 
   .member-create-grid__wide {
     grid-column: auto;
+  }
+}
+
+
+@media (max-width: 640px) {
+  .auth-modal {
+    top: 16px;
+    transform: translateX(-50%);
+    max-height: calc(100dvh - 32px);
+  }
+
+  .auth-modal__header {
+    padding: 20px 18px 16px;
+  }
+
+  .auth-mode-tabs {
+    margin: 14px 18px 0;
+  }
+
+  .auth-form {
+    padding: 16px 18px 20px;
   }
 }

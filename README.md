@@ -1,3 +1,9 @@
+
+## v1.27.2 auth UI hotfix
+- 멤버 로그인 처리 중 auth root 재렌더 시 브라우저가 저장된 관리자 이메일을 닉네임 입력칸에 순간 표시하던 현상을 방지합니다.
+- 멤버 닉네임 입력 autocomplete 의미를 `nickname`으로 분리합니다.
+- 로그인 요청 중 현재 폼 입력값은 DOM 재렌더 사이에서만 보존하며 별도 저장하지 않습니다.
+
 # NEW AXE NET v1.27.0 — MEMBER CREDENTIAL REBASE
 
 ## v1.27.0 · 일반 멤버 로그인 Supabase 이관
