@@ -1,3 +1,43 @@
+# NEW AXE NET v1.27.0 — MEMBER CREDENTIAL REBASE
+
+## v1.27.0 · 일반 멤버 로그인 Supabase 이관
+
+- 신규 `new_axe_net.member_credentials` 서버 전용 자격증명 저장소 추가
+- 비밀번호는 평문 저장하지 않고 Supabase `pgcrypto` bcrypt 해시만 보관
+- 이미 이관된 멤버는 일반 로그인 시 Apps Script를 호출하지 않고 Supabase에서 직접 검증
+- 아직 이관되지 않은 멤버만 첫 로그인 1회 기존 AXE NET 로그인 서버에서 검증
+- 첫 로그인 성공 즉시 동일 비밀번호를 해시로 NEW AXE NET에 저장하고 이후 로그인은 Supabase-only
+- 잘못된 비밀번호를 입력한 이미 이관된 멤버는 레거시 서버로 fallback하지 않음
+- 기존 HttpOnly 멤버 웹 세션 구조와 공금/정보 권한 흐름은 그대로 유지
+- 로그인 화면의 레거시 의존 문구 제거
+
+## DB / SQL
+
+Supabase SQL Editor에서 아래 파일을 **코드 배포 전에** 전체 실행하세요.
+
+`supabase/025_member_credentials.sql`
+
+이 SQL은 기존 멤버/세션/공금/정보 데이터를 변경하지 않습니다. 새 자격증명 테이블과 서버 전용 RPC만 추가합니다.
+
+## 배포 순서
+
+1. Supabase SQL Editor에서 `025_member_credentials.sql` 전체 실행
+2. v1.27.0 소스를 기존 NEW AXE NET 프로젝트에 전체 덮어쓰기
+3. GitHub Desktop Commit / Push
+4. Vercel 자동배포 확인
+5. 기존 멤버 계정 1개로 로그인 테스트
+6. 로그아웃 후 같은 계정으로 다시 로그인 테스트
+   - 첫 로그인: 기존 로그인 검증 후 Supabase 자격증명 자동 이관
+   - 두 번째 로그인부터: Supabase 직접 검증
+7. SQL 하단의 이관 진행상태 쿼리로 남은 active 멤버 확인
+
+## 이관 완료 기준
+
+`remaining_credentials = 0`이 되면 active 멤버 전원의 자격증명 이관이 완료된 상태입니다.
+그 시점의 다음 릴리스에서 `legacyLogin`, `AXE_LEGACY_API_URL`과 Apps Script 로그인 브리지를 완전히 제거하면 됩니다.
+
+---
+
 # NEW AXE NET v1.26.1 — INFO
 
 ## v1.26.1 · 정보 화면 가독성 패치

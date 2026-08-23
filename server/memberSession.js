@@ -135,6 +135,44 @@ export function publicMember(member) {
   };
 }
 
+
+export async function getMemberLoginTarget(nickname) {
+  const client = getServiceClient();
+  const { data, error } = await client.rpc('get_member_login_target', {
+    p_nickname: String(nickname || '').trim(),
+  });
+  if (error) throw error;
+  return data || null;
+}
+
+export async function verifyMemberCredentials(nickname, password) {
+  const client = getServiceClient();
+  const { data, error } = await client.rpc('verify_member_credentials', {
+    p_nickname: String(nickname || '').trim(),
+    p_password: String(password || ''),
+  });
+  if (error) throw error;
+  return data || null;
+}
+
+export async function setMemberPassword(memberKey, password, migratedFrom = 'server') {
+  const client = getServiceClient();
+  const { data, error } = await client.rpc('set_member_password', {
+    p_member_key: memberKey,
+    p_password: String(password || ''),
+    p_migrated_from: migratedFrom,
+  });
+  if (error) throw error;
+  return Boolean(data);
+}
+
+export function invalidMemberLoginError(message = '닉네임 또는 비밀번호가 올바르지 않습니다.') {
+  const error = new Error(message);
+  error.code = 'MEMBER_LOGIN_FAILED';
+  error.statusCode = 401;
+  return error;
+}
+
 export async function legacyLogin(nickname, password) {
   const apiUrl = process.env.AXE_LEGACY_API_URL || DEFAULT_LEGACY_API_URL;
   const response = await fetch(apiUrl, {
@@ -149,14 +187,14 @@ export async function legacyLogin(nickname, password) {
   });
 
   if (!response.ok) {
-    throw new Error(`기존 AXE NET 로그인 서버 응답 오류 (${response.status})`);
+    throw new Error(`기존 로그인 이관 서버 응답 오류 (${response.status})`);
   }
 
   let data;
   try {
     data = await response.json();
   } catch {
-    throw new Error('기존 AXE NET 로그인 응답을 해석할 수 없습니다.');
+    throw new Error('기존 로그인 이관 응답을 해석할 수 없습니다.');
   }
 
   if (!data || data.result !== 'success' || !data.user) {
@@ -309,12 +347,19 @@ export function normalizeApiError(error) {
   const message = String(error?.message || error || '알 수 없는 오류가 발생했습니다.');
   const lower = message.toLowerCase();
 
-  if (error?.code === 'LEGACY_LOGIN_FAILED') {
+  if (error?.code === 'LEGACY_LOGIN_FAILED' || error?.code === 'MEMBER_LOGIN_FAILED') {
     return { status: 401, message };
   }
 
   if (error?.statusCode) {
     return { status: error.statusCode, message };
+  }
+
+  if (lower.includes('member_credentials') || lower.includes('get_member_login_target') || lower.includes('verify_member_credentials')) {
+    return {
+      status: 500,
+      message: 'NEW AXE NET 멤버 로그인 DB가 준비되지 않았습니다. 025_member_credentials.sql 실행 여부를 확인하세요.',
+    };
   }
 
   if (lower.includes('member_web_sessions')) {

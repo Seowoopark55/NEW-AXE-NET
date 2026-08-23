@@ -44,7 +44,7 @@ export function renderIdentityGate(identity, _members, title = '로그인이 필
         <div class="fund-session-login-box">
           <div>
             <strong>Discord 숫자 ID 입력이 필요 없습니다.</strong>
-            <span>기존 AXE NET 닉네임·비밀번호로 로그인하세요.</span>
+            <span>AXE NET 닉네임·비밀번호로 로그인하세요.</span>
           </div>
           <button class="fund-primary-button" type="button" data-fund-open-login>로그인</button>
         </div>

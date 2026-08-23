@@ -110,7 +110,7 @@ function renderLoginModal(auth) {
           <span>AXE ACCOUNT</span>
           <h3>${mode === 'member' ? 'AXE NET 로그인' : '관리자 인증'}</h3>
           <p>${mode === 'member'
-            ? '기존 AXE NET에서 사용하던 닉네임과 비밀번호를 그대로 사용합니다.'
+            ? 'AXE NET에서 사용 중인 닉네임과 비밀번호로 로그인합니다.'
             : 'NEW AXE NET 관리 기능은 Supabase Auth 관리자 계정으로 인증합니다.'}</p>
         </div>
 
