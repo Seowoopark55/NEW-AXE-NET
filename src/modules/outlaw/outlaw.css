@@ -2,3 +2,31 @@
 @media(max-width:1000px){.ops-outlaw-summary{grid-template-columns:repeat(2,1fr)}.ops-outlaw-history__list{grid-template-columns:repeat(2,1fr)}.ops-outlaw-guide-layout{grid-template-columns:190px minmax(0,1fr)}.ops-outlaw-map-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:760px){.ops-outlaw__head{align-items:flex-start;flex-direction:column}.ops-outlaw-tabs{overflow:auto}.ops-outlaw-tabs button{min-width:105px}.ops-outlaw-toolbar,.ops-outlaw-toolbar--guide,.ops-outlaw-toolbar--map{grid-template-columns:1fr}.ops-outlaw-toolbar__meta{display:none}.ops-outlaw-history__grid{grid-template-columns:1fr}.ops-outlaw-history__recent{display:grid;grid-template-columns:1fr 1fr;align-items:end}.ops-outlaw-history__recent>span,.ops-outlaw-history__recent small{grid-column:1/-1}.ops-outlaw-guide-layout{grid-template-columns:1fr}.ops-outlaw-guide-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));overflow:auto}.ops-outlaw-guide-item{min-width:145px}.ops-outlaw-guide-hero,.ops-outlaw-map-focus{grid-template-columns:1fr}.ops-outlaw-map-grid{grid-template-columns:repeat(2,1fr)}.ops-outlaw-image--hero,.ops-outlaw-image--map-focus{min-height:220px}.ops-outlaw-map-focus>div:last-child,.ops-outlaw-guide-hero>div:last-child{padding:16px}}
 @media(max-width:520px){.ops-outlaw__head{padding:18px}.ops-outlaw__head h1{font-size:24px}.ops-outlaw-panel{padding:12px}.ops-outlaw-summary{grid-template-columns:1fr 1fr}.ops-outlaw-summary__card>strong{font-size:18px}.ops-outlaw-history__list{grid-template-columns:1fr 1fr}.ops-outlaw-guide-list{grid-template-columns:repeat(3,150px)}.ops-outlaw-map-grid{grid-template-columns:1fr 1fr}.ops-outlaw-map-card>div:last-child{padding:9px}.ops-outlaw-image--map-card{height:100px}.ops-outlaw-step{grid-template-columns:38px minmax(0,1fr);gap:9px;padding:11px}.ops-outlaw-step__no{min-height:32px}.ops-outlaw-image--step{height:180px}}
+
+/* v1.29.2 · outlaw admin management */
+.ops-outlaw-alert--success{border:1px solid rgba(90,220,151,.20);background:rgba(90,220,151,.07);color:#82e9b2}
+.ops-outlaw-toolbar--guide,.ops-outlaw-toolbar--map{grid-template-columns:minmax(220px,1fr) auto auto}
+.ops-outlaw-admin-actions{display:flex;align-items:center;justify-content:flex-end;gap:7px}
+.ops-outlaw-btn--danger{border-color:rgba(255,86,86,.24);background:rgba(255,86,86,.07);color:#ff9292}
+.ops-outlaw-step__title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.ops-outlaw-step__title-row h4{min-width:0}
+.ops-outlaw-modal-backdrop{position:fixed;inset:0;z-index:115;display:grid;place-items:center;padding:16px;background:rgba(0,0,0,.74);backdrop-filter:blur(5px)}
+.ops-outlaw-modal{width:min(680px,calc(100vw - 32px));max-height:calc(100dvh - 32px);overflow:auto;border:1px solid rgba(255,181,46,.18);border-radius:16px;background:#111317;box-shadow:0 30px 100px rgba(0,0,0,.64)}
+.ops-outlaw-modal>header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.065)}
+.ops-outlaw-modal>header span{color:#9b7b42;font-size:9px;font-weight:900;letter-spacing:.14em}
+.ops-outlaw-modal>header h2{margin:4px 0 0;color:#f1f2f4;font-size:18px}
+.ops-outlaw-modal>header button{width:32px;height:32px;border:0;border-radius:8px;background:#1a1d22;color:#8d939d;font-size:19px;cursor:pointer}
+.ops-outlaw-modal>.ops-outlaw-alert{margin:14px 18px 0}
+.ops-outlaw-admin-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;padding:18px 20px 20px}
+.ops-outlaw-admin-form label{display:grid;gap:7px;min-width:0}
+.ops-outlaw-admin-form label.is-wide,.ops-outlaw-admin-form__hint.is-wide,.ops-outlaw-admin-form__actions{grid-column:1/-1}
+.ops-outlaw-admin-form label>span{color:#777e87;font-size:10px;font-weight:850}
+.ops-outlaw-admin-form input,.ops-outlaw-admin-form select,.ops-outlaw-admin-form textarea{width:100%;min-height:40px;padding:9px 11px;border:1px solid rgba(255,255,255,.09);border-radius:8px;outline:0;background:#0b0d10;color:#e2e5e8;font:inherit;font-size:11px;resize:vertical}
+.ops-outlaw-admin-form input:focus,.ops-outlaw-admin-form select:focus,.ops-outlaw-admin-form textarea:focus{border-color:rgba(255,181,46,.36)}
+.ops-outlaw-admin-form input[readonly]{opacity:.58;cursor:not-allowed}
+.ops-outlaw-admin-form__hint{align-self:end;padding:10px 11px;border:1px solid rgba(255,255,255,.045);border-radius:8px;background:#0c0e11;color:#707781;font-size:9px;line-height:1.55}
+.ops-outlaw-admin-form__hint code{color:#d4ad66;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.ops-outlaw-admin-form__actions{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-top:5px}
+.ops-outlaw-admin-form__actions>div{display:flex;gap:7px;margin-left:auto}
+@media(max-width:760px){.ops-outlaw-toolbar--guide,.ops-outlaw-toolbar--map{grid-template-columns:1fr}.ops-outlaw-admin-actions{justify-content:flex-start;flex-wrap:wrap}}
+@media(max-width:640px){.ops-outlaw-modal{width:min(100%,calc(100vw - 20px));max-height:calc(100dvh - 20px)}.ops-outlaw-admin-form{grid-template-columns:1fr;padding:16px}.ops-outlaw-admin-form label.is-wide,.ops-outlaw-admin-form__hint.is-wide,.ops-outlaw-admin-form__actions{grid-column:1}.ops-outlaw-admin-form__actions{align-items:stretch;flex-direction:column}.ops-outlaw-admin-form__actions>div{width:100%;margin:0}.ops-outlaw-admin-form__actions .ops-outlaw-btn{flex:1}}

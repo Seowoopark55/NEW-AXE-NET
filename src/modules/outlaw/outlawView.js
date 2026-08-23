@@ -2,6 +2,7 @@ export function renderOutlawView(root, state, actions) {
   const outlaw = state.outlaw;
   const auth = state.auth;
   const canRead = Boolean(auth.member || auth.admin);
+  const isAdmin = Boolean(auth.admin);
 
   root.innerHTML = `
     <section class="ops-outlaw">
@@ -23,10 +24,12 @@ export function renderOutlawView(root, state, actions) {
       </nav>
 
       ${outlaw.error ? `<div class="ops-outlaw-alert ops-outlaw-alert--error">${h(outlaw.error)}</div>` : ''}
+      ${outlaw.message ? `<div class="ops-outlaw-alert ops-outlaw-alert--success">${h(outlaw.message)}</div>` : ''}
       ${!canRead ? renderGate() : ''}
       ${canRead && outlaw.tab === 'stats' ? renderStats(outlaw, state.members.items || []) : ''}
-      ${canRead && outlaw.tab === 'guide' ? renderGuides(outlaw) : ''}
-      ${canRead && outlaw.tab === 'map' ? renderMaps(outlaw) : ''}
+      ${canRead && outlaw.tab === 'guide' ? renderGuides(outlaw, isAdmin) : ''}
+      ${canRead && outlaw.tab === 'map' ? renderMaps(outlaw, isAdmin) : ''}
+      ${isAdmin && outlaw.modal?.type ? renderAdminModal(outlaw) : ''}
     </section>
   `;
 
@@ -210,7 +213,7 @@ function renderTrendSvg(historyAsc) {
   `;
 }
 
-function renderGuides(outlaw) {
+function renderGuides(outlaw, isAdmin) {
   const keyword = normalize(outlaw.filters.guideSearch);
   const locations = outlaw.guideLocations.filter((row) => !keyword || normalize(`${row.map_name} ${row.coord || ''}`).includes(keyword));
   const selectedKey = locations.some((row) => row.location_key === outlaw.selectedLocationKey)
@@ -230,6 +233,11 @@ function renderGuides(outlaw) {
           <input type="search" value="${h(outlaw.filters.guideSearch)}" placeholder="지역명 또는 좌표" data-outlaw-filter="guideSearch" />
         </label>
         <div class="ops-outlaw-toolbar__meta">${locations.length} LOCATIONS · ${outlaw.guideSteps.length} STEPS</div>
+        ${isAdmin ? `<div class="ops-outlaw-admin-actions">
+          <button class="ops-outlaw-mini" type="button" data-outlaw-open-admin="guide-location">지역 추가</button>
+          ${selected ? `<button class="ops-outlaw-mini" type="button" data-outlaw-open-admin="guide-location" data-item-id="${h(selected.location_key)}">지역 관리</button>
+          <button class="ops-outlaw-btn ops-outlaw-btn--gold" type="button" data-outlaw-open-admin="guide-step">단계 추가</button>` : ''}
+        </div>` : ''}
       </div>
 
       <div class="ops-outlaw-guide-layout">
@@ -261,7 +269,10 @@ function renderGuides(outlaw) {
                     <article class="ops-outlaw-step">
                       <div class="ops-outlaw-step__no">${h(step.step_no)}</div>
                       <div class="ops-outlaw-step__body">
-                        <h4>${h(step.title)}</h4>
+                        <div class="ops-outlaw-step__title-row">
+                          <h4>${h(step.title)}</h4>
+                          ${isAdmin ? `<button class="ops-outlaw-mini" type="button" data-outlaw-open-admin="guide-step" data-item-id="${Number(step.id)}">관리</button>` : ''}
+                        </div>
                         ${step.content ? `<p>${h(step.content)}</p>` : ''}
                         ${step.image ? renderImage(step.image, `${selected.map_name} ${step.step_no}`, 'ops-outlaw-image--step') : ''}
                         ${step.video_url ? `<a class="ops-outlaw-video" href="${h(step.video_url)}" target="_blank" rel="noopener noreferrer">공략 영상 열기 ↗</a>` : ''}
@@ -278,7 +289,7 @@ function renderGuides(outlaw) {
   `;
 }
 
-function renderMaps(outlaw) {
+function renderMaps(outlaw, isAdmin) {
   const keyword = normalize(outlaw.filters.mapSearch);
   const maps = outlaw.maps.filter((row) => !keyword || normalize(`${row.map_name} ${row.coord || ''} ${row.description || ''}`).includes(keyword));
   const selectedKey = maps.some((row) => row.map_key === outlaw.selectedMapKey)
@@ -294,6 +305,10 @@ function renderMaps(outlaw) {
           <input type="search" value="${h(outlaw.filters.mapSearch)}" placeholder="지역명 또는 좌표" data-outlaw-filter="mapSearch" />
         </label>
         <div class="ops-outlaw-toolbar__meta">${maps.length} MAPS</div>
+        ${isAdmin ? `<div class="ops-outlaw-admin-actions">
+          <button class="ops-outlaw-mini" type="button" data-outlaw-open-admin="briefing-map">맵 추가</button>
+          ${selected ? `<button class="ops-outlaw-btn ops-outlaw-btn--gold" type="button" data-outlaw-open-admin="briefing-map" data-item-id="${h(selected.map_key)}">선택 맵 관리</button>` : ''}
+        </div>` : ''}
       </div>
 
       ${selected ? `
@@ -322,6 +337,86 @@ function renderMaps(outlaw) {
       </div>
     </section>
   `;
+}
+
+
+function renderAdminModal(outlaw) {
+  const modal = outlaw.modal || {};
+  let title = '무법지대 관리';
+  let eyebrow = 'OUTLAW ADMIN';
+  let form = '';
+
+  if (modal.type === 'guide-location') {
+    const item = outlaw.guideLocations.find((row) => row.location_key === modal.itemId) || null;
+    title = item ? '공략 지역 수정' : '공략 지역 추가';
+    form = `
+      <form class="ops-outlaw-admin-form" data-outlaw-admin-form="guide-location">
+        <label><span>지역 키</span><input name="location_key" value="${a(item?.location_key || '')}" ${item ? 'readonly' : ''} placeholder="예: prison" required /></label>
+        <label><span>지역명</span><input name="map_name" value="${a(item?.map_name || '')}" placeholder="예: 중부 교도소" required /></label>
+        <label><span>좌표</span><input name="coord" value="${a(item?.coord || '')}" placeholder="예: 4000" /></label>
+        <label><span>정렬 순서</span><input name="sort_order" type="number" value="${Number(item?.sort_order ?? outlaw.guideLocations.length + 1)}" /></label>
+        <label class="is-wide"><span>메인 이미지 파일명</span><input name="main_image" value="${a(item?.main_image || '')}" placeholder="예: prison_map.png" /></label>
+        <div class="ops-outlaw-admin-form__hint is-wide">이미지는 <code>public/assets/outlaw/</code>에 있는 파일명을 입력합니다.</div>
+        ${adminFormActions(item ? 'guide-location' : null, item?.location_key, modal.saving)}
+      </form>`;
+  } else if (modal.type === 'guide-step') {
+    const item = outlaw.guideSteps.find((row) => Number(row.id) === Number(modal.itemId)) || null;
+    const defaultLocation = item?.location_key || outlaw.selectedLocationKey || outlaw.guideLocations[0]?.location_key || '';
+    title = item ? '공략 단계 수정' : '공략 단계 추가';
+    form = `
+      <form class="ops-outlaw-admin-form" data-outlaw-admin-form="guide-step">
+        <input type="hidden" name="id" value="${item ? Number(item.id) : ''}" />
+        <label><span>공략 지역</span><select name="location_key" required>${outlaw.guideLocations.map((row) => `<option value="${a(row.location_key)}" ${row.location_key === defaultLocation ? 'selected' : ''}>${h(row.map_name)}</option>`).join('')}</select></label>
+        <label><span>루트</span><input name="route_group" value="${a(item?.route_group || '기본 루트')}" required /></label>
+        <label><span>단계 번호</span><input name="step_no" value="${a(item?.step_no || '')}" placeholder="예: A-1" required /></label>
+        <label><span>정렬 순서</span><input name="sort_order" type="number" value="${Number(item?.sort_order ?? 1)}" /></label>
+        <label class="is-wide"><span>제목</span><input name="title" value="${a(item?.title || '')}" required /></label>
+        <label class="is-wide"><span>설명</span><textarea name="content" rows="5">${h(item?.content || '')}</textarea></label>
+        <label><span>이미지 파일명</span><input name="image" value="${a(item?.image || '')}" placeholder="예: prison_a1.png" /></label>
+        <label><span>영상 URL</span><input name="video_url" type="url" value="${a(item?.video_url || '')}" placeholder="https://..." /></label>
+        <div class="ops-outlaw-admin-form__hint is-wide">이미지 파일을 새로 추가하는 경우 코드 저장소의 <code>public/assets/outlaw/</code>에도 같은 파일을 넣어야 합니다.</div>
+        ${adminFormActions(item ? 'guide-step' : null, item?.id, modal.saving)}
+      </form>`;
+  } else if (modal.type === 'briefing-map') {
+    const item = outlaw.maps.find((row) => row.map_key === modal.itemId) || null;
+    title = item ? '브리핑맵 수정' : '브리핑맵 추가';
+    form = `
+      <form class="ops-outlaw-admin-form" data-outlaw-admin-form="briefing-map">
+        <label><span>맵 키</span><input name="map_key" value="${a(item?.map_key || '')}" ${item ? 'readonly' : ''} placeholder="예: map_018" required /></label>
+        <label><span>맵 이름</span><input name="map_name" value="${a(item?.map_name || '')}" required /></label>
+        <label><span>좌표</span><input name="coord" value="${a(item?.coord || '')}" /></label>
+        <label><span>정렬 순서</span><input name="sort_order" type="number" value="${Number(item?.sort_order ?? outlaw.maps.length + 1)}" /></label>
+        <label class="is-wide"><span>이미지 파일명</span><input name="image" value="${a(item?.image || '')}" placeholder="예: map_018.png" /></label>
+        <label class="is-wide"><span>설명</span><textarea name="description" rows="4">${h(cleanDash(item?.description) || '')}</textarea></label>
+        <label class="is-wide"><span>비고</span><textarea name="note" rows="3">${h(cleanDash(item?.note) || '')}</textarea></label>
+        <label><span>자료 기준일</span><input name="source_updated_at" type="date" value="${a(item?.source_updated_at || '')}" /></label>
+        <div class="ops-outlaw-admin-form__hint">이미지는 <code>public/assets/outlaw/</code> 파일명을 사용합니다.</div>
+        ${adminFormActions(item ? 'briefing-map' : null, item?.map_key, modal.saving)}
+      </form>`;
+  }
+
+  return `
+    <div class="ops-outlaw-modal-backdrop" data-outlaw-modal-close>
+      <section class="ops-outlaw-modal" data-outlaw-modal-panel>
+        <header>
+          <div><span>${eyebrow}</span><h2>${h(title)}</h2></div>
+          <button type="button" data-outlaw-modal-close aria-label="닫기">×</button>
+        </header>
+        ${modal.error ? `<div class="ops-outlaw-alert ops-outlaw-alert--error">${h(modal.error)}</div>` : ''}
+        ${form}
+      </section>
+    </div>`;
+}
+
+function adminFormActions(deactivateType, itemId, saving = false) {
+  return `
+    <div class="ops-outlaw-admin-form__actions">
+      ${deactivateType && itemId !== null && itemId !== undefined ? `<button class="ops-outlaw-btn ops-outlaw-btn--danger" type="button" data-outlaw-deactivate="${h(deactivateType)}" data-item-id="${h(itemId)}" ${saving ? 'disabled' : ''}>목록에서 내리기</button>` : '<span></span>'}
+      <div>
+        <button class="ops-outlaw-btn" type="button" data-outlaw-modal-close ${saving ? 'disabled' : ''}>취소</button>
+        <button class="ops-outlaw-btn ops-outlaw-btn--gold" type="submit" ${saving ? 'disabled' : ''}>${saving ? '저장 중…' : '저장'}</button>
+      </div>
+    </div>`;
 }
 
 function renderImage(filename, label, className = '') {
@@ -362,6 +457,36 @@ function bindEvents(root, actions) {
   root.querySelector('[data-outlaw-history-close]')?.addEventListener('click', actions.onCloseHistory);
   root.querySelectorAll('[data-outlaw-guide]').forEach((button) => button.addEventListener('click', () => actions.onSelectGuide(button.dataset.outlawGuide)));
   root.querySelectorAll('[data-outlaw-map]').forEach((button) => button.addEventListener('click', () => actions.onSelectMap(button.dataset.outlawMap)));
+
+
+  root.querySelectorAll('[data-outlaw-open-admin]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const raw = button.dataset.itemId;
+      actions.onOpenAdmin?.(button.dataset.outlawOpenAdmin, raw === undefined ? null : raw);
+    });
+  });
+
+  root.querySelectorAll('[data-outlaw-modal-close]').forEach((element) => {
+    element.addEventListener('click', (event) => {
+      if (event.currentTarget.classList.contains('ops-outlaw-modal-backdrop') && event.target.closest('[data-outlaw-modal-panel]')) return;
+      actions.onCloseAdmin?.();
+    });
+  });
+  root.querySelector('[data-outlaw-modal-panel]')?.addEventListener('click', (event) => event.stopPropagation());
+
+  root.querySelector('[data-outlaw-admin-form]')?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const values = Object.fromEntries(new FormData(form).entries());
+    actions.onSaveAdmin?.(form.dataset.outlawAdminForm, values);
+  });
+
+  root.querySelectorAll('[data-outlaw-deactivate]').forEach((button) => {
+    button.addEventListener('click', () => actions.onDeactivateAdmin?.(
+      button.dataset.outlawDeactivate,
+      button.dataset.itemId,
+    ));
+  });
 
   root.querySelectorAll('[data-outlaw-image]').forEach((image) => {
     image.addEventListener('error', () => image.closest('[data-outlaw-image-wrap]')?.classList.add('is-missing'));
@@ -443,3 +568,5 @@ function h(value) {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
 }
+
+function a(value) { return h(value); }

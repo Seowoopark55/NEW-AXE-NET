@@ -1,3 +1,15 @@
+# NEW AXE NET v1.29.2 — OUTLAW ADMIN MANAGEMENT
+
+- 관리자 인증 시 `무법지대 > 공략`에서 공략 지역과 단계를 추가·수정·목록 내리기 할 수 있습니다.
+- 관리자 인증 시 `무법지대 > 브리핑맵`에서 맵을 추가·수정·목록 내리기 할 수 있습니다.
+- 통계 데이터는 BOT Shadow Mirror가 담당하므로 웹 수동 수정 기능은 추가하지 않았습니다.
+- 저장/비활성화는 테이블 직접 쓰기가 아니라 `is_admin()`을 재검증하는 Security Definer RPC를 사용합니다.
+- 이미지 필드는 기존 `public/assets/outlaw/` 파일명 방식을 유지합니다. 새 이미지 파일은 코드 저장소에도 별도로 추가해야 합니다.
+- 필수 추가 SQL: `supabase/032_outlaw_admin_management.sql`
+- Google Sheet / Apps Script 런타임 의존 추가 없음.
+
+---
+
 # v1.29.1 map asset patch
 
 - 사용자 제공 `map.zip`의 좌표 기반 브리핑맵 17장을 `public/assets/outlaw/`에 연결했습니다.

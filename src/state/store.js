@@ -164,6 +164,13 @@ const initialState = {
       guideSearch: '',
       mapSearch: '',
     },
+    message: null,
+    modal: {
+      type: null,
+      itemId: null,
+      saving: false,
+      error: null,
+    },
   },
 
   fund: {
