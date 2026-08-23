@@ -17,6 +17,13 @@ export function renderAuthView(root, auth, actions = {}) {
   restoreFormDraft(root.querySelector('[data-member-login-form]'), memberDraft);
   restoreFormDraft(root.querySelector('[data-admin-login-form]'), adminDraft);
 
+  // Chrome may still group all saved credentials by origin even when each form
+  // uses a different autocomplete section. Keep the password manager enabled,
+  // but reject only a cross-filled identity (admin e-mail in member login or
+  // member nickname in admin login). Manually typed values are never touched.
+  installCrossCredentialAutofillGuard(root.querySelector('[data-member-login-form]'), 'member');
+  installCrossCredentialAutofillGuard(root.querySelector('[data-admin-login-form]'), 'admin');
+
   root.querySelector('[data-open-login]')?.addEventListener('click', () => {
     actions.onOpenLogin?.('member');
   });
@@ -213,6 +220,56 @@ function renderAdminLoginForm(auth) {
   `;
 }
 
+
+function installCrossCredentialAutofillGuard(form, mode) {
+  if (!form) return;
+
+  const identityName = mode === 'admin' ? 'admin_email' : 'member_nickname';
+  const passwordName = mode === 'admin' ? 'admin_password' : 'member_password';
+  const identity = form.elements?.namedItem(identityName);
+  const password = form.elements?.namedItem(passwordName);
+
+  if (!(identity instanceof HTMLInputElement)) return;
+
+  const sanitizeAutofill = () => {
+    if (!isBrowserAutofilled(identity)) return;
+
+    const value = String(identity.value || '').trim();
+    if (!value) return;
+
+    const crossFilled = mode === 'admin'
+      ? !looksLikeEmail(value)
+      : looksLikeEmail(value);
+
+    if (!crossFilled) return;
+
+    identity.value = '';
+    if (password instanceof HTMLInputElement) password.value = '';
+  };
+
+  // Password managers can inject values just after paint or after selecting a
+  // saved account. Check several short windows, but only act on :-webkit-autofill.
+  [0, 80, 240, 700, 1400].forEach((delay) => {
+    window.setTimeout(sanitizeAutofill, delay);
+  });
+
+  identity.addEventListener('input', () => {
+    window.setTimeout(sanitizeAutofill, 0);
+    window.setTimeout(sanitizeAutofill, 80);
+  });
+}
+
+function isBrowserAutofilled(input) {
+  try {
+    return input.matches(':-webkit-autofill');
+  } catch {
+    return false;
+  }
+}
+
+function looksLikeEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
+}
 
 function readFormDraft(form, fields) {
   if (!form) return null;
