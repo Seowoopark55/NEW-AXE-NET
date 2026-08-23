@@ -2,7 +2,7 @@ import { api } from '../../api/api.js';
 
 export async function fetchTubeVideos() {
   return api.select('tube_videos', {
-    columns: 'tube_id,title,url,youtube_video_id,thumbnail_url,published_at,writer_member_key,writer,writer_badge,content,category,sort_order,views,likes,dislikes,source,source_updated_at,sync_owner,created_at,updated_at',
+    columns: 'tube_id,title,url,youtube_video_id,thumbnail_url,published_at,writer_member_key,writer,writer_badge,content,category,sort_order,views,likes,dislikes,source,source_updated_at,sync_owner,discord_thread_id,discord_sync_status,discord_synced_at,discord_sync_error,discord_archived_by_sync,created_at,updated_at',
     orderBy: 'published_at',
     ascending: false,
     limit: 500,

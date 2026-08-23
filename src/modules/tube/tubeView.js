@@ -111,6 +111,7 @@ function renderCard(video, options = {}) {
             <strong>${h(video.writer || 'AXE')}</strong>
             ${badge(video.writer_badge)}
             ${syncBadge(video.sync_owner)}
+            ${discordSyncBadge(video.discord_sync_status)}
           </div>
           <p>${h(compact(video.content || '등록된 설명이 없습니다.', 96))}</p>
           <div class="ops-tube-card__meta">
@@ -155,6 +156,7 @@ function renderDetail(video, options = {}) {
               <strong>${h(video.writer || 'AXE')}</strong>
               ${badge(video.writer_badge)}
               ${syncBadge(video.sync_owner)}
+              ${discordSyncBadge(video.discord_sync_status)}
               <span>${h(video.category || '일반')}</span>
             </div>
             <time>${formatDateTime(video.published_at)}</time>
@@ -211,7 +213,7 @@ function renderEditor(video, options = {}) {
           <div class="ops-tube-editor__meta">
             <span>등록자</span>
             <strong>${h(options.currentWriter || 'AXE')}</strong>
-            ${video ? syncBadge(video.sync_owner) : '<span class="ops-tube-sync ops-tube-sync--new">NEW</span>'}
+            ${video ? `${syncBadge(video.sync_owner)}${discordSyncBadge(video.discord_sync_status)}` : '<span class="ops-tube-sync ops-tube-sync--new">NEW</span><span class="ops-tube-sync ops-tube-sync--pending">Discord 대기</span>'}
           </div>
 
           <label class="ops-tube-editor__field ops-tube-editor__field--wide">
@@ -359,6 +361,15 @@ function syncBadge(value) {
   const owner = String(value || '').toLowerCase();
   if (owner === 'supabase') return '<span class="ops-tube-sync ops-tube-sync--new">NEW 관리</span>';
   return '<span class="ops-tube-sync">기존 미러</span>';
+}
+
+
+function discordSyncBadge(value) {
+  const status = String(value || 'pending').toLowerCase();
+  if (status === 'synced') return '<span class="ops-tube-sync ops-tube-sync--discord">Discord 연동</span>';
+  if (status === 'archived') return '<span class="ops-tube-sync ops-tube-sync--archived">Discord 보관</span>';
+  if (status === 'error') return '<span class="ops-tube-sync ops-tube-sync--error">Discord 오류</span>';
+  return '<span class="ops-tube-sync ops-tube-sync--pending">Discord 대기</span>';
 }
 
 function getThumbnail(video) {

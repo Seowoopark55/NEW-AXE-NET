@@ -1,0 +1,25 @@
+NEW AXE NET v1.33.0 · AXE TUBE Discord Forum Primary validation
+
+PASS
+- JavaScript syntax check: src / api / server
+- relative import resolution check
+- AXE STYLE audit
+- tube_videos Discord sync state columns wired into public read model
+- member save/delete sets pending (plus DB trigger as root guard)
+- admin RPC writes are covered by DB trigger
+- metrics-only updates do not flip Discord sync state to pending
+
+BOT Forum Primary V1
+- legacy Apps Script data is pulled first and mirrored into Supabase
+- final Discord forum source defaults to active Supabase tube_videos
+- Supabase query failure falls back to legacy source
+- empty Supabase guard prevents accidental mass archive while legacy has data
+- inactive Supabase videos archive existing Discord forum threads
+- DB discord_thread_id is used as recovery fallback if local bot state is lost
+- reactivated Supabase videos reuse archived thread when possible
+- forum sync status is written back to Supabase
+
+Not executed in this environment
+- Vite production build (node_modules not installed)
+- live Supabase SQL execution
+- live Discord thread create/edit/archive API

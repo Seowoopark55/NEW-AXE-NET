@@ -362,6 +362,13 @@ export function normalizeApiError(error) {
     };
   }
 
+  if (lower.includes('discord_sync_status') || lower.includes('discord_thread_id')) {
+    return {
+      statusCode: 503,
+      message: 'AXE TUBE Discord 포럼 연동 데이터베이스가 아직 준비되지 않았습니다. 037_tube_discord_forum_primary.sql 실행 여부를 확인하세요.',
+    };
+  }
+
   if (lower.includes('sync_owner') || lower.includes('save_tube_video_admin') || lower.includes('deactivate_tube_video_admin')) {
     return {
       status: 500,
