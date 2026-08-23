@@ -1,3 +1,43 @@
+# NEW AXE NET v1.19.0 — Fund UI Recomposition
+
+이번 버전은 공금 기능을 추가하지 않고 **배너 / 사이트 카테고리 / 공금 워크스페이스 / 공금내역 / 증빙 뷰어의 시각 구조를 다시 설계**한 UI 리컴포지션 버전입니다.
+
+## 핵심 변경
+
+- 사이트 전체 중심축을 1120px로 통일하고, 공금 워크스페이스는 1040px / 공금내역은 940px로 단계적으로 좁혀 빈 공간을 줄임
+- AXE 배너를 136px의 브랜드 헤더로 정돈하고 캡션을 작은 브랜드 플레이트 형태로 변경
+- `멤버 / 공금` 대분류를 underline tab이 아니라 중앙의 segmented category navigation으로 재설계
+- 공금 상단의 넓은 통계 rail을 `공용계좌 잔액 + 3개 보조 지표` 한 장의 compact summary로 재구성
+- 공금 10개 탭을 별도 capsule navigation으로 묶고 일반 메뉴와 관리자 메뉴 사이에 구분선 추가
+- `공금내역`의 7열 table을 제거하고 **날짜 그룹 + compact ledger feed**로 완전 재설계
+  - 날짜는 하루에 한 번만 표시
+  - 내역 / 구분 / 메모를 한 정보 블록으로 묶음
+  - 관련자 / 주차 / 계좌를 한 정보 블록으로 묶음
+  - 금액과 증빙/수정 액션은 우측에 고정
+- 필터를 큰 표 헤더에서 분리해 작은 ledger toolbar로 재구성
+- 증빙 보기를 정식 modal viewer로 재설계
+  - 헤더 / 이미지 stage / footer
+  - 원본 비율 유지
+  - 원본 열기
+  - ESC / backdrop 닫기
+- 기존 기능의 data-action과 Supabase 로직은 변경하지 않음
+
+## 적용
+
+**SQL 변경 없음. Supabase SQL Editor에서 실행할 내용도 없습니다.**
+
+기존 프로젝트에 전체 덮어쓰기 후 GitHub Desktop에서 Commit / Push 하면 됩니다.
+
+## 설계 원칙
+
+1. 넓은 화면을 억지로 채우지 않음
+2. 데이터는 표보다 정보 묶음의 리듬을 우선
+3. 브랜드 UI와 업무 UI의 역할을 분리
+4. 골드는 활성 상태와 핵심 액션에만 사용
+5. 화면별 임시 override 대신 canonical CSS 파일 자체를 수정
+
+---
+
 # NEW AXE NET v1.18.1 — Site Header Balance
 
 v1.18.0 Operations Console의 업무영역은 유지하면서, 화면 상단을 **사이트형 계층**으로 재구성한 마이너 업데이트입니다.

@@ -17,19 +17,18 @@ const ADMIN_ITEMS = [
 ];
 
 export function renderFundNav(section, isAdmin, pendingCount = 0) {
-  const items = [
-    ...PUBLIC_ITEMS,
-    ...(isAdmin ? ADMIN_ITEMS : []),
-  ];
-
   return `
     <nav class="ops-fund-nav" aria-label="공금 메뉴">
-      ${items.map(([value, label]) => renderItem(
-        value,
-        label,
-        section,
-        value === 'review' && pendingCount > 0 ? pendingCount : null,
-      )).join('')}
+      <div class="ops-fund-nav__scroll">
+        ${PUBLIC_ITEMS.map(([value, label]) => renderItem(value, label, section)).join('')}
+        ${isAdmin ? '<span class="ops-fund-nav__separator" aria-hidden="true"></span>' : ''}
+        ${isAdmin ? ADMIN_ITEMS.map(([value, label]) => renderItem(
+          value,
+          label,
+          section,
+          value === 'review' && pendingCount > 0 ? pendingCount : null,
+        )).join('') : ''}
+      </div>
     </nav>
   `;
 }

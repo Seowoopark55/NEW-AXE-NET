@@ -22,33 +22,37 @@ export function renderHistoryView(state) {
   ).length;
   const personOptions = getPersonOptions(baseRows);
   const showingDeleted = filters.status === 'cancelled';
+  const groups = groupLedgerRows(activeRows);
 
   return `
     <div class="ops-ledger">
-      <header class="ops-view-head">
+      <header class="ops-view-head ops-view-head--ledger">
         <div>
+          <span class="ops-view-kicker">LEDGER</span>
           <h2>공금내역</h2>
-          <p>월별 원장을 조회하고 직접 수입·지출을 등록하거나 기존 내역을 수정합니다.</p>
+          <p>필요한 정보만 빠르게 확인하고, 상세 작업은 행에서 바로 처리합니다.</p>
         </div>
         <div class="ops-view-actions">
           ${renderMonthPicker(selectedMonth, fund.periods)}
-          <button class="ops-primary-button" type="button" data-open-entry-creator="transaction">지출/수입 등록</button>
+          <button class="ops-primary-button" type="button" data-open-entry-creator="transaction">수입·지출 등록</button>
         </div>
       </header>
 
       ${admin.message ? `<div class="fund-inline-success">${escapeHtml(admin.message)}</div>` : ''}
       ${admin.error ? `<div class="fund-inline-error">${escapeHtml(admin.error)}</div>` : ''}
 
-      <section class="ops-surface">
-        <div class="ops-toolbar">
-          <div class="ops-toolbar__group">
-            <label class="ops-filter-label">이름
+      <section class="ops-ledger-board">
+        <div class="ops-ledger-toolbar">
+          <div class="ops-ledger-toolbar__filters">
+            <label class="ops-ledger-filter">
+              <span>이름</span>
               <select class="ops-select" data-history-filter="person" ${showingDeleted ? 'disabled' : ''}>
                 ${option('all', '전체', filters.person)}
                 ${personOptions.map((name) => option(name, name, filters.person)).join('')}
               </select>
             </label>
-            <label class="ops-filter-label">구분
+            <label class="ops-ledger-filter">
+              <span>구분</span>
               <select class="ops-select" data-history-filter="type" ${showingDeleted ? 'disabled' : ''}>
                 ${option('all', '전체', filters.type)}
                 ${option('payment', '승인반영', filters.type)}
@@ -58,7 +62,8 @@ export function renderHistoryView(state) {
                 ${option('adjust', '잔액조정', filters.type)}
               </select>
             </label>
-            <label class="ops-filter-label">계좌
+            <label class="ops-ledger-filter">
+              <span>계좌</span>
               <select class="ops-select" data-history-filter="account" ${showingDeleted ? 'disabled' : ''}>
                 ${option('all', '전체', filters.account)}
                 ${option('공용계좌', '공용계좌', filters.account)}
@@ -66,42 +71,40 @@ export function renderHistoryView(state) {
                 ${option('분할납부', '분할납부', filters.account)}
               </select>
             </label>
-            <button class="ops-secondary-button" type="button" data-history-filter-reset ${showingDeleted ? 'disabled' : ''}>초기화</button>
+            <button class="ops-text-button" type="button" data-history-filter-reset ${showingDeleted ? 'disabled' : ''}>필터 초기화</button>
           </div>
-          <div class="ops-toolbar__group">
-            <span class="ops-toolbar__summary">
-              ${showingDeleted ? `삭제 ${activeRows.length}건` : `${baseRows.length}건 중 ${activeRows.length}건 표시`}
-            </span>
+          <div class="ops-ledger-toolbar__meta">
+            <span>${showingDeleted ? `삭제 ${activeRows.length}건` : `${activeRows.length}건 표시`}</span>
             ${deletedCount ? `
-              <button class="ops-icon-button ${showingDeleted ? 'is-gold' : ''}" type="button" data-history-status-toggle="${showingDeleted ? 'active' : 'cancelled'}">
-                ${showingDeleted ? '정상내역' : `삭제 ${deletedCount}`}
+              <button class="ops-text-button ${showingDeleted ? 'is-active' : ''}" type="button" data-history-status-toggle="${showingDeleted ? 'active' : 'cancelled'}">
+                ${showingDeleted ? '정상 내역 보기' : `삭제 내역 ${deletedCount}`}
               </button>
             ` : ''}
           </div>
         </div>
 
-        <div class="ops-ledger__table-wrap">
-          <table class="ops-ledger__table">
-            <thead>
-              <tr>
-                <th class="ops-ledger__date">날짜</th>
-                <th class="ops-ledger__entry">내역</th>
-                <th class="ops-ledger__person">관련자 / 주차</th>
-                <th class="ops-ledger__account">계좌</th>
-                <th class="ops-ledger__amount">금액</th>
-                <th class="ops-ledger__evidence">증빙</th>
-                <th class="ops-ledger__manage">관리</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${activeRows.length
-                ? activeRows.map(renderLedgerRow).join('')
-                : '<tr><td colspan="7" class="ops-empty-cell">조건에 맞는 공금내역이 없습니다.</td></tr>'}
-            </tbody>
-          </table>
+        <div class="ops-ledger-list" role="list">
+          ${groups.length
+            ? groups.map(renderLedgerDay).join('')
+            : '<div class="ops-ledger-empty">조건에 맞는 공금내역이 없습니다.</div>'}
         </div>
       </section>
     </div>
+  `;
+}
+
+function renderLedgerDay(group) {
+  const [year = '', month = '', day = ''] = String(group.date || '').match(/\d+/g) ?? [];
+  return `
+    <section class="ops-ledger-day" role="listitem">
+      <div class="ops-ledger-day__date" aria-label="${escapeHtml(group.date)}">
+        <strong>${escapeHtml(month && day ? `${month}.${day}` : group.date)}</strong>
+        <span>${escapeHtml(year || '')}</span>
+      </div>
+      <div class="ops-ledger-day__rows">
+        ${group.rows.map(renderLedgerRow).join('')}
+      </div>
+    </section>
   `;
 }
 
@@ -112,39 +115,60 @@ function renderLedgerRow(item) {
   const nickname = item.nickname || '—';
   const period = item.year && item.month
     ? `${Number(item.month)}월${item.week ? ` ${Number(item.week)}주차` : ''}`
-    : '—';
+    : '';
   const memo = String(item.memo || '').trim();
   const sub = [type, item.direction || '', memo].filter(Boolean).join(' · ');
   const isOut = ledgerAmountType(item) === 'out';
+  const account = item.account || '—';
+  const meta = [period, account].filter(Boolean).join(' · ');
+  const evidenceLabel = [category, nickname !== '—' ? nickname : '', period].filter(Boolean).join(' · ');
 
   return `
-    <tr class="${deleted ? 'is-deleted' : ''}">
-      <td class="ops-ledger__date">${formatDate(item.ledger_date)}</td>
-      <td class="ops-ledger__entry" title="${escapeHtml(sub)}">
-        <div class="ops-ledger__main">
-          <span>${escapeHtml(category)}</span>
+    <article class="ops-ledger-row ${deleted ? 'is-deleted' : ''}">
+      <div class="ops-ledger-row__entry" title="${escapeHtml(sub)}">
+        <div class="ops-ledger-row__title">
+          <strong>${escapeHtml(category)}</strong>
           ${ledgerKindBadge(item)}
         </div>
-        <div class="ops-ledger__sub">${escapeHtml(sub || '—')}</div>
-      </td>
-      <td class="ops-ledger__person">
+        <span>${escapeHtml(sub || '—')}</span>
+      </div>
+
+      <div class="ops-ledger-row__who">
         <strong>${escapeHtml(nickname)}</strong>
-        <span>${escapeHtml(period)}</span>
-      </td>
-      <td class="ops-ledger__account"><span>${escapeHtml(item.account || '—')}</span></td>
-      <td class="ops-ledger__amount"><span class="ops-ledger__money ${isOut ? 'is-out' : ''}">${ledgerSign(item)}${formatMoney(Math.abs(Number(item.amount ?? 0)))}</span></td>
-      <td class="ops-ledger__evidence">
+        <span>${escapeHtml(meta || account)}</span>
+      </div>
+
+      <div class="ops-ledger-row__money ${isOut ? 'is-out' : ''}">
+        ${ledgerSign(item)}${formatMoney(Math.abs(Number(item.amount ?? 0)))}
+      </div>
+
+      <div class="ops-ledger-row__actions">
         ${item.evidence_url
-          ? `<button class="ops-icon-button is-gold" type="button" data-evidence-preview="${escapeHtml(item.evidence_url)}" data-evidence-label="${escapeHtml(category)} 증빙">보기</button>`
-          : '<span class="ops-toolbar__summary">—</span>'}
-      </td>
-      <td class="ops-ledger__manage">
+          ? `<button class="ops-row-button ops-row-button--evidence" type="button" data-evidence-preview="${escapeHtml(item.evidence_url)}" data-evidence-label="${escapeHtml(evidenceLabel || '공금 증빙')}">증빙</button>`
+          : '<span class="ops-ledger-row__no-evidence">—</span>'}
         ${deleted
-          ? `<button class="ops-icon-button" type="button" data-restore-ledger="${item.id}">복구</button>`
-          : `<button class="ops-icon-button" type="button" data-edit-ledger="${item.id}">수정</button>`}
-      </td>
-    </tr>
+          ? `<button class="ops-row-button" type="button" data-restore-ledger="${item.id}">복구</button>`
+          : `<button class="ops-row-button" type="button" data-edit-ledger="${item.id}">수정</button>`}
+      </div>
+    </article>
   `;
+}
+
+function groupLedgerRows(rows) {
+  const groups = [];
+  const byDate = new Map();
+
+  rows.forEach((item) => {
+    const date = formatDate(item.ledger_date || item.created_at);
+    if (!byDate.has(date)) {
+      const group = { date, rows: [] };
+      byDate.set(date, group);
+      groups.push(group);
+    }
+    byDate.get(date).rows.push(item);
+  });
+
+  return groups;
 }
 
 function filterLedger(items, filters, selectedMonth) {
@@ -214,7 +238,7 @@ function renderMonthPicker(month, periods = []) {
     months.sort((a, b) => b.year - a.year || b.month - a.month);
   }
   return `
-    <select class="ops-select" data-fund-month-select aria-label="월 선택">
+    <select class="ops-select ops-select--month" data-fund-month-select aria-label="월 선택">
       ${months.map((item) => option(item.value, item.label, value)).join('')}
     </select>
   `;

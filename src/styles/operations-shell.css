@@ -1,274 +1,201 @@
-/* NEW AXE NET v1.18.1 · Site + Operations Shell
-   The operational workspace remains flat and data-first, while the outer
-   chrome regains a clear website hierarchy: top utility bar → AXE banner →
-   primary module navigation → centered workspace.
+/* NEW AXE NET v1.19.0 · Site shell
+   ------------------------------------------------------------------
+   Purpose: make NEW AXE NET feel like a complete AXE website first,
+   then place the operational workspace inside it. The banner, module
+   categories and workspace now share one centered visual axis.
 */
 
 .ops-shell {
   min-height: 100vh;
-  color: #e9e7e2;
+  color: #ece8df;
   background:
-    radial-gradient(circle at 50% -240px, rgba(255,178,33,.065), transparent 470px),
-    #090a0c;
+    radial-gradient(circle at 50% -180px, rgba(206,143,31,.07), transparent 520px),
+    #08090b;
 }
 
-/* -------------------------------------------------------------------------- */
-/* Top utility bar                                                             */
-/* -------------------------------------------------------------------------- */
+/* Top utility bar --------------------------------------------------------- */
 .ops-topbar {
   position: sticky;
   top: 0;
   z-index: 30;
-  min-height: 54px;
-  border-bottom: 1px solid rgba(255,255,255,.065);
-  background: rgba(9,10,12,.95);
+  height: 56px;
+  border-bottom: 1px solid rgba(255,255,255,.055);
+  background: rgba(8,9,11,.94);
   backdrop-filter: blur(16px);
 }
 
 .ops-topbar__inner {
-  width: min(1180px, calc(100% - 32px));
-  min-height: 54px;
+  width: min(1120px, calc(100% - 32px));
+  height: 100%;
   margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 18px;
 }
 
 .ops-brand {
-  flex: 0 0 auto;
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
+  min-width: 0;
 }
 
 .ops-brand__mark {
-  width: 42px;
-  height: 30px;
+  width: 43px;
+  height: 31px;
   overflow: hidden;
-  border: 1px solid rgba(255,181,46,.18);
-  border-radius: 7px;
-  background: #0e0f11;
+  border: 1px solid rgba(255,181,46,.16);
+  border-radius: 8px;
+  background: #0d0f11;
+  box-shadow: inset 0 1px rgba(255,255,255,.025);
 }
 
-.ops-brand__mark img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+.ops-brand__mark img { width: 100%; height: 100%; display: block; object-fit: cover; }
 
-.ops-brand__copy {
-  display: grid;
-  gap: 1px;
-  line-height: 1;
-}
-
-.ops-brand__copy strong {
-  color: #fff7e8;
-  font-size: 13px;
-  font-weight: 900;
-  letter-spacing: .025em;
-}
-
-.ops-brand__copy span {
-  color: #8b682d;
-  font-size: 8px;
-  font-weight: 900;
-  letter-spacing: .18em;
-}
+.ops-brand__copy { display: grid; gap: 2px; line-height: 1; }
+.ops-brand__copy strong { color: #fff6e5; font-size: 13px; font-weight: 900; letter-spacing: .025em; }
+.ops-brand__copy span { color: #967031; font-size: 8px; font-weight: 900; letter-spacing: .18em; }
 
 .ops-topbar__utility {
   margin-left: auto;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 9px;
   min-width: 0;
 }
 
 .ops-topbar .status-pill {
   min-height: 24px;
   padding: 0 8px;
-  border-radius: 6px;
-  font-size: 8.5px;
-  letter-spacing: .05em;
-  background: transparent;
-}
-
-.ops-topbar .status-pill i { width: 5px; height: 5px; }
-
-/* Account controls follow the same quiet utility language. */
-.ops-topbar .auth-signed-in {
-  min-height: 30px;
-  padding: 2px 3px 2px 9px;
   border-radius: 7px;
-  background: transparent;
+  font-size: 8.5px;
+  letter-spacing: .04em;
+  background: rgba(255,255,255,.012);
 }
+.ops-topbar .status-pill i { width: 5px; height: 5px; }
+.ops-topbar .auth-signed-in { min-height: 30px; padding: 2px 3px 2px 9px; border-radius: 7px; background: transparent; }
 .ops-topbar .auth-pill,
 .ops-topbar .auth-login-button,
 .ops-topbar .auth-admin-upgrade,
-.ops-topbar .auth-logout {
-  min-height: 26px;
-  border-radius: 6px;
-  font-size: 9.5px;
-  background: transparent;
-}
+.ops-topbar .auth-logout { min-height: 26px; border-radius: 6px; font-size: 9.5px; background: transparent; }
 .ops-topbar .auth-signed-in__text span { font-size: 8px; }
 .ops-topbar .auth-signed-in__text strong { font-size: 10.5px; }
 
-/* -------------------------------------------------------------------------- */
-/* Branded site header                                                         */
-/* -------------------------------------------------------------------------- */
+/* Brand site head --------------------------------------------------------- */
 .ops-sitehead {
-  border-bottom: 1px solid rgba(255,255,255,.055);
-  background:
-    linear-gradient(180deg, rgba(255,179,33,.018), transparent 72%),
-    #090a0c;
+  background: linear-gradient(180deg, rgba(255,178,32,.012), transparent 72%);
 }
 
 .ops-sitehead__inner {
-  width: min(1180px, calc(100% - 32px));
+  width: min(1120px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 18px 0 0;
+  padding: 16px 0 12px;
 }
 
 .ops-hero {
   position: relative;
   isolation: isolate;
-  min-height: 154px;
+  height: 136px;
   overflow: hidden;
-  border: 1px solid rgba(255,179,33,.14);
-  border-radius: 12px;
+  border: 1px solid rgba(226,157,37,.15);
+  border-radius: 14px;
   background:
-    linear-gradient(90deg, rgba(5,6,8,.88) 0%, rgba(5,6,8,.45) 40%, rgba(5,6,8,.12) 72%, rgba(5,6,8,.38) 100%),
-    url('/assets/axe-brand-hero.webp') center 51% / cover no-repeat;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.025), 0 14px 34px rgba(0,0,0,.18);
+    linear-gradient(90deg, rgba(4,5,6,.86) 0%, rgba(4,5,6,.48) 35%, rgba(4,5,6,.08) 68%, rgba(4,5,6,.34) 100%),
+    url('/assets/axe-brand-hero.webp') center 50% / cover no-repeat;
+  box-shadow:
+    inset 0 1px rgba(255,255,255,.025),
+    0 16px 36px rgba(0,0,0,.18);
 }
 
-.ops-hero__veil {
+.ops-hero::after {
+  content: "";
   position: absolute;
   inset: 0;
   z-index: 0;
   background:
-    radial-gradient(circle at 25% 50%, rgba(255,175,27,.10), transparent 30%),
-    linear-gradient(180deg, transparent 44%, rgba(0,0,0,.18));
+    linear-gradient(180deg, rgba(255,255,255,.01), transparent 32%),
+    radial-gradient(circle at 22% 65%, rgba(255,173,26,.11), transparent 31%);
   pointer-events: none;
 }
+
+.ops-hero__veil { display: none; }
 
 .ops-hero__caption {
   position: absolute;
   z-index: 1;
-  left: 22px;
-  bottom: 18px;
+  left: 18px;
+  bottom: 16px;
   display: grid;
   gap: 3px;
-  max-width: 310px;
+  padding: 10px 12px 9px;
+  border-left: 2px solid rgba(255,181,46,.78);
+  background: linear-gradient(90deg, rgba(5,6,7,.58), rgba(5,6,7,.12));
+  backdrop-filter: blur(2px);
 }
+.ops-hero__caption span { color: #c9953e; font-size: 8.5px; font-weight: 900; letter-spacing: .16em; }
+.ops-hero__caption strong { color: #fff5e4; font-size: 18px; font-weight: 900; letter-spacing: .01em; line-height: 1.1; }
+.ops-hero__caption p { margin: 0; color: rgba(235,226,211,.58); font-size: 9px; font-weight: 760; letter-spacing: .08em; }
 
-.ops-hero__caption span {
-  color: #c08a30;
-  font-size: 9px;
-  font-weight: 900;
-  letter-spacing: .18em;
-}
-
-.ops-hero__caption strong {
-  color: #fff7e7;
-  font-size: 19px;
-  font-weight: 900;
-  letter-spacing: .025em;
-  text-shadow: 0 2px 18px rgba(0,0,0,.65);
-}
-
-.ops-hero__caption p {
-  margin: 0;
-  color: rgba(238,231,218,.58);
-  font-size: 9.5px;
-  font-weight: 750;
-  letter-spacing: .075em;
-}
-
-/* Primary modules now live under the banner, like a site-level navigation. */
+/* Site categories: intentional segmented navigation, not a code-like tab row. */
 .ops-module-nav {
-  min-height: 48px;
-  margin-top: 10px;
-  display: flex;
-  align-items: stretch;
+  width: fit-content;
+  min-width: 236px;
+  margin: 11px auto 0;
+  padding: 4px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(108px, 1fr));
   gap: 4px;
-  border-top: 1px solid rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.075);
+  border-radius: 11px;
+  background: rgba(16,18,21,.88);
+  box-shadow: inset 0 1px rgba(255,255,255,.02);
 }
 
 .ops-module-nav__item {
   position: relative;
-  min-width: 78px;
-  padding: 0 16px;
-  border: 0;
-  color: #8f9298;
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: #8e9298;
   background: transparent;
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 850;
   cursor: pointer;
-  transition: color .15s ease, background .15s ease;
+  transition: color .15s ease, border-color .15s ease, background .15s ease, box-shadow .15s ease;
 }
-
-.ops-module-nav__item::after {
-  content: "";
-  position: absolute;
-  left: 16px;
-  right: 16px;
-  bottom: -1px;
-  height: 2px;
-  border-radius: 999px 999px 0 0;
-  background: transparent;
-}
-
-.ops-module-nav__item:hover {
-  color: #ddd9d1;
-  background: rgba(255,255,255,.018);
-}
-
+.ops-module-nav__item::after { display: none; }
+.ops-module-nav__item:hover { color: #e1ddd5; background: rgba(255,255,255,.025); }
 .ops-module-nav__item--active {
-  color: #fff5df;
+  color: #fff4df;
+  border-color: rgba(255,181,46,.21);
+  background: linear-gradient(180deg, rgba(255,181,46,.10), rgba(255,181,46,.045));
+  box-shadow: inset 0 1px rgba(255,213,124,.05);
 }
 
-.ops-module-nav__item--active::after {
-  background: #ffb52e;
-  box-shadow: 0 0 14px rgba(255,181,46,.16);
-}
-
-/* -------------------------------------------------------------------------- */
-/* Workspace                                                                    */
-/* -------------------------------------------------------------------------- */
-.ops-main { min-width: 0; }
-
+/* Workspace -------------------------------------------------------------- */
+.ops-main { min-width: 0; border-top: 1px solid rgba(255,255,255,.035); }
 .ops-main__inner {
-  width: min(1180px, calc(100% - 32px));
+  width: min(1120px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 24px 0 56px;
+  padding: 24px 0 58px;
 }
-
 .ops-main .module-root { min-width: 0; }
 
 @media (max-width: 720px) {
   .ops-topbar__inner,
   .ops-sitehead__inner,
-  .ops-main__inner {
-    width: min(100% - 20px, 1180px);
-  }
-
+  .ops-main__inner { width: min(100% - 20px, 1120px); }
   .ops-brand__copy { display: none; }
   .ops-topbar__utility .status-pill { display: none; }
-
   .ops-sitehead__inner { padding-top: 10px; }
-  .ops-hero { min-height: 112px; border-radius: 9px; }
-  .ops-hero__caption { left: 14px; bottom: 12px; }
+  .ops-hero { height: 104px; border-radius: 10px; }
+  .ops-hero__caption { left: 12px; bottom: 11px; padding: 7px 9px; }
   .ops-hero__caption span,
   .ops-hero__caption p { display: none; }
-  .ops-hero__caption strong { font-size: 15px; }
-
-  .ops-module-nav { min-height: 44px; margin-top: 6px; }
-  .ops-module-nav__item { min-width: 64px; padding-inline: 12px; }
-  .ops-module-nav__item::after { left: 12px; right: 12px; }
-
+  .ops-hero__caption strong { font-size: 14px; }
+  .ops-module-nav { margin-top: 8px; min-width: 220px; }
+  .ops-module-nav__item { height: 35px; }
   .ops-main__inner { padding-top: 18px; }
 }

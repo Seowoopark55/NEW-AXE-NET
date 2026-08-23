@@ -39,11 +39,11 @@ export function renderFundView(root, state, actions = {}) {
     <section class="ops-fund">
       <header class="ops-fund__header">
         <div>
-          <span class="ops-fund__kicker">FUND OPERATIONS</span>
-          <h1>공금</h1>
-          <p>납부 현황과 검수, 원장, 운영 설정을 한 곳에서 관리합니다.</p>
+          <span class="ops-fund__kicker">FUND MANAGEMENT</span>
+          <h1>공금관리</h1>
+          <p>납부 현황부터 검수와 원장 관리까지 한 흐름으로 확인합니다.</p>
         </div>
-        <button class="ops-quiet-button" type="button" data-fund-refresh>새로고침</button>
+        <button class="ops-quiet-button" type="button" data-fund-refresh><span aria-hidden="true">↻</span> 새로고침</button>
       </header>
 
       ${renderOpsSummary(state, pendingCount)}
@@ -76,24 +76,26 @@ function renderOpsSummary(state, pendingCount) {
   const exemptionCount = countActiveExemptionGroups(fund.admin.exemptions ?? []) || Number(fund.monthOverview?.totals?.exempt || 0);
 
   return `
-    <div class="ops-fund-stats" aria-label="공금 요약">
-      <div class="ops-fund-stats__primary">
-        <span>공용계좌</span>
+    <section class="ops-fund-summary" aria-label="공금 요약">
+      <div class="ops-fund-summary__balance">
+        <span>공용계좌 잔액</span>
         <strong>${formatMoney(balance.public)}</strong>
       </div>
-      <div class="ops-fund-stats__item ${pendingCount ? 'is-alert' : ''}">
-        <span>검수대기·보류</span>
-        <strong>${pendingCount}</strong>
+      <div class="ops-fund-summary__metrics">
+        <div class="${pendingCount ? 'is-alert' : ''}">
+          <span>검수대기·보류</span>
+          <strong>${pendingCount}</strong>
+        </div>
+        <div>
+          <span>선택월 승인</span>
+          <strong>${approvedCount}</strong>
+        </div>
+        <div>
+          <span>활성 면제</span>
+          <strong>${exemptionCount}</strong>
+        </div>
       </div>
-      <div class="ops-fund-stats__item">
-        <span>선택월 승인</span>
-        <strong>${approvedCount}</strong>
-      </div>
-      <div class="ops-fund-stats__item">
-        <span>활성 면제</span>
-        <strong>${exemptionCount}</strong>
-      </div>
-    </div>
+    </section>
   `;
 }
 
@@ -546,36 +548,48 @@ function openEvidencePreview(src, label = '공금 증빙') {
 
   document.querySelector('[data-evidence-lightbox]')?.remove();
 
+  const safeLabel = escapeHtml(label);
+  const safeSrc = escapeHtml(src);
   const overlay = document.createElement('div');
   overlay.className = 'fund-evidence-lightbox';
   overlay.dataset.evidenceLightbox = '';
   overlay.innerHTML = `
     <div class="fund-evidence-lightbox__backdrop" data-evidence-lightbox-close></div>
-    <section class="fund-evidence-lightbox__panel" role="dialog" aria-modal="true" aria-label="${label.replaceAll('"', '&quot;')}">
-      <header>
+    <section class="fund-evidence-lightbox__panel" role="dialog" aria-modal="true" aria-label="${safeLabel}">
+      <header class="fund-evidence-lightbox__header">
         <div>
-          <span>EVIDENCE</span>
-          <strong>${label}</strong>
+          <span>EVIDENCE PREVIEW</span>
+          <strong>${safeLabel}</strong>
+          <p>증빙 이미지는 원본 비율로 표시됩니다.</p>
         </div>
-        <button type="button" aria-label="닫기" data-evidence-lightbox-close>×</button>
+        <button class="fund-evidence-lightbox__close" type="button" aria-label="닫기" data-evidence-lightbox-close>×</button>
       </header>
-      <div class="fund-evidence-lightbox__image-wrap">
-        <img src="${src}" alt="${label.replaceAll('"', '&quot;')}" />
+      <div class="fund-evidence-lightbox__stage">
+        <div class="fund-evidence-lightbox__image-wrap">
+          <img src="${safeSrc}" alt="${safeLabel}" />
+        </div>
       </div>
+      <footer class="fund-evidence-lightbox__footer">
+        <span>ESC 또는 바깥 영역을 눌러 닫을 수 있습니다.</span>
+        <a href="${safeSrc}" target="_blank" rel="noopener noreferrer">원본 열기</a>
+      </footer>
     </section>
   `;
 
-  const close = () => overlay.remove();
+  const close = () => {
+    document.removeEventListener('keydown', onKey);
+    overlay.remove();
+  };
   overlay.querySelectorAll('[data-evidence-lightbox-close]').forEach((element) => {
     element.addEventListener('click', close);
   });
 
   const onKey = (event) => {
     if (event.key !== 'Escape') return;
-    document.removeEventListener('keydown', onKey);
     close();
   };
   document.addEventListener('keydown', onKey);
   document.body.appendChild(overlay);
 }
+
 
