@@ -288,6 +288,9 @@
 .ops-status--done { color: #8fd7a8; border-color: rgba(93,191,127,.20); }
 .ops-status--pending { color: #a8cff0; border-color: rgba(97,161,216,.20); }
 .ops-status--unpaid { color: #d4d1cb; }
+.ops-status--short { color: #ffcf75; border-color: rgba(255,181,46,.26); background: rgba(255,181,46,.055); }
+.ops-status--reject { color: #ff9292; border-color: rgba(255,92,92,.24); background: rgba(255,80,80,.045); }
+.ops-status--before { color: #686c72; }
 .ops-status--exempt,
 .ops-status--future,
 .ops-status--muted { color: #777b82; }

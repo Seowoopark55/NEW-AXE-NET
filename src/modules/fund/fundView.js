@@ -460,6 +460,32 @@ function bindFundEvents(root, state, actions) {
     button.addEventListener('click', () => actions.onDisableExemptionRange?.(button.dataset.disableExemptionRange));
   });
 
+  root.querySelectorAll('[data-integrity-repair-request]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const id = Number(button.dataset.integrityRepairRequest);
+      if (!Number.isInteger(id) || !window.confirm(`승인 신청 #${id} 기준으로 누락 원장을 복구할까요?`)) return;
+      actions.onRepairApprovedRequestLedger?.(id);
+    });
+  });
+
+  root.querySelectorAll('[data-integrity-align]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const id = Number(button.dataset.integrityAlign);
+      const direction = String(button.dataset.integrityDirection || '');
+      const target = direction === 'ledger_to_request' ? '신청 금액을 현재 활성 원장에' : '활성 원장 금액을 승인 신청에';
+      if (!Number.isInteger(id) || !window.confirm(`${target} 맞출까요? 변경 내용은 감사 로그에 남습니다.`)) return;
+      actions.onAlignIntegrityAmounts?.(id, direction);
+    });
+  });
+
+  root.querySelectorAll('[data-integrity-reject-conflict]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const id = Number(button.dataset.integrityRejectConflict);
+      if (!Number.isInteger(id) || !window.confirm(`이미 납부 원장이 있는 충돌 신청 #${id}을 반려할까요?`)) return;
+      actions.onRejectIntegrityConflict?.(id);
+    });
+  });
+
   root.querySelectorAll('[data-fund-member-setting-form]').forEach((form) => {
     form.addEventListener('submit', (event) => {
       event.preventDefault();

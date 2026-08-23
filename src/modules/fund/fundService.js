@@ -419,6 +419,24 @@ export async function fetchFundIntegrityReport() {
   return api.rpc('get_fund_integrity_report');
 }
 
+export async function repairFundApprovedRequestLedger(requestId) {
+  return api.rpc('repair_fund_approved_request_ledger', {
+    p_request_id: requestId,
+  });
+}
+
+export async function alignFundLedgerToRequest(requestId) {
+  return api.rpc('align_fund_ledger_to_request', {
+    p_request_id: requestId,
+  });
+}
+
+export async function alignFundRequestToLedger(requestId) {
+  return api.rpc('align_fund_request_to_ledger', {
+    p_request_id: requestId,
+  });
+}
+
 
 async function withAdminEvidence(evidence, folder, operation) {
   let path = null;

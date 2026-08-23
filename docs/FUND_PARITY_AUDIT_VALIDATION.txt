@@ -1,0 +1,42 @@
+NEW AXE NET v1.22.0 — FUND PARITY AUDIT VALIDATION
+Date: 2026-08-23
+
+Static validation
+- package version: 1.22.0
+- JavaScript syntax: 37 files passed node --check
+- relative imports: 65 checked, 0 missing
+- CSS raw brace balance: fund.css / operations-console.css / views/admin.css passed
+- SQL delimiter balance: 020_fund_parity_audit.sql $$ pairs balanced
+- required SQL functions confirmed:
+  * fund_period_status_live
+  * get_fund_periods
+  * get_fund_month_overview
+  * get_fund_month_matrix
+  * get_my_fund_profile
+  * get_fund_integrity_report
+  * repair_fund_approved_request_ledger
+  * align_fund_ledger_to_request
+  * align_fund_request_to_ledger
+- PostgREST schema reload statement confirmed
+
+Behavioral parity changes reviewed
+- insufficient payment -> 부족
+- pending/hold -> 검수대기
+- rejected only -> 반려
+- unpaid aggregate includes 미납 + 부족 + 반려
+- rejected period can be resubmitted
+- successful submission moves to 내 제출
+- join_date_override applies to member profile periods
+- integrity report includes approved-request/ledger amount mismatch
+- safe repair/alignment actions write admin audit log
+
+Production build
+- npm install was attempted in this environment but timed out before a usable Vite install completed.
+- Therefore a full Vite production build could not be executed here.
+- Vercel deployment/build should be treated as the production build verification step.
+
+Intentional NEW behavior retained
+- no rightmost monthly unpaid-count column
+- public-account balance remains the primary KPI
+- canonical member source remains members + fund_member_settings
+- no destructive automatic physical-delete repair action

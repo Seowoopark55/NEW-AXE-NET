@@ -5,6 +5,8 @@ import { store } from '../../state/store.js';
 import {
   approveFundRequest,
   approveFundRequestsBulk,
+  alignFundLedgerToRequest,
+  alignFundRequestToLedger,
   createFundBalanceCheck,
   createFundPayment,
   createFundTransaction,
@@ -30,6 +32,7 @@ import {
   fetchSessionFundProfile,
   holdFundRequest,
   rejectFundRequest,
+  repairFundApprovedRequestLedger,
   restoreFundLedgerEntry,
   setFundFeeRuleEnabled,
   setFundMemberSetting,
@@ -162,7 +165,7 @@ function buildActions() {
       }));
       try {
         const profile = await fetchAdminFundProfile(memberKey);
-        const selectedPeriod = profile?.periods?.find((item) => item.status === '미납' && !['pending', 'hold'].includes(item.request_status)) ?? null;
+        const selectedPeriod = profile?.periods?.find((item) => isPayableFundPeriod(item)) ?? null;
         store.updateState((state) => ({
           ...state,
           fund: { ...state.fund, payment: { ...state.fund.payment, proxyLoading: false, proxyProfile: profile, selectedPeriod, amount: selectedPeriod?.weekly_fee ? String(selectedPeriod.weekly_fee) : '', publicAmount: '', companyAmount: '' } },
@@ -526,6 +529,34 @@ function buildActions() {
       });
     },
 
+    async onRepairApprovedRequestLedger(id) {
+      await runAdminMutation(async () => {
+        await repairFundApprovedRequestLedger(id);
+        return `승인 신청 #${id}의 누락 원장을 복구했습니다.`;
+      });
+    },
+
+    async onAlignIntegrityAmounts(id, direction) {
+      await runAdminMutation(async () => {
+        if (direction === 'ledger_to_request') {
+          await alignFundRequestToLedger(id);
+          return `신청 #${id}의 금액을 활성 원장 기준으로 맞췄습니다.`;
+        }
+        if (direction === 'request_to_ledger') {
+          await alignFundLedgerToRequest(id);
+          return `신청 #${id} 기준으로 활성 원장 금액을 맞췄습니다.`;
+        }
+        throw new Error('지원하지 않는 정합성 보정 방향입니다.');
+      });
+    },
+
+    async onRejectIntegrityConflict(id) {
+      await runAdminMutation(async () => {
+        await rejectFundRequest(id, '정합성점검: 이미 활성 납부 원장이 있어 충돌 신청을 반려함');
+        return `활성 납부 원장과 충돌한 신청 #${id}을 반려했습니다.`;
+      });
+    },
+
     async onSaveFundMemberSetting(values) {
       await runAdminMutation(async () => {
         await setFundMemberSetting(values);
@@ -533,6 +564,12 @@ function buildActions() {
       });
     },
   };
+}
+
+function isPayableFundPeriod(item) {
+  if (!item) return false;
+  return (item.status === '미납' || item.status === '반려')
+    && !['pending', 'hold'].includes(item.request_status);
 }
 
 async function loadFundBase() {
@@ -749,7 +786,7 @@ async function syncFundIdentityFromAuth() {
 
     const profile = await fetchProfileForIdentity({ source, memberKey });
     const selectedPeriod = profile?.periods?.find(
-      (item) => item.status === '미납' && !['pending', 'hold'].includes(item.request_status),
+      (item) => isPayableFundPeriod(item),
     ) ?? null;
 
     store.updateState((current) => ({
@@ -851,6 +888,7 @@ async function submitPayment(values) {
       ...current,
       fund: {
         ...current.fund,
+        section: 'submissions',
         identity: isAdmin && targetMemberKey !== identity.memberKey ? current.fund.identity : { ...current.fund.identity, profile },
         payment: {
           ...current.fund.payment,

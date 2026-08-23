@@ -394,8 +394,11 @@
 .fund-status-badge--done,
 .fund-request-pill--approved { color: #8ce1ac; border-color: rgba(74,169,112,.32); background: rgba(48,132,81,.08); }
 .fund-status-badge--unpaid,
+.fund-status-badge--rejected,
 .fund-request-pill--rejected,
 .fund-request-pill--deleted { color: #ff8d8d; border-color: rgba(255,80,80,.30); background: rgba(255,80,80,.06); }
+.fund-status-badge--short { color: #ffcf75; border-color: rgba(255,181,46,.30); background: rgba(255,181,46,.06); }
+.fund-status-badge--pending { color: #9fd2ff; border-color: rgba(94,164,255,.28); background: rgba(72,126,205,.06); }
 .fund-status-badge--exempt { color: #bbb; }
 .fund-status-badge--scheduled,
 .fund-status-badge--before { color: #777; }

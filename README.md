@@ -1,3 +1,40 @@
+# NEW AXE NET v1.22.0 — FUND PARITY AUDIT
+
+기존 AXE NET 공금관리 10개 탭을 기능 단위로 다시 대조하고, UI 미세조정보다 **상태 판정·제출 흐름·정합성 복구** 차이를 우선 수정한 버전입니다.
+
+## v1.22.0 변경
+
+- 월별현황 live status에 `부족 / 검수대기 / 반려` 판정 복원
+- 미납 집계는 `미납 + 부족 + 반려` 기준으로 통일
+- 반려된 회차는 증빙을 다시 제출할 수 있도록 재제출 경로 복원
+- 공금 제출 성공 후 기존 AXE NET처럼 `내 제출`로 자동 이동
+- `join_date_override`를 개인 공금 프로필 기간에도 일관 적용
+- 정합성점검에 `승인 신청 ↔ 활성 원장 금액 불일치` 진단 추가
+- 정합성점검 안전 복구 추가
+  - 승인 신청 원장 누락 복구
+  - 신청 금액을 원장 기준으로 맞추기
+  - 원장 금액을 신청 기준으로 맞추기
+  - 이미 납부된 회차의 충돌 pending/hold 신청 반려
+- 정합성 보정은 `fund_admin_audit_log`에 기록
+- 기존에 제거한 월별현황 우측 미납 합계 열, 공용계좌 우선 KPI 등 NEW의 의도적 차이는 유지
+
+## DB / SQL
+
+Supabase SQL Editor에서 `supabase/020_fund_parity_audit.sql`을 전체 실행해야 합니다.
+추가 환경변수나 CSV Import는 없습니다.
+
+## 적용 순서
+
+1. Supabase SQL Editor에서 `020_fund_parity_audit.sql` 전체 실행
+2. v1.22.0 소스를 기존 NEW AXE NET 프로젝트에 전체 덮어쓰기
+3. GitHub Desktop Commit / Push
+4. Vercel 자동배포 확인
+5. `공금납부 → 내 제출 → 검수대기 → 승인 → 월별현황 → 공금내역 → 정합성점검` 순서로 실사용 확인
+
+감사 결과: `docs/FUND_PARITY_AUDIT_20260823.md`
+
+---
+
 # NEW AXE NET v1.21.2
 
 ## Banner refinement

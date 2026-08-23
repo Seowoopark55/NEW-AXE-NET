@@ -441,6 +441,14 @@
 .fund-admin-integrity-detail summary::-webkit-details-marker { display: none; }
 .fund-admin-integrity-detail small { display: block; margin-top: 5px; line-height: 1.45; overflow-wrap: anywhere; }
 
+.fund-integrity-actions { display: flex !important; align-items: center !important; justify-content: flex-end; gap: 6px !important; min-width: 0; }
+.fund-integrity-actions .fund-secondary-button,
+.fund-integrity-actions .ops-danger-button { min-height: var(--axe-ui-button-small-height); padding-inline: 9px; white-space: nowrap; }
+.fund-integrity-row--mismatch { grid-template-columns: minmax(260px,1fr) 112px minmax(150px,.95fr); }
+.fund-integrity-mismatch-main { display: grid !important; gap: 3px !important; }
+.fund-integrity-mismatch-main strong { display: block; }
+.fund-integrity-detail--wide { grid-column: 1 / -1; }
+
 /* Fund members: compact list; exception editor opens only when needed. */
 .fund-admin-member { border-bottom: 1px solid var(--admin-border-soft); }
 .fund-admin-member:last-child { border-bottom: 0; }
@@ -491,6 +499,8 @@
   .fund-admin-member__editor { grid-template-columns: 1fr; }
   .fund-admin-integrity-list article { grid-template-columns: 1fr auto; }
   .fund-admin-integrity-list article > .fund-admin-integrity-detail { grid-column: 1/-1; }
+  .fund-admin-integrity-list article > .fund-integrity-actions { grid-column: 1/-1; justify-content: flex-start; }
+  .fund-integrity-row--mismatch { grid-template-columns: 1fr auto; }
   .fund-admin-rule { grid-template-columns: 88px minmax(150px,1fr) 58px; }
   .fund-admin-rule > :last-child { grid-column: 3; }
   .fund-admin-exemption { grid-template-columns: 1fr auto; }

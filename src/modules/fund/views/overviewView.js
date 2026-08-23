@@ -98,6 +98,7 @@ function displayStatus(cell) {
     return '완료';
   }
   if (cell.status === '검수대기') return '검수';
+  if (cell.status === '가입 전') return '제외';
   return cell.status;
 }
 
@@ -108,8 +109,11 @@ function statusClass(status) {
   if (status === '완료') return 'done';
   if (status === '검수') return 'pending';
   if (status === '미납') return 'unpaid';
+  if (status === '부족') return 'short';
+  if (status === '반려') return 'reject';
   if (status === '면제') return 'exempt';
   if (status === '예정') return 'future';
+  if (status === '제외') return 'before';
   return 'muted';
 }
 

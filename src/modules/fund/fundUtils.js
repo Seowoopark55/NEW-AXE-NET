@@ -85,6 +85,9 @@ export function renderStatusBadge(status) {
   const classes = {
     '완료': 'done',
     '미납': 'unpaid',
+    '부족': 'short',
+    '검수대기': 'pending',
+    '반려': 'rejected',
     '면제': 'exempt',
     '예정': 'scheduled',
     '가입 전': 'before',

@@ -28,10 +28,10 @@ export function renderPaymentView(state) {
     ? fund.payment.proxyProfile
     : identity.profile;
   const periods = effectiveProfile?.periods ?? [];
-  const unpaid = periods.filter((item) => item.status === '미납' && !isOpenRequest(item.request_status));
+  const unpaid = periods.filter((item) => isPayablePeriod(item));
   const selected = fund.payment.selectedPeriod
     ?? unpaid[0]
-    ?? periods.find((item) => item.status === '미납')
+    ?? periods.find((item) => isPayablePeriod(item))
     ?? null;
 
   return `
@@ -80,9 +80,11 @@ function renderProxyBar(state) {
 }
 
 function renderOwnPeriod(item, selected) {
-  const selectable = item.status === '미납' && !isOpenRequest(item.request_status);
+  const selectable = isPayablePeriod(item);
   const isSelected = selected && selected.year === item.year && selected.month === item.month && selected.week === item.week;
-  const request = item.request_status ? `<small>${requestStatusLabel(item.request_status)}</small>` : '';
+  const requestLabel = item.request_status ? requestStatusLabel(item.request_status) : '';
+  const duplicateStateLabel = (item.status === '검수대기' && item.request_status === 'pending') || (item.status === '반려' && item.request_status === 'rejected');
+  const request = requestLabel && !duplicateStateLabel ? `<small>${requestLabel}</small>` : '';
   return `
     <button class="fund-own-period ${isSelected ? 'fund-own-period--active' : ''}" type="button" ${selectable ? `data-payment-period="${item.year}-${item.month}-${item.week}"` : 'disabled'}>
       <div><strong>${formatPeriodLabel(item)}</strong><span>${formatMoney(item.weekly_fee)}</span></div>
@@ -94,7 +96,7 @@ function renderOwnPeriod(item, selected) {
 function renderPaymentForm(state, selected, profile) {
   const payment = state.fund.payment;
   const openRequest = isOpenRequest(selected.request_status);
-  if (selected.status !== '미납' || openRequest) {
+  if (!isPayablePeriod(selected) || openRequest) {
     const openLabel = selected.request_status === 'hold' ? '보류 중' : '검수대기 중';
     return `<div class="fund-empty-state fund-empty-state--large">${openRequest ? `이 주차는 이미 ${openLabel}입니다.` : '선택한 주차는 현재 제출 대상이 아닙니다.'}</div>`;
   }
@@ -180,6 +182,12 @@ function formatBytes(value) {
 function renderNoPayment(periods) {
   const hasOpenRequest = periods.some((item) => isOpenRequest(item.request_status));
   return `<div class="fund-empty-state fund-empty-state--large">${hasOpenRequest ? '현재 제출 가능한 미납 주차가 없습니다. 검수대기·보류 중인 제출은 내 제출에서 확인할 수 있습니다.' : '현재 제출할 미납 공금이 없습니다.'}</div>`;
+}
+
+function isPayablePeriod(item) {
+  return Boolean(item)
+    && (item.status === '미납' || item.status === '반려')
+    && !isOpenRequest(item.request_status);
 }
 
 function isOpenRequest(status) {
