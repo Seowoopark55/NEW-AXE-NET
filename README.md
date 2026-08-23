@@ -1,4 +1,39 @@
-# NEW AXE NET v1.28.2 — PLIKA ACCOUNT LEGACY IMPORT
+# NEW AXE NET v1.29.0 — OUTLAW OPERATIONS
+
+## v1.29.0 · 무법지대 Supabase-native 모듈
+
+- 상위 메뉴 `무법지대` 추가: `통계 / 공략 / 브리핑맵`
+- 사용자 제공 CSV 4종 분석 및 이관
+  - 현재 통계 19명
+  - 통계 히스토리 472건
+  - 브리핑맵 17개
+  - 공략 3개 지역 / 10단계
+- 무법지대 자료는 anon 공개하지 않고 멤버 로그인/관리자 인증 후에만 조회
+- 일반 멤버는 HttpOnly member session + Vercel server 경로
+- 관리자는 Supabase Auth + RLS `is_admin()` 경로
+- 기존 통계 닉네임 표기는 source_nickname으로 보존하되 member_key는 Discord ID로 정확히 연결
+- 랭킹: 누적 킬 우선 → 동률 K/D → 데스 적은 순
+- 멤버별 최근 히스토리와 킬/데스 추이 차트 제공
+- CSV에 실제 PNG 원본이 없어 이미지는 placeholder 처리. `public/assets/outlaw/`에 원본 파일을 넣으면 자동 표시
+- Google Sheet / Apps Script 런타임 의존 추가 없음
+
+### 필수 SQL
+
+1. `supabase/030_outlaw_module.sql`
+2. `supabase/031_outlaw_legacy_import.sql`
+
+실행 후 기대값: `19 / 472 / 17 / 3 / 10`
+
+### 중요
+
+이번 통계 데이터는 2026-08-23 CSV snapshot입니다. 웹 런타임은 Supabase만 읽습니다.
+다음 단계에서 AXE BOT의 무법지대 OCR 저장 경로를 Supabase로 전환해야 이후 통계가 자동 갱신됩니다.
+
+상세 설계: `docs/OUTLAW_MODULE_1.0.md`
+검증: `docs/OUTLAW_MODULE_VALIDATION.txt`
+
+---
+
 
 ## v1.28.2 · 플리카 계좌 CSV 1회 이관
 

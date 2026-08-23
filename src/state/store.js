@@ -143,6 +143,29 @@ const initialState = {
     },
   },
 
+  outlaw: {
+    initialized: false,
+    loading: false,
+    error: null,
+    tab: 'stats',
+    stats: [],
+    guideLocations: [],
+    guideSteps: [],
+    maps: [],
+    selectedMemberKey: null,
+    selectedLocationKey: null,
+    selectedMapKey: null,
+    history: [],
+    historyLoading: false,
+    historyError: null,
+    filters: {
+      statSearch: '',
+      statStatus: 'active',
+      guideSearch: '',
+      mapSearch: '',
+    },
+  },
+
   fund: {
     initialized: false,
     loading: false,

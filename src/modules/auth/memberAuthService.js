@@ -110,3 +110,22 @@ export async function submitMemberAccountRequest(values) {
   return data.request_id;
 }
 
+
+
+export async function fetchMemberOutlawData() {
+  const data = await postJson('/api/member-session', { action: 'outlaw_bootstrap' });
+  return {
+    stats: Array.isArray(data.stats) ? data.stats : [],
+    guideLocations: Array.isArray(data.guide_locations) ? data.guide_locations : [],
+    guideSteps: Array.isArray(data.guide_steps) ? data.guide_steps : [],
+    maps: Array.isArray(data.maps) ? data.maps : [],
+  };
+}
+
+export async function fetchMemberOutlawHistory(memberKey) {
+  const data = await postJson('/api/member-session', {
+    action: 'outlaw_history',
+    member_key: String(memberKey || '').trim(),
+  });
+  return Array.isArray(data.history) ? data.history : [];
+}

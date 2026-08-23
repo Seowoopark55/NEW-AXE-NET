@@ -362,6 +362,13 @@ export function normalizeApiError(error) {
     };
   }
 
+  if (lower.includes('outlaw_stats_') || lower.includes('outlaw_guide_') || lower.includes('outlaw_briefing_maps')) {
+    return {
+      status: 500,
+      message: '무법지대 데이터베이스가 아직 준비되지 않았습니다. 030_outlaw_module.sql / 031_outlaw_legacy_import.sql 실행 여부를 확인하세요.',
+    };
+  }
+
   if (lower.includes('member_accounts') || lower.includes('member_account_requests') || lower.includes('company_assets') || lower.includes('company_asset_returns')) {
     return {
       status: 500,

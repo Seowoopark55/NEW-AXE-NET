@@ -1,0 +1,53 @@
+NEW AXE NET v1.29.0 OUTLAW MODULE VALIDATION
+
+[DB]
+- 030_outlaw_module.sql 실행
+- 031_outlaw_legacy_import.sql 실행
+- current_stats = 19
+- history_rows = 472
+- briefing_maps = 17
+- guide_locations = 3
+- guide_steps = 10
+- linked_current = 19
+- unlinked_current = 0
+
+[AUTH]
+- 로그아웃: 무법지대 자료 대신 멤버 로그인 gate
+- 일반 멤버: 통계 / 공략 / 브리핑맵 조회
+- 관리자: 동일 조회
+
+[STATS]
+- 활동 멤버 기본 필터
+- 전체/퇴사/비활성 필터
+- 닉네임 검색
+- 킬 우선, 동률 K/D, 이후 데스 적은 순 랭킹
+- 멤버 행 클릭 -> 최근 120개 이내 히스토리 로드
+- 추이 차트 / 최근 delta 표시
+
+[GUIDE]
+- 3 locations
+- prison 4 steps
+- humane 3 steps
+- chiliad 3 steps
+- humane YouTube 링크 정상
+
+[MAP]
+- 17 maps
+- 검색 / 선택 상세
+- 페리코 좌표 ???? 보존
+
+[MEDIA]
+- public/assets/outlaw에 원본 이미지가 없을 때 placeholder 정상
+- 이미지 추가 시 파일명 그대로 렌더
+
+[BOUNDARY]
+- Google Sheet / Apps Script 런타임 호출 없음
+- 기존 fund / assets / info / auth 로직 변경 없음
+
+[STATIC VALIDATION]
+- all JS node --check: PASS
+- style audit: PASS
+- local import paths: PASS
+- 031 legacy history source rows: 472 (record_id = legacy_<message_id>)
+- 야미 legacy Discord ID mismatch: explicit `ෆ야미ෆ -> 얌이` fallback included
+- Vite production build: runtime dependency install unavailable in this sandbox, Vercel deployment final check required

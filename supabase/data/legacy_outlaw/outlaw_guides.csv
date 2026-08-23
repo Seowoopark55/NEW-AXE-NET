@@ -1,0 +1,11 @@
+id,map_name,main_image,coord,route_group,step_no,title,content,image,video_url,order
+prison,중부 교도소,prison_map.png,4000,기동 루트,A-1,오토바이 좌측 쪽문 입장,오토바이 2~3대는 좌측 작은 문을 통해 진입합니다.,prison_a1.png,,1
+prison,중부 교도소,prison_map.png,4000,기동 루트,A-2,쪽문 이동 후 내부 상자 먹기,쪽문으로 이동하여 기동 내부 1개씩 먹습니다.,prison_a2.png,,2
+prison,중부 교도소,prison_map.png,4000,기동 루트,B-1,우측 문 차량 입장,차량 2~3대는 우측 문을 통해 진입합니다.,prison_b1.png,,3
+prison,중부 교도소,prison_map.png,4000,기동 루트,B-2,우측 문 이동 후 내부 상자 먹기,우측 문을 통해 이동하여 기둥 내부 상자를 먹습니다.,prison_b2.png,,4
+humane,휴메인 연구소,humane_map.png,2060,오토바이 스턴트 루트,A-1,오토바이 선발 진입,선발대 오토바이  첫번째 경로 ,,https://youtu.be/eO0eVyMneKI?si=wnP8O3HWsVdEaTmt,1
+humane,휴메인 연구소,humane_map.png,2060,오토바이 스턴트 루트,A-2,오토바이 진입 2,선발대 오토바이  두번째 경로 ,,https://youtu.be/spAJjI8feJs?si=lsGCsHitmoDRg5I5,2
+humane,휴메인 연구소,humane_map.png,2060,오토바이 스턴트 루트,B,차량 진입,"정문 차량 진입 , 정문에서 바로 우회전 후 첫번째 계단쪽으로 진입 ",humane_b.png,,3
+chiliad,칠리아드 야생 지역 캠프,chiliad_map.png,1085,월담 루트,A-1,담장 넘어가서 진행,차량 or 조리대를 담장 앞에 깔아두고 담 넘기,chiliad_a1.png,,1
+chiliad,칠리아드 야생 지역 캠프,chiliad_map.png,1085,월담 루트,A-2,정면,,chiliad_a2.png,,2
+chiliad,칠리아드 야생 지역 캠프,chiliad_map.png,1085,월담 루트,A-3,내부,,chiliad_a3.png,,3

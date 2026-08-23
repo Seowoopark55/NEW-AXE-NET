@@ -40,6 +40,78 @@ export default async function handler(req, res) {
       });
     }
 
+    if (action === 'outlaw_bootstrap') {
+      const [statsResult, locationsResult, stepsResult, mapsResult] = await Promise.all([
+        context.client
+          .from('outlaw_stats_current')
+          .select('member_key,source_nickname,total_kills,total_deaths,kd,source_updated_at')
+          .order('total_kills', { ascending: false }),
+        context.client
+          .from('outlaw_guide_locations')
+          .select('location_key,map_name,main_image,coord,sort_order')
+          .eq('active', true)
+          .order('sort_order', { ascending: true }),
+        context.client
+          .from('outlaw_guide_steps')
+          .select('id,location_key,route_group,step_no,title,content,image,video_url,sort_order')
+          .eq('active', true)
+          .order('sort_order', { ascending: true }),
+        context.client
+          .from('outlaw_briefing_maps')
+          .select('map_key,map_name,image,description,note,coord,source_updated_at,sort_order')
+          .eq('active', true)
+          .order('sort_order', { ascending: true }),
+      ]);
+
+      for (const result of [statsResult, locationsResult, stepsResult, mapsResult]) {
+        if (result.error) throw result.error;
+      }
+
+      const statRows = statsResult.data || [];
+      const memberKeys = [...new Set(statRows.map((row) => row.member_key).filter(Boolean))];
+      let memberRows = [];
+      if (memberKeys.length) {
+        const { data, error } = await context.client
+          .from('members')
+          .select('member_key,nickname,status,sort_order')
+          .in('member_key', memberKeys);
+        if (error) throw error;
+        memberRows = data || [];
+      }
+      const memberMap = new Map(memberRows.map((member) => [member.member_key, member]));
+      const stats = statRows.map((row) => ({
+        ...row,
+        nickname: memberMap.get(row.member_key)?.nickname || row.source_nickname,
+        member_status: memberMap.get(row.member_key)?.status || 'active',
+        member_sort_order: memberMap.get(row.member_key)?.sort_order || 0,
+      }));
+
+      return sendJson(res, 200, {
+        ok: true,
+        stats,
+        guide_locations: locationsResult.data || [],
+        guide_steps: stepsResult.data || [],
+        maps: mapsResult.data || [],
+      });
+    }
+
+    if (action === 'outlaw_history') {
+      const memberKey = String(body.member_key || '').trim();
+      if (!memberKey) {
+        return sendJson(res, 400, { ok: false, message: '조회할 멤버 정보가 없습니다.' });
+      }
+
+      const { data, error } = await context.client
+        .from('outlaw_stats_history')
+        .select('record_id,member_key,source_nickname,total_kills,total_deaths,kill_delta,death_delta,delta_kd,confidence,status,recorded_at')
+        .eq('member_key', memberKey)
+        .order('recorded_at', { ascending: false })
+        .limit(120);
+      if (error) throw error;
+
+      return sendJson(res, 200, { ok: true, history: data || [] });
+    }
+
     if (action === 'fund_profile') {
       const discordUserId = String(context.member.discord_user_id || '').trim();
       if (!discordUserId) {
