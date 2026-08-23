@@ -4,8 +4,8 @@ export function renderAuthView(root, auth, actions = {}) {
   // Auth state updates re-render this root. Preserve the in-flight form values so
   // the browser password manager cannot briefly replace a member nickname with
   // a saved admin e-mail while the login button changes to "확인 중...".
-  const memberDraft = readFormDraft(root.querySelector('[data-member-login-form]'), ['nickname', 'password']);
-  const adminDraft = readFormDraft(root.querySelector('[data-admin-login-form]'), ['email', 'password']);
+  const memberDraft = readFormDraft(root.querySelector('[data-member-login-form]'), ['member_nickname', 'member_password']);
+  const adminDraft = readFormDraft(root.querySelector('[data-admin-login-form]'), ['admin_email', 'admin_password']);
 
   root.innerHTML = `
     <div class="auth-control">
@@ -42,8 +42,8 @@ export function renderAuthView(root, auth, actions = {}) {
     event.preventDefault();
     const formData = new FormData(memberForm);
     actions.onMemberLogin?.({
-      nickname: String(formData.get('nickname') ?? '').trim(),
-      password: String(formData.get('password') ?? ''),
+      nickname: String(formData.get('member_nickname') ?? '').trim(),
+      password: String(formData.get('member_password') ?? ''),
     });
   });
 
@@ -52,8 +52,8 @@ export function renderAuthView(root, auth, actions = {}) {
     event.preventDefault();
     const formData = new FormData(adminForm);
     actions.onAdminLogin?.({
-      email: String(formData.get('email') ?? '').trim(),
-      password: String(formData.get('password') ?? ''),
+      email: String(formData.get('admin_email') ?? '').trim(),
+      password: String(formData.get('admin_password') ?? ''),
     });
   });
 }
@@ -138,12 +138,13 @@ function renderLoginModal(auth) {
 
 function renderMemberLoginForm(auth) {
   return `
-    <form class="auth-form" data-member-login-form>
-      <label>
+    <form class="auth-form" id="axe-member-login-form" name="axe-member-login" autocomplete="on" data-member-login-form>
+      <label for="axe-member-nickname">
         <span>닉네임</span>
         <input
-          name="nickname"
-          autocomplete="nickname"
+          id="axe-member-nickname"
+          name="member_nickname"
+          autocomplete="section-axe-member username"
           autocapitalize="off"
           spellcheck="false"
           placeholder="AXE NET 닉네임"
@@ -151,12 +152,13 @@ function renderMemberLoginForm(auth) {
         />
       </label>
 
-      <label>
+      <label for="axe-member-password">
         <span>비밀번호</span>
         <input
+          id="axe-member-password"
           type="password"
-          name="password"
-          autocomplete="current-password"
+          name="member_password"
+          autocomplete="section-axe-member current-password"
           required
         />
       </label>
@@ -176,15 +178,30 @@ function renderMemberLoginForm(auth) {
 
 function renderAdminLoginForm(auth) {
   return `
-    <form class="auth-form" data-admin-login-form>
-      <label>
+    <form class="auth-form" id="axe-admin-login-form" name="axe-admin-login" autocomplete="on" data-admin-login-form>
+      <label for="axe-admin-email">
         <span>이메일</span>
-        <input type="email" name="email" autocomplete="username" placeholder="admin@example.com" required />
+        <input
+          id="axe-admin-email"
+          type="email"
+          name="admin_email"
+          autocomplete="section-axe-admin username"
+          autocapitalize="off"
+          spellcheck="false"
+          placeholder="admin@example.com"
+          required
+        />
       </label>
 
-      <label>
+      <label for="axe-admin-password">
         <span>비밀번호</span>
-        <input type="password" name="password" autocomplete="current-password" required />
+        <input
+          id="axe-admin-password"
+          type="password"
+          name="admin_password"
+          autocomplete="section-axe-admin current-password"
+          required
+        />
       </label>
 
       ${auth.error ? `<div class="auth-form__error">${escapeHtml(auth.error)}</div>` : ''}

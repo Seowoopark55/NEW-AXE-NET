@@ -1,3 +1,10 @@
+## v1.27.3 auth credential separation
+- 멤버 로그인과 관리자 로그인을 서로 다른 브라우저 autofill section으로 분리합니다.
+- 멤버 필드: `section-axe-member` / 관리자 필드: `section-axe-admin`
+- form/id/name도 각각 분리하여 저장된 관리자 이메일이 멤버 닉네임 칸에 자동 주입되는 가능성을 낮춥니다.
+- 로그인 API, Supabase DB, 세션 구조는 변경하지 않습니다.
+- SQL/환경변수 추가 변경 없음.
+
 
 ## v1.27.2 auth UI hotfix
 - 멤버 로그인 처리 중 auth root 재렌더 시 브라우저가 저장된 관리자 이메일을 닉네임 입력칸에 순간 표시하던 현상을 방지합니다.
