@@ -1,0 +1,39 @@
+NEW AXE NET v1.24.0 — STYLE STRUCTURAL REBASE VALIDATION
+Date: 2026-08-23
+
+[PASS] JavaScript syntax
+- 37 JS/MJS files passed node --check
+
+[PASS] Relative imports
+- 71 relative imports checked
+- 0 missing targets
+
+[PASS] CSS structure
+- 8 CSS files checked
+- 0 brace-balance errors
+
+[PASS] Style ownership audit (`npm run audit:styles`)
+- fund styles isolated from main.css
+- obsolete pre-operations shell CSS removed from main.css
+- legacy fund ledger/table CSS removed
+- no !important specificity patches in canonical UI CSS
+- no duplicate exact selector ownership across canonical UI styles
+- low-density desktop rows use explicit content-driven columns
+  - ops-ledger-row: 330px 150px 96px 84px
+  - ops-review__top: 24px 315px 110px 52px 50px
+  - fund-admin-rule: 92px 240px 56px 64px
+  - fund-admin-member__main: 240px 84px 100px 76px 58px
+
+[PASS] Structural cleanup
+- unused settingsView.js removed
+- obsolete old site shell selectors removed from main.css
+- obsolete old members list/search/table selectors removed from main.css
+- old fund ledger/table selectors removed from admin.css
+
+[INFO] Production build
+- npm run build was attempted.
+- This sandbox has no node_modules, so local Vite executable is unavailable (`vite: not found`).
+- No claim of production-build validation is made here; Vercel should install dependencies and run the build on deployment.
+
+[DB]
+- No schema / RPC / SQL changes in v1.24.0.

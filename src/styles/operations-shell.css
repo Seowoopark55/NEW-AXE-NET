@@ -1,4 +1,4 @@
-/* NEW AXE NET v1.21.1 · Premium banner + separated primary navigation
+/* NEW AXE NET v1.24.0 · Canonical site shell
    ------------------------------------------------------------------
    Brand at the top, one connected site navigation rail under the banner,
    then a centered operational workspace. No floating segmented menus.
@@ -24,7 +24,7 @@
 }
 
 .ops-topbar__inner {
-  width: min(1120px, calc(100% - 32px));
+  width: min(var(--axe-ui-site-max), calc(100% - 32px));
   height: 100%;
   margin: 0 auto;
   display: flex;
@@ -73,7 +73,7 @@
   background: transparent;
 }
 .ops-sitehead__inner {
-  width: min(1120px, calc(100% - 32px));
+  width: min(var(--axe-ui-site-max), calc(100% - 32px));
   margin: 0 auto;
   padding: 16px 0 0;
 }
@@ -228,7 +228,7 @@
 /* Workspace -------------------------------------------------------------- */
 .ops-main { min-width: 0; }
 .ops-main__inner {
-  width: min(1120px, calc(100% - 32px));
+  width: min(var(--axe-ui-site-max), calc(100% - 32px));
   margin: 0 auto;
   padding: 26px 0 58px;
 }
@@ -237,7 +237,7 @@
 @media (max-width: 720px) {
   .ops-topbar__inner,
   .ops-sitehead__inner,
-  .ops-main__inner { width: min(100% - 20px, 1120px); }
+  .ops-main__inner { width: min(100% - 20px, var(--axe-ui-site-max)); }
   .ops-brand__copy { display: none; }
   .ops-topbar__utility .status-pill { display: none; }
   .ops-sitehead__inner { padding-top: 10px; }

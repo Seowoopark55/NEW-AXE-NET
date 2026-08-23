@@ -1,10 +1,10 @@
-/* NEW AXE NET v1.20.1 · Members workspace
+/* NEW AXE NET v1.24.0 · Members workspace
    Flat operational layout shared with Fund. This file owns the members list
    shell; existing detail/create drawers keep their proven interaction CSS.
 */
 
 .ops-members {
-  width: min(960px, 100%);
+  width: min(var(--axe-ui-ops-workspace), 100%);
   margin: 0 auto;
   color: #e9e5dd;
 }
@@ -180,13 +180,13 @@
 .ops-member-row { cursor: pointer; transition: background .13s ease; }
 .ops-member-row:hover { background: rgba(255,255,255,.018); }
 .ops-member-row td { color: #c8c5be; font-size: 11.4px; }
-.ops-member-order { color: #73777d !important; font-variant-numeric: tabular-nums; }
+.ops-member-row td.ops-member-order { color: #73777d; font-variant-numeric: tabular-nums; }
 .ops-member-name strong { color: #ece8df; font-size: 12.3px; font-weight: 880; }
-.ops-member-discord { color: #aaa7a1 !important; }
+.ops-member-row td.ops-member-discord { color: #aaa7a1; }
 .ops-member-date { font-variant-numeric: tabular-nums; }
-.ops-member-badge { color: #b8a984 !important; }
+.ops-member-row td.ops-member-badge { color: #b8a984; }
 .ops-member-table .is-number { text-align: right; font-variant-numeric: tabular-nums; }
-.ops-member-empty { height: 72px !important; color: #72767d !important; text-align: center !important; }
+.ops-member-table td.ops-member-empty { height: 72px; color: #72767d; text-align: center; }
 
 .ops-member-col-order { width: 54px; }
 .ops-member-col-name { width: 132px; }

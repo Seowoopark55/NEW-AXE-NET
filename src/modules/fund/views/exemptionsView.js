@@ -12,7 +12,7 @@ export function renderExemptionsView(state) {
   const defaultWeek = Number(period?.week || 1);
 
   return `
-    <div class="fund-admin fund-admin--medium">
+    <div class="fund-admin fund-admin--exemptions">
       ${renderPageHeader('면제관리', '멤버별 공금 면제 기간을 시작 주차부터 종료 주차까지 관리합니다.')}
       ${admin.message ? `<div class="fund-inline-success">${escapeHtml(admin.message)}</div>` : ''}
       ${admin.error ? `<div class="fund-inline-error">${escapeHtml(admin.error)}</div>` : ''}

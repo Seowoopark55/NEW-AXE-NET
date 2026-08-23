@@ -1,3 +1,46 @@
+# NEW AXE NET v1.24.0 — AXE STYLE STRUCTURAL REBASE
+
+이번 버전은 화면별 여백을 다시 덧대는 패치가 아니라, 반복되던 **넓은 빈 공간의 구조적 원인을 제거하는 CSS/레이아웃 리베이스**입니다.
+
+## v1.24.0 핵심
+
+- 공금 UI 전체 CSS ownership 감사
+- 문제의 핵심이 중복 selector보다는 desktop 행의 `1fr` stretch 구조임을 확인하고 제거
+- 공금내역: 780px 내용 중심 workspace + `330 / 150 / 96 / 84` 고정 정보열
+- 검수대기: 640px compact queue + 고정 정보열
+- 요율관리: 등록 폼 640px / 적용이력 530px로 축소, 이력 행의 stretch column 제거
+- 멤버관리: 실제 리스트 640px + `멤버 / 대상 / 가입일 / 상태 / 관리` 고정 열
+- 잔액·면제·정합성 화면도 용도별 semantic max-width로 재정렬
+- `main.css`에서 현재 사용하지 않는 구형 sidebar/hero/navigation shell CSS 제거
+- `main.css`에서 구형 members list/table/search CSS 제거
+- `admin.css`에서 사용하지 않는 구형 fund ledger/table CSS 제거
+- unused `settingsView.js` 제거
+- canonical UI CSS의 `!important` 제거
+- 공통 width token을 `AXE UI SYSTEM 4.0`에 집중
+- 재발 방지용 `npm run audit:styles` 추가
+- 기능/DB 변경 없음
+
+## UI 원칙
+
+상위 960px workspace는 **중앙 정렬 기준선**입니다. 실제 데이터가 적은 화면까지 960px를 억지로 채우지 않습니다.
+기존 AXE NET처럼 정보량에 맞는 열 폭을 사용하고, 좁아진 업무 화면은 가운데 정렬합니다.
+
+상세 감사/구조 기준: `docs/AXE_STYLE_REBASE_1.0.md`
+
+## DB / SQL
+
+**추가 SQL 없음.** v1.22.0의 `020_fund_parity_audit.sql`까지 적용되어 있으면 Supabase SQL Editor에서 실행할 내용이 없습니다.
+
+## 적용
+
+1. v1.24.0 ZIP 압축 해제
+2. 기존 NEW AXE NET 프로젝트 전체 덮어쓰기
+3. GitHub Desktop Commit / Push
+4. Vercel 자동배포 확인
+5. 공금내역 / 검수대기 / 요율관리 / 멤버관리 / 면제관리 / 정합성점검 폭과 간격 확인
+
+---
+
 # NEW AXE NET v1.23.0 — FUND UI FINISH
 
 공금 기능 패리티를 유지한 채, 실사용 캡처에서 남아 있던 **검수대기 / 공금내역 / 면제관리 / 정합성점검 / 멤버관리** 화면을 마지막 마감 기준으로 정리한 버전입니다.

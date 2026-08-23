@@ -1,11 +1,11 @@
-/* NEW AXE NET v1.21.0 · Operations Home
+/* NEW AXE NET v1.24.0 · Operations Home
    ------------------------------------------------------------------
    A useful landing page, not a decorative dashboard. It reuses the same
    960px work grid as Members/Fund and keeps information flat and compact.
 */
 
 .ops-home {
-  width: min(960px, 100%);
+  width: min(var(--axe-ui-ops-workspace), 100%);
   margin: 0 auto;
   color: #e9e5dd;
 }

@@ -8,12 +8,12 @@ export function renderFeeRulesView(state) {
   const period = fund.selectedPeriod;
 
   return `
-    <div class="fund-admin fund-admin--narrow">
+    <div class="fund-admin fund-admin--rules-view">
       ${renderPageHeader('요율관리', `현재 주간 공금 ${formatMoney(currentFee)} · 적용 시작 주차를 등록하고 이력을 관리합니다.`)}
       ${admin.message ? `<div class="fund-inline-success">${escapeHtml(admin.message)}</div>` : ''}
       ${admin.error ? `<div class="fund-inline-error">${escapeHtml(admin.error)}</div>` : ''}
 
-      <section class="fund-admin-panel fund-admin-panel--form fund-admin-panel--rules">
+      <section class="fund-admin-panel fund-admin-panel--form fund-admin-panel--rule-form">
         ${panelHead('공금 금액 변경', '지정한 주차부터 새 금액이 적용됩니다.')}
         <form class="fund-admin-inline-form" data-fee-rule-form>
           <div class="fund-form-grid">
@@ -27,7 +27,7 @@ export function renderFeeRulesView(state) {
         </form>
       </section>
 
-      <section class="fund-admin-panel fund-admin-panel--rules">
+      <section class="fund-admin-panel fund-admin-panel--rule-history">
         ${panelHead('요율 적용 이력', '기본 규칙은 잠겨 있고 추가 규칙은 활성/비활성할 수 있습니다.', `${admin.feeRules.length}개`)}
         <div class="fund-admin-rule-list">${admin.feeRules.length ? admin.feeRules.map(renderRule).join('') : '<div class="fund-empty-state">등록된 요율이 없습니다.</div>'}</div>
       </section>

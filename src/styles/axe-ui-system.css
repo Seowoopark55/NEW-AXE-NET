@@ -1,13 +1,22 @@
-/* AXE UI SYSTEM 3.1 · Unified Operations UI
+/* AXE UI SYSTEM 4.0 · AXE Compact Operations UI
    ------------------------------------------------------------------
    기준: 기존 AXE NET 최신 운영본의 실제 화면 밀도/타이포/컨트롤.
-   NEW AXE NET은 이 수치를 기본값으로 사용하고, 기능 화면이 좁아지면
-   남는 폭을 좌측에 붙이지 않고 중앙에 둔다.
+   NEW AXE NET은 이 수치를 기본값으로 사용한다.
+   상위 workspace는 공통 축을 제공하지만 실제 데이터 열은 정보량만큼만
+   차지하고, 낮은 밀도의 목록은 1fr로 빈 폭을 강제로 소비하지 않는다.
 */
 
 :root {
   /* Shell / workspace */
   --axe-ui-shell-max: 1280px;
+  --axe-ui-site-max: 1120px;
+  --axe-ui-ops-workspace: 960px;
+  --axe-ui-data-wide: 820px;
+  --axe-ui-ledger-workspace: 780px;
+  --axe-ui-review-workspace: 640px;
+  --axe-ui-admin-wide: 860px;
+  --axe-ui-admin-medium: 700px;
+  --axe-ui-admin-panel: 640px;
   --axe-ui-content-pad-x: 18px;
   --axe-ui-section-gap: 14px;
   --axe-ui-block-gap: 12px;

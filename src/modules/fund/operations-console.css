@@ -1,12 +1,12 @@
-/* NEW AXE NET v1.20.1 · Unified Fund Operations
+/* NEW AXE NET v1.24.0 · AXE Compact Fund Operations
    ------------------------------------------------------------------
-   A calmer, site-like operational UI. The fund workspace no longer
-   stretches to fill the page; it uses deliberate widths, grouped data
-   blocks, quiet controls and a compact ledger feed instead of a wide table.
+   Structural rebase: low-density operational lists use content-driven
+   widths and explicit columns. The 960px shell remains a common axis,
+   but lists no longer stretch empty 1fr columns across that axis.
 */
 
 .ops-fund {
-  width: min(960px, 100%);
+  width: min(var(--axe-ui-ops-workspace), 100%);
   margin: 0 auto;
   color: #e9e5dd;
 }
@@ -279,7 +279,8 @@
 .ops-monthly__member { color: #e7e4dd; font-size: 12px; font-weight: 850; }
 .ops-monthly__week-title { display: block; color: #d7d3cb; font-size: 11px; }
 .ops-monthly__week-date { display: block; margin-top: 2px; color: #816a43; font-size: 9px; }
-.ops-monthly__current { background: rgba(255,181,46,.025) !important; box-shadow: inset 0 2px 0 rgba(255,181,46,.55); }
+.ops-monthly__table tbody tr td.ops-monthly__current,
+.ops-monthly__table thead tr th.ops-monthly__current { background: rgba(255,181,46,.025); box-shadow: inset 0 2px 0 rgba(255,181,46,.55); }
 .ops-monthly__table tbody tr:hover td { background: rgba(255,255,255,.018); }
 .ops-status { display: inline-flex; align-items: center; justify-content: center; min-width: 47px; height: 22px; padding: 0 7px; border: 1px solid rgba(255,255,255,.10); border-radius: 5px; color: #aaa; background: rgba(255,255,255,.025); font-size: 10px; font-weight: 850; }
 .ops-status--public { color: #93cfff; border-color: rgba(89,166,229,.25); background: rgba(89,166,229,.055); }
@@ -294,10 +295,10 @@
 .ops-status--exempt,
 .ops-status--future,
 .ops-status--muted { color: #777b82; }
-.ops-empty-cell { padding: 24px !important; color: #757980; font-size: 11px; text-align: center !important; }
+.ops-monthly__table td.ops-empty-cell { padding: 24px; color: #757980; font-size: 11px; text-align: center; }
 
 /* Ledger 3.0 ------------------------------------------------------------- */
-.ops-ledger { width: 100%; margin: 0; }
+.ops-ledger { width: min(var(--axe-ui-ledger-workspace), 100%); margin: 0 auto; }
 .ops-view-head--ledger { margin-bottom: 10px; }
 .ops-ledger-board {
   overflow: hidden;
@@ -324,7 +325,7 @@
 .ops-ledger-list { display: grid; }
 .ops-ledger-day {
   display: grid;
-  grid-template-columns: 68px minmax(0, 1fr);
+  grid-template-columns: 64px minmax(0, 1fr);
   border-bottom: 1px solid rgba(255,255,255,.09);
 }
 .ops-ledger-day:last-child { border-bottom: 0; }
@@ -339,10 +340,10 @@
 .ops-ledger-row {
   min-height: 55px;
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) 168px 104px 92px;
+  grid-template-columns: 330px 150px 96px 84px;
   align-items: center;
-  gap: 12px;
-  padding: 7px 9px 7px 12px;
+  gap: 10px;
+  padding: 7px 9px 7px 10px;
   border-bottom: 1px solid rgba(255,255,255,.045);
   transition: background .14s ease;
 }
@@ -389,7 +390,7 @@
 .ops-ledger-empty { padding: 30px 16px; color: #73777d; font-size: 11px; text-align: center; }
 
 /* Review queue 2.0 ------------------------------------------------------- */
-.ops-review { width: 100%; margin: 0; }
+.ops-review { width: min(var(--axe-ui-review-workspace), 100%); margin: 0 auto; }
 .ops-review .ops-surface { background: #0b0d10; }
 .ops-review__toolbar { min-height: 45px; padding-inline: 11px; background: rgba(255,255,255,.01); }
 .ops-review__select-all { display: inline-flex; align-items: center; gap: 7px; color: #a8a8a8; font-size: 10.5px; font-weight: 800; }
@@ -405,7 +406,7 @@
   transition: border-color .14s ease, background .14s ease;
 }
 .ops-review__item:hover { border-color: rgba(255,255,255,.10); background: rgba(255,255,255,.018); }
-.ops-review__top { display: grid; grid-template-columns: 24px minmax(240px,1fr) 145px 66px 50px; align-items: center; gap: 9px; min-width: 0; }
+.ops-review__top { display: grid; grid-template-columns: 24px 315px 110px 52px 50px; align-items: center; gap: 8px; min-width: 0; }
 .ops-review__check { display: flex; align-items: center; justify-content: center; }
 .ops-review__identity { min-width: 0; }
 .ops-review__identity strong { display: block; overflow: hidden; color: #e5e1d9; font-size: 12px; font-weight: 870; text-overflow: ellipsis; white-space: nowrap; }
@@ -429,9 +430,10 @@
 
 @media (max-width: 860px) {
   .ops-fund-summary { grid-template-columns: 1fr; }
+  .ops-ledger,.ops-review { width: 100%; }
   .ops-fund-summary__balance { border-right: 0; border-bottom: 1px solid rgba(255,255,255,.055); }
   .ops-fund-summary__metrics > div { flex: 1 1 0; min-width: 0; }
-  .ops-ledger-row { grid-template-columns: minmax(220px,1fr) 138px 98px 92px; gap: 9px; }
+  .ops-ledger-row { grid-template-columns: minmax(230px,1fr) 132px 94px 82px; gap: 8px; }
 }
 
 @media (max-width: 720px) {

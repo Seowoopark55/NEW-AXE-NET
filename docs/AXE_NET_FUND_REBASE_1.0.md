@@ -80,11 +80,11 @@ NEW의 안전 삭제/복구와 수정 모달은 기존 기능을 해치지 않�
 NEW DB에서는 기존 live status engine을 건드리지 않기 위해 각 주차를 개별 `fund_exemptions` 행으로 저장하고, 동일 등록 범위를 `range_key`로 묶는다.
 
 ## CSS 소유권
-리베이스 시 구형 `main.css`의 공금 전용 v0.9~v1.4 블록을 제거한다.
+리베이스 시 구형 `main.css`의 공금 전용 블록을 제거한다.
 
-공금 UI는 아래 세 파일만 canonical owner로 사용한다.
-- `src/modules/fund/fund.css` — 공통/사용자 화면
-- `src/modules/fund/views/overview.css` — 월별현황
-- `src/modules/fund/views/admin.css` — 관리자 화면
+v1.24 구조 리베이스 이후 공금 UI canonical owner는 아래 세 파일이다.
+- `src/modules/fund/fund.css` — 공통/사용자 workflow
+- `src/modules/fund/operations-console.css` — 공금 shell / 월별현황 / 공금내역 / 검수대기
+- `src/modules/fund/views/admin.css` — 잔액 / 요율 / 면제 / 정합성 / 공금 멤버관리
 
-같은 문제를 다시 만들 수 있는 버전별 `.fund-*` override 누적은 금지한다.
+`main.css`는 공금 selector를 소유하지 않는다. 같은 문제를 다시 만들 수 있는 버전별 `.fund-*` override 누적은 금지한다. 상세 기준은 `AXE_STYLE_REBASE_1.0.md`를 따른다.

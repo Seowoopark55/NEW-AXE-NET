@@ -15,13 +15,14 @@ export function renderFundMembersView(state) {
   const rows = members.items.slice().sort((a, b) => Number(a.sort_order ?? 9999) - Number(b.sort_order ?? 9999));
 
   return `
-    <div class="fund-admin fund-admin--medium">
+    <div class="fund-admin fund-admin--members">
       ${renderPageHeader('멤버관리', '공금 대상 여부와 예외 기준만 관리합니다. 회원 원본 정보는 멤버 메뉴에서 관리합니다.', renderPeriodSelect(fund.periods, period))}
       ${admin.message ? `<div class="fund-inline-success">${escapeHtml(admin.message)}</div>` : ''}
       ${admin.error ? `<div class="fund-inline-error">${escapeHtml(admin.error)}</div>` : ''}
 
       <section class="fund-admin-panel fund-admin-panel--members">
         <div class="fund-admin-panel__head is-row"><div><h3>공금 대상 설정</h3><p>예외가 필요한 멤버만 설정을 펼쳐 기준일과 메모를 수정합니다.</p></div><b>${rows.length}명</b></div>
+        <div class="fund-admin-member__columns" aria-hidden="true"><span>멤버</span><span>대상</span><span>가입일</span><span>상태</span><span>관리</span></div>
         <div class="fund-admin-member-list">
           ${rows.map((member) => renderMember(member, settings.get(member.member_key), statusMap.get(member.nickname), admin.saving)).join('')}
         </div>

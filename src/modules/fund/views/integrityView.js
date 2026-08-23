@@ -14,7 +14,7 @@ export function renderIntegrityView(state) {
   ];
 
   return `
-    <div class="fund-admin fund-admin--medium">
+    <div class="fund-admin fund-admin--integrity-view">
       ${renderPageHeader('정합성점검', '공금 신청과 실제 반영 기록을 비교해 문제가 있는 항목만 확인하고 안전하게 복구합니다.', '<button class="fund-secondary-button" type="button" data-fund-refresh>다시 점검</button>')}
 
       ${state.fund.admin.message ? `<div class="fund-inline-success">${escapeHtml(state.fund.admin.message)}</div>` : ''}

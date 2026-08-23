@@ -13,7 +13,7 @@ export function renderBalanceView(state) {
   const latest = admin.balanceChecks?.[0] || null;
 
   return `
-    <div class="fund-admin fund-admin--medium">
+    <div class="fund-admin fund-admin--balance">
       ${renderPageHeader('잔액점검', `공용계좌 계산 잔액 ${formatMoney(balance.public)} · 실제 인게임 잔액과 대조합니다.`)}
       ${admin.message ? `<div class="fund-inline-success">${escapeHtml(admin.message)}</div>` : ''}
       ${admin.error ? `<div class="fund-inline-error">${escapeHtml(admin.error)}</div>` : ''}
