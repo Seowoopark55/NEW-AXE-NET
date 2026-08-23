@@ -67,7 +67,7 @@ export function renderHistoryView(state) {
                 ${option('분할납부', '분할납부', filters.account)}
               </select>
             </label>
-            <button class="ops-text-button" type="button" data-history-filter-reset ${showingDeleted ? 'disabled' : ''}>필터 초기화</button>
+            <button class="ops-text-button ops-ledger-reset" type="button" data-history-filter-reset ${showingDeleted ? 'disabled' : ''}>필터 초기화</button>
           </div>
           <div class="ops-ledger-toolbar__meta">
             <span>${showingDeleted ? `삭제 ${activeRows.length}건` : `${activeRows.length}건 표시`}</span>
@@ -144,7 +144,7 @@ function renderLedgerRow(item) {
           : '<span class="ops-ledger-row__no-evidence">—</span>'}
         ${deleted
           ? `<button class="ops-row-button" type="button" data-restore-ledger="${item.id}">복구</button>`
-          : `<button class="ops-row-button" type="button" data-edit-ledger="${item.id}">수정</button>`}
+          : `<button class="ops-row-button ops-row-button--more" type="button" data-edit-ledger="${item.id}" aria-label="내역 수정" title="수정">⋯</button>`}
       </div>
     </article>
   `;

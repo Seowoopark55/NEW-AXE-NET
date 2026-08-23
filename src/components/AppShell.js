@@ -28,8 +28,8 @@ export function renderAppShell(root) {
             <div class="ops-hero__veil"></div>
             <div class="ops-hero__caption">
               <span>AXE OPERATIONS NETWORK</span>
-              <strong>NEW AXE NET</strong>
-              <p>MEMBERS · FUND · OPERATIONS</p>
+              <strong>OPERATIONS</strong>
+              <p>MEMBERS · FUND</p>
             </div>
           </div>
 

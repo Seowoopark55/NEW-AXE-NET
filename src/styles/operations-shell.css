@@ -1,4 +1,4 @@
-/* NEW AXE NET v1.20.0 · Unified site shell
+/* NEW AXE NET v1.20.1 · Unified site shell
    ------------------------------------------------------------------
    Brand at the top, one connected site navigation rail under the banner,
    then a centered operational workspace. No floating segmented menus.
@@ -105,8 +105,8 @@
   border-left: 2px solid rgba(255,181,46,.78);
 }
 .ops-hero__caption span { color: #c9953e; font-size: 8.5px; font-weight: 900; letter-spacing: .15em; }
-.ops-hero__caption strong { color: #fff5e4; font-size: 18px; font-weight: 900; letter-spacing: .01em; line-height: 1.08; }
-.ops-hero__caption p { margin: 0; color: rgba(235,226,211,.56); font-size: 9px; font-weight: 760; letter-spacing: .07em; }
+.ops-hero__caption strong { color: #fff5e4; font-size: 16px; font-weight: 900; letter-spacing: .045em; line-height: 1.08; }
+.ops-hero__caption p { margin: 0; color: rgba(235,226,211,.58); font-size: 9.5px; font-weight: 760; letter-spacing: .09em; }
 
 .ops-module-rail {
   height: 48px;

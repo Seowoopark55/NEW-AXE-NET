@@ -1,3 +1,35 @@
+# NEW AXE NET v1.20.1 — Grid & Detail Polish
+
+v1.20.0의 디자인 언어를 유지하면서 **공통 좌우 기준선 / 배너 중복 / 멤버 summary / 공금내역 디테일을 마감하는 버전**입니다.
+
+## 핵심 변경
+
+- 멤버와 공금 업무영역을 동일한 960px 중앙 workspace로 통일
+- 공금의 월별현황 / 공금내역 / 검수대기에서 별도 900px nested max-width 제거
+- 배너 안의 `NEW AXE NET` 중복 텍스트 제거, 브랜드 캡션 축약
+- 멤버 summary rail을 4등분해 좌측 쏠림 제거
+- 공금내역 메타 typography 미세 확대
+- `직접` 배지를 보라색 대신 중성 gray 스타일로 변경
+- 수정 action을 compact `⋯` 버튼으로 변경 (동작은 기존과 동일)
+- 필터 초기화를 ghost control로 통일
+- 날짜 그룹 경계를 강화해 ledger feed 가독성 개선
+
+## DB / SQL
+
+**DB 변경 없음. Supabase SQL Editor에 입력할 내용 없음.**
+
+## 적용
+
+1. v1.20.1 ZIP 압축 해제
+2. 기존 NEW AXE NET 프로젝트에 전체 덮어쓰기
+3. GitHub Desktop Commit
+4. Push
+5. Vercel 자동배포 확인
+
+설계 문서: `docs/UNIFIED_UI_1.1.md`
+
+---
+
 # NEW AXE NET v1.20.0 — Unified UI Pass
 
 이번 버전은 기능 추가가 아니라 **사이트 전체의 디자인 언어를 한 번에 맞추는 전역 UI 정돈 버전**입니다.
