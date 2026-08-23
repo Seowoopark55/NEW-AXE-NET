@@ -1,4 +1,4 @@
-/* NEW AXE NET v1.20.1 · Unified site shell
+/* NEW AXE NET v1.21.1 · Premium banner + separated primary navigation
    ------------------------------------------------------------------
    Brand at the top, one connected site navigation rail under the banner,
    then a centered operational workspace. No floating segmented menus.
@@ -64,8 +64,14 @@
 .ops-topbar .auth-signed-in__text span { font-size: 8px; }
 .ops-topbar .auth-signed-in__text strong { font-size: 10.5px; }
 
-/* Connected banner + site navigation ------------------------------------ */
-.ops-sitehead { background: linear-gradient(180deg, rgba(255,178,32,.01), transparent 76%); }
+/* Banner + primary navigation --------------------------------------------
+   The hero is a standalone brand object. The category navigation below is
+   deliberately separated by physical spacing, its own border and radius.
+   This prevents the old "tabs inside the banner box" visual coupling.
+*/
+.ops-sitehead {
+  background: transparent;
+}
 .ops-sitehead__inner {
   width: min(1120px, calc(100% - 32px));
   margin: 0 auto;
@@ -75,62 +81,65 @@
 .ops-hero {
   position: relative;
   isolation: isolate;
-  height: 128px;
+  width: 100%;
+  height: 160px;
   overflow: hidden;
-  border: 1px solid rgba(226,157,37,.15);
-  border-bottom-color: rgba(255,255,255,.055);
-  border-radius: 13px 13px 0 0;
+  padding: 0;
+  border: 1px solid rgba(226,157,37,.20);
+  border-radius: 13px;
+  color: inherit;
   background:
-    linear-gradient(90deg, rgba(4,5,6,.87) 0%, rgba(4,5,6,.46) 34%, rgba(4,5,6,.07) 68%, rgba(4,5,6,.32) 100%),
-    url('/assets/axe-brand-hero.webp') center 50% / cover no-repeat;
-  box-shadow: inset 0 1px rgba(255,255,255,.025);
+    linear-gradient(180deg, rgba(3,4,5,.01), rgba(3,4,5,.12)),
+    url('/assets/axe-hero-premium.webp') center center / cover no-repeat;
+  box-shadow:
+    0 12px 34px rgba(0,0,0,.20),
+    inset 0 1px rgba(255,255,255,.025);
+  appearance: none;
+  cursor: pointer;
+  transition: border-color .15s ease, filter .15s ease, transform .15s ease;
 }
 .ops-hero::after {
   content: "";
   position: absolute;
   inset: 0;
-  z-index: 0;
-  background: radial-gradient(circle at 22% 65%, rgba(255,173,26,.10), transparent 31%);
+  border-radius: inherit;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,.16), transparent 16%, transparent 84%, rgba(0,0,0,.16)),
+    linear-gradient(180deg, rgba(255,255,255,.015), rgba(0,0,0,.08));
   pointer-events: none;
 }
-.ops-hero__veil { display: none; }
-.ops-hero__caption {
-  position: absolute;
-  z-index: 1;
-  left: 18px;
-  bottom: 15px;
-  display: grid;
-  gap: 3px;
-  padding-left: 11px;
-  border-left: 2px solid rgba(255,181,46,.78);
+.ops-hero:hover {
+  border-color: rgba(255,181,46,.32);
+  filter: brightness(1.035);
 }
-.ops-hero__caption span { color: #c9953e; font-size: 8.5px; font-weight: 900; letter-spacing: .15em; }
-.ops-hero__caption strong { color: #fff5e4; font-size: 16px; font-weight: 900; letter-spacing: .045em; line-height: 1.08; }
-.ops-hero__caption p,
-.ops-hero__caption .ops-hero__sub { margin: 0; color: rgba(235,226,211,.58); font-size: 9.5px; font-weight: 760; letter-spacing: .09em; }
+.ops-hero:active { transform: translateY(1px); }
+.ops-hero:focus-visible {
+  outline: 2px solid rgba(255,181,46,.55);
+  outline-offset: 3px;
+}
 
 .ops-module-rail {
-  height: 48px;
+  height: 50px;
   display: flex;
   align-items: stretch;
-  border: 1px solid rgba(255,255,255,.065);
-  border-top: 0;
-  border-radius: 0 0 11px 11px;
+  margin-top: 10px;
+  border: 1px solid rgba(255,255,255,.075);
+  border-radius: 10px;
   background: #0d0f12;
-  box-shadow: 0 12px 28px rgba(0,0,0,.14);
+  box-shadow: 0 10px 24px rgba(0,0,0,.12);
 }
 .ops-module-nav {
   width: 100%;
   display: flex;
   align-items: stretch;
-  padding: 0 14px;
-  gap: 4px;
+  padding: 0 12px;
+  gap: 10px;
 }
 .ops-module-nav__item {
   position: relative;
-  min-width: 96px;
-  height: 47px;
-  padding: 0 16px;
+  min-width: 92px;
+  height: 49px;
+  padding: 0 14px;
   border: 0;
   color: #8d9197;
   background: transparent;
@@ -142,15 +151,19 @@
 .ops-module-nav__item::after {
   content: "";
   position: absolute;
-  left: 15px;
-  right: 15px;
-  bottom: 0;
+  left: 14px;
+  right: 14px;
+  bottom: -1px;
   height: 2px;
+  border-radius: 999px 999px 0 0;
   transform: scaleX(0);
   background: #ffb52e;
   transition: transform .15s ease;
 }
-.ops-module-nav__item:hover { color: #e2ded6; background: rgba(255,255,255,.018); }
+.ops-module-nav__item:hover {
+  color: #e2ded6;
+  background: rgba(255,255,255,.016);
+}
 .ops-module-nav__item--active { color: #fff3da; }
 .ops-module-nav__item--active::after { transform: scaleX(1); }
 
@@ -170,15 +183,10 @@
   .ops-brand__copy { display: none; }
   .ops-topbar__utility .status-pill { display: none; }
   .ops-sitehead__inner { padding-top: 10px; }
-  .ops-hero { height: 100px; border-radius: 10px 10px 0 0; }
-  .ops-hero__caption { left: 12px; bottom: 11px; padding-left: 8px; }
-  .ops-hero__caption > span:not(.ops-hero__sub),
-  .ops-hero__caption p,
-  .ops-hero__sub { display: none; }
-  .ops-hero__caption strong { font-size: 14px; }
-  .ops-module-rail { height: 44px; }
-  .ops-module-nav { padding-inline: 6px; }
-  .ops-module-nav__item { min-width: 82px; height: 43px; padding-inline: 10px; }
+  .ops-hero { height: 112px; border-radius: 10px; }
+  .ops-module-rail { height: 46px; margin-top: 8px; border-radius: 9px; }
+  .ops-module-nav { padding-inline: 5px; gap: 2px; }
+  .ops-module-nav__item { min-width: 78px; height: 45px; padding-inline: 9px; font-size: 12px; }
   .ops-main__inner { padding-top: 20px; }
 }
 
@@ -196,21 +204,3 @@ button.ops-brand {
 }
 button.ops-brand:hover .ops-brand__copy strong { color: #ffd78a; }
 button.ops-brand:focus-visible,
-button.ops-hero:focus-visible {
-  outline: 2px solid rgba(255,181,46,.55);
-  outline-offset: 2px;
-}
-button.ops-hero {
-  width: 100%;
-  padding: 0;
-  border: 1px solid rgba(226,157,37,.15);
-  color: inherit;
-  text-align: left;
-  appearance: none;
-  cursor: pointer;
-}
-button.ops-hero:hover {
-  border-color: rgba(255,181,46,.27);
-  filter: brightness(1.025);
-}
-button.ops-hero .ops-hero__caption { pointer-events: none; }

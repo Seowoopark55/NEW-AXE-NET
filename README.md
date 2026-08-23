@@ -1,4 +1,15 @@
-# NEW AXE NET v1.21.0 — Home Workspace & Balance Polish
+# NEW AXE NET v1.21.1 — Premium Banner & Navigation Separation
+
+## v1.21.1 변경점
+
+- 생성한 AXE 프리미엄 배너를 사이트 실제 hero asset으로 적용 (`public/assets/axe-hero-premium.webp`)
+- 배너 내부 코드 텍스트/문구 전부 제거: 배너는 이미지 자체만 표시
+- 배너 클릭 및 상단 NEW AXE NET 로고 클릭은 기존처럼 홈으로 이동
+- `홈 / 멤버 / 공금` 카테고리 네비게이션을 배너 박스에서 완전히 분리
+- 배너는 독립 rounded hero, 카테고리는 10px 아래 별도 navigation rail로 분리
+- 모바일에서도 hero와 navigation이 별도 박스로 유지
+- DB/SQL 변경 없음
+
 
 이번 버전은 v1.20.1의 사이트 구조를 유지하면서 **실제 홈 화면을 추가하고, 배너/로고를 홈 진입점으로 만들며 공금 상단 밸런스를 마감하는 버전**입니다.
 
@@ -27,7 +38,7 @@
 
 ## 적용
 
-1. v1.21.0 ZIP 압축 해제
+1. v1.21.1 ZIP 압축 해제
 2. 기존 NEW AXE NET 프로젝트에 전체 덮어쓰기
 3. GitHub Desktop Commit
 4. Push
