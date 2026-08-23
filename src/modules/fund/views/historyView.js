@@ -144,7 +144,7 @@ function renderLedgerRow(item) {
           : '<span class="ops-ledger-row__no-evidence">—</span>'}
         ${deleted
           ? `<button class="ops-row-button" type="button" data-restore-ledger="${item.id}">복구</button>`
-          : `<button class="ops-row-button ops-row-button--more" type="button" data-edit-ledger="${item.id}" aria-label="내역 수정" title="수정">⋯</button>`}
+          : `<button class="ops-row-button ops-row-button--edit" type="button" data-edit-ledger="${item.id}" aria-label="내역 수정">수정</button>`}
       </div>
     </article>
   `;

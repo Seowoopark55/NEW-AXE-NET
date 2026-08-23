@@ -130,7 +130,7 @@ const initialState = {
   },
 
   ui: {
-    activeModule: 'members',
+    activeModule: 'home',
   },
 };
 

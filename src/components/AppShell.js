@@ -5,15 +5,15 @@ export function renderAppShell(root) {
     <div class="ops-shell">
       <header class="ops-topbar">
         <div class="ops-topbar__inner">
-          <div class="ops-brand" aria-label="NEW AXE NET">
-            <div class="ops-brand__mark">
+          <button class="ops-brand ops-home-trigger" type="button" data-nav-home aria-label="NEW AXE NET 홈으로 이동">
+            <span class="ops-brand__mark">
               <img src="/assets/axe-brand-mark.webp" alt="AXE" />
-            </div>
-            <div class="ops-brand__copy">
+            </span>
+            <span class="ops-brand__copy">
               <strong>NEW AXE NET</strong>
               <span>OPERATIONS</span>
-            </div>
-          </div>
+            </span>
+          </button>
 
           <div class="ops-topbar__utility">
             <div id="connection-status" class="connection-status"></div>
@@ -24,17 +24,18 @@ export function renderAppShell(root) {
 
       <section class="ops-sitehead" aria-label="NEW AXE NET 배너와 주요 메뉴">
         <div class="ops-sitehead__inner">
-          <div class="ops-hero" aria-label="AXE Operations Network">
-            <div class="ops-hero__veil"></div>
-            <div class="ops-hero__caption">
+          <button class="ops-hero ops-home-trigger" type="button" data-nav-home aria-label="운영 홈으로 이동" title="홈으로 이동">
+            <span class="ops-hero__veil"></span>
+            <span class="ops-hero__caption">
               <span>AXE OPERATIONS NETWORK</span>
               <strong>OPERATIONS</strong>
-              <p>MEMBERS · FUND</p>
-            </div>
-          </div>
+              <span class="ops-hero__sub">MEMBERS · FUND</span>
+            </span>
+          </button>
 
           <div class="ops-module-rail">
             <nav class="ops-module-nav" aria-label="주요 메뉴">
+              <button class="ops-module-nav__item" type="button" data-nav-module="home">홈</button>
               <button class="ops-module-nav__item" type="button" data-nav-module="members">멤버</button>
               <button class="ops-module-nav__item" type="button" data-nav-module="fund">공금</button>
             </nav>
@@ -53,11 +54,12 @@ export function renderAppShell(root) {
   root.querySelectorAll('[data-nav-module]').forEach((button) => {
     button.addEventListener('click', () => {
       const moduleName = button.dataset.navModule;
-      store.updateState((state) => ({
-        ...state,
-        ui: { ...state.ui, activeModule: moduleName },
-      }));
+      navigateTo(moduleName);
     });
+  });
+
+  root.querySelectorAll('[data-nav-home]').forEach((element) => {
+    element.addEventListener('click', () => navigateTo('home'));
   });
 
   renderConnectionStatus(store.getState().system);
@@ -67,6 +69,13 @@ export function renderAppShell(root) {
     renderConnectionStatus(state.system);
     renderNavigation(state.ui.activeModule);
   });
+}
+
+function navigateTo(moduleName) {
+  store.updateState((state) => ({
+    ...state,
+    ui: { ...state.ui, activeModule: moduleName },
+  }));
 }
 
 function renderNavigation(activeModule) {

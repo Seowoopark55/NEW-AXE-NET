@@ -106,7 +106,8 @@
 }
 .ops-hero__caption span { color: #c9953e; font-size: 8.5px; font-weight: 900; letter-spacing: .15em; }
 .ops-hero__caption strong { color: #fff5e4; font-size: 16px; font-weight: 900; letter-spacing: .045em; line-height: 1.08; }
-.ops-hero__caption p { margin: 0; color: rgba(235,226,211,.58); font-size: 9.5px; font-weight: 760; letter-spacing: .09em; }
+.ops-hero__caption p,
+.ops-hero__caption .ops-hero__sub { margin: 0; color: rgba(235,226,211,.58); font-size: 9.5px; font-weight: 760; letter-spacing: .09em; }
 
 .ops-module-rail {
   height: 48px;
@@ -171,11 +172,45 @@
   .ops-sitehead__inner { padding-top: 10px; }
   .ops-hero { height: 100px; border-radius: 10px 10px 0 0; }
   .ops-hero__caption { left: 12px; bottom: 11px; padding-left: 8px; }
-  .ops-hero__caption span,
-  .ops-hero__caption p { display: none; }
+  .ops-hero__caption > span:not(.ops-hero__sub),
+  .ops-hero__caption p,
+  .ops-hero__sub { display: none; }
   .ops-hero__caption strong { font-size: 14px; }
   .ops-module-rail { height: 44px; }
   .ops-module-nav { padding-inline: 6px; }
   .ops-module-nav__item { min-width: 82px; height: 43px; padding-inline: 10px; }
   .ops-main__inner { padding-top: 20px; }
 }
+
+/* v1.21 · home navigation ------------------------------------------------ */
+.ops-home-trigger {
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+button.ops-brand {
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+}
+button.ops-brand:hover .ops-brand__copy strong { color: #ffd78a; }
+button.ops-brand:focus-visible,
+button.ops-hero:focus-visible {
+  outline: 2px solid rgba(255,181,46,.55);
+  outline-offset: 2px;
+}
+button.ops-hero {
+  width: 100%;
+  padding: 0;
+  border: 1px solid rgba(226,157,37,.15);
+  color: inherit;
+  text-align: left;
+  appearance: none;
+  cursor: pointer;
+}
+button.ops-hero:hover {
+  border-color: rgba(255,181,46,.27);
+  filter: brightness(1.025);
+}
+button.ops-hero .ops-hero__caption { pointer-events: none; }
