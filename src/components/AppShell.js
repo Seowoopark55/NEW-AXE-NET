@@ -56,6 +56,7 @@ export function renderAppShell(root) {
           </button>
 
           <div class="ops-topbar__utility">
+            <div id="quick-access-root"></div>
             <div id="connection-status" class="connection-status"></div>
             <div id="auth-root"></div>
           </div>

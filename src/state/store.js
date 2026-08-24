@@ -22,6 +22,17 @@ const initialState = {
     loginOpen: false,
   },
 
+  shortcuts: {
+    initialized: false,
+    loading: false,
+    items: [],
+    open: false,
+    managerOpen: false,
+    editingId: null,
+    saving: false,
+    error: null,
+  },
+
   members: {
     items: [],
     loading: false,

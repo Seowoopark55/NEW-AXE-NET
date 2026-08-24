@@ -1,5 +1,6 @@
 import { store } from '../../state/store.js';
 import { renderHomeView } from './homeView.js';
+import { navigateToShortcut } from '../shortcuts/shortcutTargets.js';
 
 export function initHomeModule() {
   const root = document.querySelector('#module-root');
@@ -17,6 +18,10 @@ export function initHomeModule() {
             activeModule: moduleName,
           },
         }));
+      },
+
+      onOpenShortcut(targetKey) {
+        navigateToShortcut(targetKey);
       },
 
       onOpenNotice(noticeId = null) {

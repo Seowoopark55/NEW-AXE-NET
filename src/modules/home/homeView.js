@@ -18,9 +18,17 @@ export function renderHomeView(root, state, actions = {}) {
     .slice(0, 4);
   const dataLoading = Boolean(fund.loading || !fund.initialized || state.notice?.loading || state.tube?.loading);
 
+  const shortcuts = Array.isArray(state.shortcuts?.items) ? state.shortcuts.items : [];
+
   root.innerHTML = `
     <section class="ops-home" aria-label="NEW AXE NET 홈">
       ${dataLoading ? '<div class="ops-home__loading">최신 데이터를 불러오는 중입니다.</div>' : ''}
+      ${shortcuts.length ? `
+        <div class="ops-home-shortcuts" aria-label="내 바로가기">
+          <span class="ops-home-shortcuts__label">⚡ 바로가기</span>
+          ${shortcuts.map((item) => `<button class="ops-home-shortcuts__item" type="button" data-home-shortcut="${escapeHtml(item.target_key)}">${escapeHtml(item.label)}</button>`).join('')}
+        </div>
+      ` : ''}
 
       <div class="ops-home-overview">
         <section class="ops-home-card">
@@ -125,6 +133,10 @@ function renderVideoPreview(video) {
 function bindHomeEvents(root, actions) {
   root.querySelectorAll('[data-home-module]').forEach((button) => {
     button.addEventListener('click', () => actions.onOpenModule?.(button.dataset.homeModule));
+  });
+
+  root.querySelectorAll('[data-home-shortcut]').forEach((button) => {
+    button.addEventListener('click', () => actions.onOpenShortcut?.(button.dataset.homeShortcut));
   });
 
   root.querySelectorAll('[data-home-fund-section]').forEach((button) => {

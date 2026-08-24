@@ -16,6 +16,18 @@ import {
 
 const ALLOWED_PAYMENT_MODES = new Set(['공용계좌', '회사잔고', '분할납부']);
 
+const SHORTCUT_TARGET_KEYS = new Set([
+  'home',
+  'notice.general', 'notice.patch', 'notice.operations',
+  'info.craft', 'info.quest', 'info.process', 'info.modbook', 'info.skill',
+  'outlaw.stats', 'outlaw.guide', 'outlaw.map', 'tube',
+  'fund.overview', 'fund.payment', 'fund.submissions',
+  'fund.review', 'fund.history', 'fund.balance', 'fund.feeRules', 'fund.exemptions', 'fund.integrity', 'fund.fundMembers',
+  'assets.accounts', 'assets.company', 'assets.returns', 'members',
+]);
+const SHORTCUT_MAX_COUNT = 6;
+const SHORTCUT_MAX_LABEL_LENGTH = 24;
+
 
 function tubeApiError(statusCode, message) {
   const error = new Error(message);
@@ -88,6 +100,139 @@ export default async function handler(req, res) {
         member: publicMember(context.member),
         expires_at: context.session.expires_at,
       });
+    }
+
+    if (action === 'shortcut_list') {
+      const { data, error } = await context.client
+        .from('member_shortcuts')
+        .select('id,label,target_key,sort_order,created_at,updated_at')
+        .eq('member_key', context.member.member_key)
+        .order('sort_order', { ascending: true })
+        .order('id', { ascending: true });
+      if (error) throw error;
+      return sendJson(res, 200, { ok: true, shortcuts: data || [] });
+    }
+
+    if (action === 'shortcut_save') {
+      const rawId = body.id == null || body.id === '' ? null : Number(body.id);
+      const label = String(body.label || '').trim();
+      const targetKey = String(body.target_key || '').trim();
+
+      if (rawId !== null && (!Number.isInteger(rawId) || rawId <= 0)) {
+        return sendJson(res, 400, { ok: false, message: '수정할 바로가기 정보가 올바르지 않습니다.' });
+      }
+      if (!label) {
+        return sendJson(res, 400, { ok: false, message: '바로가기 이름을 입력하세요.' });
+      }
+      if (label.length > SHORTCUT_MAX_LABEL_LENGTH) {
+        return sendJson(res, 400, { ok: false, message: `바로가기 이름은 ${SHORTCUT_MAX_LABEL_LENGTH}자 이내로 입력하세요.` });
+      }
+      if (!SHORTCUT_TARGET_KEYS.has(targetKey)) {
+        return sendJson(res, 400, { ok: false, message: '지원하지 않는 바로가기 위치입니다.' });
+      }
+
+      if (rawId === null) {
+        const { count, error: countError } = await context.client
+          .from('member_shortcuts')
+          .select('id', { count: 'exact', head: true })
+          .eq('member_key', context.member.member_key);
+        if (countError) throw countError;
+        if (Number(count || 0) >= SHORTCUT_MAX_COUNT) {
+          return sendJson(res, 409, { ok: false, message: `바로가기는 최대 ${SHORTCUT_MAX_COUNT}개까지 등록할 수 있습니다.` });
+        }
+
+        const { data: lastRows, error: lastError } = await context.client
+          .from('member_shortcuts')
+          .select('sort_order')
+          .eq('member_key', context.member.member_key)
+          .order('sort_order', { ascending: false })
+          .limit(1);
+        if (lastError) throw lastError;
+        const sortOrder = Number(lastRows?.[0]?.sort_order ?? -1) + 1;
+
+        const { data, error } = await context.client
+          .from('member_shortcuts')
+          .insert({
+            member_key: context.member.member_key,
+            label,
+            target_key: targetKey,
+            sort_order: sortOrder,
+          })
+          .select('id,label,target_key,sort_order,created_at,updated_at')
+          .single();
+        if (error) throw error;
+        return sendJson(res, 200, { ok: true, shortcut: data });
+      }
+
+      const { data, error } = await context.client
+        .from('member_shortcuts')
+        .update({
+          label,
+          target_key: targetKey,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', rawId)
+        .eq('member_key', context.member.member_key)
+        .select('id,label,target_key,sort_order,created_at,updated_at')
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) return sendJson(res, 404, { ok: false, message: '수정할 바로가기를 찾을 수 없습니다.' });
+      return sendJson(res, 200, { ok: true, shortcut: data });
+    }
+
+    if (action === 'shortcut_delete') {
+      const id = Number(body.id);
+      if (!Number.isInteger(id) || id <= 0) {
+        return sendJson(res, 400, { ok: false, message: '삭제할 바로가기 정보가 올바르지 않습니다.' });
+      }
+
+      const { data, error } = await context.client
+        .from('member_shortcuts')
+        .delete()
+        .eq('id', id)
+        .eq('member_key', context.member.member_key)
+        .select('id')
+        .maybeSingle();
+      if (error) throw error;
+      if (!data) return sendJson(res, 404, { ok: false, message: '삭제할 바로가기를 찾을 수 없습니다.' });
+      return sendJson(res, 200, { ok: true, id });
+    }
+
+    if (action === 'shortcut_reorder') {
+      const ids = Array.isArray(body.ids)
+        ? body.ids.map((value) => Number(value)).filter(Number.isInteger)
+        : [];
+      if (!ids.length || ids.length > SHORTCUT_MAX_COUNT || new Set(ids).size !== ids.length) {
+        return sendJson(res, 400, { ok: false, message: '바로가기 순서 정보가 올바르지 않습니다.' });
+      }
+
+      const { data: ownedRows, error: ownedError } = await context.client
+        .from('member_shortcuts')
+        .select('id')
+        .eq('member_key', context.member.member_key)
+        .in('id', ids);
+      if (ownedError) throw ownedError;
+      if ((ownedRows || []).length !== ids.length) {
+        return sendJson(res, 403, { ok: false, message: '본인의 바로가기만 순서를 변경할 수 있습니다.' });
+      }
+
+      for (let index = 0; index < ids.length; index += 1) {
+        const { error } = await context.client
+          .from('member_shortcuts')
+          .update({ sort_order: index, updated_at: new Date().toISOString() })
+          .eq('id', ids[index])
+          .eq('member_key', context.member.member_key);
+        if (error) throw error;
+      }
+
+      const { data, error } = await context.client
+        .from('member_shortcuts')
+        .select('id,label,target_key,sort_order,created_at,updated_at')
+        .eq('member_key', context.member.member_key)
+        .order('sort_order', { ascending: true })
+        .order('id', { ascending: true });
+      if (error) throw error;
+      return sendJson(res, 200, { ok: true, shortcuts: data || [] });
     }
 
     if (action === 'outlaw_bootstrap') {
