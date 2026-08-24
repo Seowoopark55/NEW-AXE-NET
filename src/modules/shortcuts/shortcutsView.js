@@ -1,11 +1,12 @@
 import { getAvailableShortcutTargets, getShortcutTarget } from './shortcutTargets.js';
 
-export function renderShortcutsView(root, state, actions) {
+export function renderShortcutsView(root, modalRoot, state, actions) {
   const shortcuts = state.shortcuts ?? {};
   const identity = state.auth?.member ?? state.auth?.admin ?? null;
 
   if (!identity) {
     root.innerHTML = '';
+    modalRoot.innerHTML = '';
     return;
   }
 
@@ -38,11 +39,11 @@ export function renderShortcutsView(root, state, actions) {
         </div>
       ` : ''}
     </div>
-
-    ${shortcuts.managerOpen ? renderManager(shortcuts, items, editing, state) : ''}
   `;
 
-  bindShortcutEvents(root, actions);
+  modalRoot.innerHTML = shortcuts.managerOpen ? renderManager(shortcuts, items, editing, state) : '';
+
+  bindShortcutEvents(root, modalRoot, actions);
 }
 
 function renderShortcutItem(item) {
@@ -134,29 +135,29 @@ function renderManagerRow(item, index, total) {
   `;
 }
 
-function bindShortcutEvents(root, actions) {
+function bindShortcutEvents(root, modalRoot, actions) {
   root.querySelector('[data-quick-toggle]')?.addEventListener('click', () => actions.onToggle?.());
   root.querySelector('[data-quick-manage]')?.addEventListener('click', () => actions.onOpenManager?.());
-  root.querySelector('[data-quick-manager-close]')?.addEventListener('click', () => actions.onCloseManager?.());
-  root.querySelector('[data-quick-edit-cancel]')?.addEventListener('click', () => actions.onEdit?.(null));
+  modalRoot.querySelector('[data-quick-manager-close]')?.addEventListener('click', () => actions.onCloseManager?.());
+  modalRoot.querySelector('[data-quick-edit-cancel]')?.addEventListener('click', () => actions.onEdit?.(null));
 
   root.querySelectorAll('[data-quick-open]').forEach((button) => {
     button.addEventListener('click', () => actions.onOpenShortcut?.(button.dataset.quickOpen));
   });
 
-  root.querySelectorAll('[data-quick-edit]').forEach((button) => {
+  modalRoot.querySelectorAll('[data-quick-edit]').forEach((button) => {
     button.addEventListener('click', () => actions.onEdit?.(Number(button.dataset.quickEdit)));
   });
 
-  root.querySelectorAll('[data-quick-delete]').forEach((button) => {
+  modalRoot.querySelectorAll('[data-quick-delete]').forEach((button) => {
     button.addEventListener('click', () => actions.onDelete?.(Number(button.dataset.quickDelete)));
   });
 
-  root.querySelectorAll('[data-quick-move]').forEach((button) => {
+  modalRoot.querySelectorAll('[data-quick-move]').forEach((button) => {
     button.addEventListener('click', () => actions.onMove?.(Number(button.dataset.quickId), button.dataset.quickMove));
   });
 
-  root.querySelector('[data-quick-form]')?.addEventListener('submit', (event) => {
+  modalRoot.querySelector('[data-quick-form]')?.addEventListener('submit', (event) => {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     actions.onSave?.({
@@ -165,7 +166,7 @@ function bindShortcutEvents(root, actions) {
     });
   });
 
-  root.querySelector('[data-quick-modal-backdrop]')?.addEventListener('click', (event) => {
+  modalRoot.querySelector('[data-quick-modal-backdrop]')?.addEventListener('click', (event) => {
     if (event.target === event.currentTarget) actions.onCloseManager?.();
   });
 }

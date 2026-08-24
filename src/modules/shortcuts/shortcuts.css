@@ -1,6 +1,7 @@
-/* NEW AXE NET v1.42.0 · personal quick access */
+/* NEW AXE NET v1.42.1 · personal quick access */
 
 #quick-access-root { position: relative; }
+#quick-access-modal-root { position: relative; z-index: 0; }
 
 .ops-quick { position: relative; }
 .ops-quick__trigger {
@@ -45,8 +46,8 @@
 .ops-quick__link small { overflow: hidden; color: #656b74; font-size: 8px; text-overflow: ellipsis; white-space: nowrap; }
 .ops-quick__empty { padding: 18px 10px; color: #6e747c; font-size: 9px; line-height: 1.6; text-align: center; }
 
-.ops-quick-modal { position: fixed; z-index: 160; inset: 0; display: grid; place-items: center; padding: 20px; background: rgba(0,0,0,.66); backdrop-filter: blur(4px); }
-.ops-quick-modal__panel { width: min(620px, 100%); max-height: min(720px, calc(100vh - 40px)); overflow: auto; border: 1px solid rgba(255,181,46,.16); border-radius: 12px; background: #0e1013; box-shadow: 0 26px 80px rgba(0,0,0,.58); }
+.ops-quick-modal { position: fixed; z-index: 160; inset: 0; display: grid; place-items: center; padding: 20px; overflow-y: auto; overscroll-behavior: contain; background: rgba(0,0,0,.66); backdrop-filter: blur(4px); }
+.ops-quick-modal__panel { width: min(620px, 100%); max-height: min(720px, calc(100dvh - 40px)); overflow: auto; border: 1px solid rgba(255,181,46,.16); border-radius: 12px; background: #0e1013; box-shadow: 0 26px 80px rgba(0,0,0,.58); }
 .ops-quick-modal__head { min-height: 62px; display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 15px 12px 17px; border-bottom: 1px solid rgba(255,255,255,.06); }
 .ops-quick-modal__head > div { display: grid; gap: 3px; }
 .ops-quick-modal__head span { color: #8c6a31; font-size: 7.5px; font-weight: 950; letter-spacing: .16em; }
@@ -92,5 +93,7 @@
 @media (max-width: 720px) {
   .ops-quick__trigger > span:nth-child(2) { display: none; }
   .ops-quick__menu { position: fixed; top: 54px; right: 10px; left: 10px; width: auto; }
+  .ops-quick-modal { place-items: start center; padding: 12px; }
+  .ops-quick-modal__panel { max-height: calc(100dvh - 24px); }
   .ops-quick-modal__body { grid-template-columns: 1fr; }
 }

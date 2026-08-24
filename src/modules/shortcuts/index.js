@@ -15,7 +15,11 @@ export async function initShortcutsModule() {
   const root = document.querySelector('#quick-access-root');
   if (!root) throw new Error('#quick-access-root element not found.');
 
-  const rerender = () => renderShortcutsView(root, store.getState(), buildActions());
+  // The top bar uses backdrop-filter, which creates a containing block for fixed
+  // descendants in modern browsers. Keep the manager modal in a body-level
+  // portal so `position: fixed` is always based on the viewport.
+  const modalRoot = ensureShortcutModalRoot();
+  const rerender = () => renderShortcutsView(root, modalRoot, store.getState(), buildActions());
   rerender();
 
   store.subscribe((state) => {
@@ -32,6 +36,17 @@ export async function initShortcutsModule() {
   const identity = getShortcutIdentity(store.getState());
   loadedIdentityKey = identity ? `${identity.mode}:${identity.memberKey}` : null;
   if (identity) await loadShortcuts();
+}
+
+
+function ensureShortcutModalRoot() {
+  let root = document.querySelector('#quick-access-modal-root');
+  if (root) return root;
+
+  root = document.createElement('div');
+  root.id = 'quick-access-modal-root';
+  document.body.appendChild(root);
+  return root;
 }
 
 function buildActions() {

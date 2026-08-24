@@ -1,4 +1,4 @@
-# NEW AXE NET v1.42.0
+# NEW AXE NET v1.42.1
 
 ## UI / IA REDESIGN
 실사용 기능 이전 이후 첫 전체 UI 정돈 버전입니다. 데이터 구조나 Supabase RPC는 변경하지 않고, 화면의 정보 구조와 AXE 브랜드 표현을 재설계했습니다.
@@ -79,3 +79,15 @@
 
 ### AXE BOT
 변경 없음.
+
+
+## v1.42.1 QUICK ACCESS MODAL FIX
+- 상단 바로가기 관리창이 화면 위로 잘리던 문제를 수정했습니다.
+- 원인은 `backdrop-filter`가 적용된 sticky 상단바 내부에서 `position: fixed` 모달을 렌더링해, 일부 브라우저에서 상단바를 기준으로 고정 위치가 계산되던 구조였습니다.
+- 바로가기 관리창을 `body` 직속 전용 portal root로 분리해 항상 브라우저 viewport를 기준으로 표시되도록 변경했습니다.
+- 낮은 화면/모바일에서는 상단 여백을 유지하고 내부 스크롤로 전체 항목에 접근할 수 있도록 보강했습니다.
+
+### 적용
+- SQL 없음
+- 환경변수 변경 없음
+- GitHub `NEW-AXE-NET` 저장소에 이 버전 파일을 덮어쓰고 Push하면 됩니다.
