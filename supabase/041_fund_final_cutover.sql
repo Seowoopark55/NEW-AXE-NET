@@ -234,17 +234,18 @@ begin
   ) returning id into v_backup_id;
 
   -- 여기부터 같은 DB transaction. 뒤에서 잔액 검증이 실패하면 전부 원복됩니다.
-  delete from new_axe_net.fund_ledger;
-  delete from new_axe_net.fund_requests;
-  delete from new_axe_net.fund_exemptions;
-  delete from new_axe_net.fund_fee_rules;
-  delete from new_axe_net.fund_status_snapshot;
+  delete from new_axe_net.fund_ledger where true;
+  delete from new_axe_net.fund_requests where true;
+  delete from new_axe_net.fund_exemptions where true;
+  delete from new_axe_net.fund_fee_rules where true;
+  delete from new_axe_net.fund_status_snapshot where true;
 
   update new_axe_net.fund_member_settings
   set enabled = false,
       note = case when note is null then 'Final cutover: current AXE NET 비대상' else note end,
       updated_by = 'AXE BOT FINAL CUTOVER',
-      updated_at = v_now;
+      updated_at = v_now
+  where true;
 
   -- 공금 대상 멤버
   for v_row in select value from jsonb_array_elements(p_payload->'members') loop

@@ -27,6 +27,7 @@ export async function signInMember(nickname, password) {
   return {
     member: data.member,
     expires_at: data.expires_at,
+    admin_bridge: data.admin_bridge || null,
   };
 }
 

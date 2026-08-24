@@ -64,13 +64,32 @@ export async function initAuthModule() {
             auth: {
               ...state.auth,
               initialized: true,
-              loading: false,
+              loading: Boolean(session.admin_bridge?.auto_signin),
               member: session.member,
               memberSessionExpiresAt: session.expires_at,
-              error: null,
+              error: session.admin_bridge?.mode === 'error' ? session.admin_bridge.message : null,
               loginOpen: false,
             },
           }));
+
+          // role=admin 멤버는 별도 이메일 입력 없이 내부 Auth 계정으로 자동 승격합니다.
+          // 최고관리자처럼 기존 외부 admin_accounts가 연결된 계정은 기존 이메일 인증을 그대로 유지합니다.
+          if (session.admin_bridge?.auto_signin && session.admin_bridge?.email) {
+            try {
+              const adminSession = await signInWithPassword(session.admin_bridge.email, session.admin_bridge.secret);
+              await applyAdminSession(adminSession, { closeLogin: true });
+            } catch (adminError) {
+              console.error('[NEW AXE NET] member admin auto sign-in failed:', adminError);
+              store.updateState((state) => ({
+                ...state,
+                auth: {
+                  ...state.auth,
+                  loading: false,
+                  error: '멤버 로그인은 완료됐지만 관리자 권한 자동 연결에 실패했습니다. 최고관리자에게 문의하세요.',
+                },
+              }));
+            }
+          }
         } catch (error) {
           setAuthError(translateMemberAuthError(error));
         }

@@ -343,6 +343,175 @@ export async function revokeMemberSession(token) {
   if (error) throw error;
 }
 
+
+const MEMBER_ADMIN_BRIDGE_DOMAIN = 'member-admin.axenet.invalid';
+
+function memberAdminBridgeEmail(memberKey) {
+  const digest = crypto
+    .createHash('sha256')
+    .update(String(memberKey || ''))
+    .digest('hex')
+    .slice(0, 24);
+  return `member-${digest}@${MEMBER_ADMIN_BRIDGE_DOMAIN}`;
+}
+
+function isMemberAdminBridgeEmail(email) {
+  return String(email || '').toLowerCase().endsWith(`@${MEMBER_ADMIN_BRIDGE_DOMAIN}`);
+}
+
+
+function memberAdminBridgeSecret(memberKey, memberPassword) {
+  const serverSecret = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '');
+  if (!serverSecret) throw new Error('SUPABASE_SERVICE_ROLE_KEY가 없어 관리자 자동 연결 비밀값을 만들 수 없습니다.');
+
+  // Supabase Auth의 최소 비밀번호 길이 정책과 무관하게 충분히 긴 내부 비밀값을 사용합니다.
+  // 사용자가 입력한 멤버 비밀번호 원문은 저장하지 않고 HMAC 입력으로만 사용합니다.
+  const digest = crypto
+    .createHmac('sha256', serverSecret)
+    .update(`${String(memberKey || '')}:${String(memberPassword || '')}`)
+    .digest('base64url');
+  return `Ax!${digest}9z`;
+}
+
+async function findAuthUserByEmail(client, email) {
+  const target = String(email || '').trim().toLowerCase();
+  if (!target) return null;
+
+  for (let page = 1; page <= 10; page += 1) {
+    const { data, error } = await client.auth.admin.listUsers({ page, perPage: 100 });
+    if (error) throw error;
+    const users = data?.users || [];
+    const found = users.find((user) => String(user?.email || '').trim().toLowerCase() === target);
+    if (found) return found;
+    if (users.length < 100) break;
+  }
+
+  return null;
+}
+
+/**
+ * role=admin 멤버가 닉네임/비밀번호로 로그인했을 때 기존 Supabase Auth
+ * 관리자 체계를 그대로 사용할 수 있도록 내부 전용 Auth 계정을 자동 연결합니다.
+ *
+ * - 사용자는 내부 이메일을 입력하거나 볼 필요가 없습니다.
+ * - 이미 사람이 직접 만든 admin_accounts 연결(최고관리자)은 절대 덮어쓰지 않습니다.
+ * - role이 admin이 아니면 아무 작업도 하지 않습니다.
+ */
+export async function ensureMemberAdminBridge(member, password) {
+  if (!member || String(member.status || '').toLowerCase() !== 'active') return null;
+  if (String(member.role || '').toLowerCase() !== 'admin') return null;
+
+  const client = getServiceClient();
+  const memberKey = String(member.member_key || '').trim();
+  if (!memberKey) return null;
+  const bridgeSecret = memberAdminBridgeSecret(memberKey, password);
+
+  const { data: existingLink, error: linkError } = await client
+    .from('admin_accounts')
+    .select('user_id,member_key,enabled,admin_level')
+    .eq('member_key', memberKey)
+    .maybeSingle();
+  if (linkError) throw linkError;
+
+  if (existingLink?.user_id) {
+    const { data: existingUserData, error: userError } = await client.auth.admin.getUserById(existingLink.user_id);
+    if (userError) throw userError;
+    const existingUser = existingUserData?.user || null;
+    const email = String(existingUser?.email || '').trim().toLowerCase();
+
+    // 최고관리자처럼 사람이 직접 연결한 Auth 계정은 비밀번호/이메일을 건드리지 않습니다.
+    if (!isMemberAdminBridgeEmail(email)) {
+      return {
+        mode: 'external',
+        auto_signin: false,
+      };
+    }
+
+    const { error: updateUserError } = await client.auth.admin.updateUserById(existingLink.user_id, {
+      password: bridgeSecret,
+      user_metadata: {
+        ...(existingUser?.user_metadata || {}),
+        axe_member_key: memberKey,
+        axe_shadow_admin: true,
+      },
+    });
+    if (updateUserError) throw updateUserError;
+
+    if (!existingLink.enabled) {
+      const { error: enableError } = await client
+        .from('admin_accounts')
+        .update({ enabled: true, admin_level: 'operator', updated_at: new Date().toISOString() })
+        .eq('member_key', memberKey);
+      if (enableError) throw enableError;
+    }
+
+    return {
+      mode: 'member',
+      auto_signin: true,
+      email,
+      secret: bridgeSecret,
+    };
+  }
+
+  const email = memberAdminBridgeEmail(memberKey);
+  let authUser = await findAuthUserByEmail(client, email);
+  let createdNow = false;
+
+  if (!authUser) {
+    const { data, error } = await client.auth.admin.createUser({
+      email,
+      password: bridgeSecret,
+      email_confirm: true,
+      user_metadata: {
+        axe_member_key: memberKey,
+        axe_shadow_admin: true,
+      },
+    });
+    if (error) throw error;
+    authUser = data?.user || null;
+    createdNow = true;
+  } else {
+    const { error } = await client.auth.admin.updateUserById(authUser.id, {
+      password: bridgeSecret,
+      user_metadata: {
+        ...(authUser.user_metadata || {}),
+        axe_member_key: memberKey,
+        axe_shadow_admin: true,
+      },
+    });
+    if (error) throw error;
+  }
+
+  if (!authUser?.id) throw new Error('멤버 관리자 Auth 계정을 생성하지 못했습니다.');
+
+  const { error: accountError } = await client
+    .from('admin_accounts')
+    .insert({
+      user_id: authUser.id,
+      member_key: memberKey,
+      enabled: true,
+      admin_level: 'operator',
+    });
+
+  if (accountError) {
+    if (createdNow) {
+      try {
+        await client.auth.admin.deleteUser(authUser.id);
+      } catch (cleanupError) {
+        console.warn('[NEW AXE NET] orphan member admin auth cleanup skipped:', cleanupError?.message || cleanupError);
+      }
+    }
+    throw accountError;
+  }
+
+  return {
+    mode: 'member',
+    auto_signin: true,
+    email,
+    secret: bridgeSecret,
+  };
+}
+
 export function normalizeApiError(error) {
   const message = String(error?.message || error || '알 수 없는 오류가 발생했습니다.');
   const lower = message.toLowerCase();

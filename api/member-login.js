@@ -1,5 +1,6 @@
 import {
   createMemberSession,
+  ensureMemberAdminBridge,
   findNewMemberForLegacyUser,
   getMemberLoginTarget,
   invalidMemberLoginError,
@@ -57,6 +58,20 @@ export default async function handler(req, res) {
       migrated = true;
     }
 
+    let adminBridge = null;
+    if (String(member.role || '').toLowerCase() === 'admin') {
+      try {
+        adminBridge = await ensureMemberAdminBridge(member, password);
+      } catch (bridgeError) {
+        console.error('[NEW AXE NET] member admin bridge failed:', bridgeError);
+        adminBridge = {
+          mode: 'error',
+          auto_signin: false,
+          message: '관리자 권한 자동 연결에 실패했습니다. 최고관리자에게 문의하세요.',
+        };
+      }
+    }
+
     const session = await createMemberSession(member);
     await touchMemberLogin(member.member_key);
     setMemberSessionCookie(req, res, session.token, session.expires_at);
@@ -66,6 +81,7 @@ export default async function handler(req, res) {
       expires_at: session.expires_at,
       member: publicMember(member),
       credential_migrated: migrated,
+      admin_bridge: adminBridge,
     });
   } catch (error) {
     console.error('[NEW AXE NET] member login failed:', error);

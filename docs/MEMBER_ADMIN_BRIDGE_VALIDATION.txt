@@ -1,0 +1,29 @@
+NEW AXE NET v1.40.0 · MEMBER ADMIN BRIDGE VALIDATION
+Date: 2026-08-24
+
+Static validation
+- JavaScript syntax: all src/api/server .js/.mjs files passed node --check
+- Style audit: PASS
+- package version: 1.40.0
+- SQL 043 added: admin_level / is_admin / is_superadmin / admin_session / members superadmin guard
+
+Behavior design
+- superadmin: existing external Supabase Auth email login remains unchanged
+- operator: members.role=admin + active -> member login provisions internal Auth link
+- operator browser never asks for internal email
+- 4-character member passwords are supported because internal Auth uses a long HMAC-derived bridge secret
+- demotion to role=user blocks DB admin authorization even if an old Auth session remains
+- member create/update/audit controls are superadmin-only
+- existing fund/admin RLS and RPC keep using is_admin(), so operator can use operational admin functions
+
+Production build
+- npm install was attempted in this environment but timed out.
+- Therefore Vite production build must be confirmed by Vercel deployment.
+
+Apply order
+1) Run supabase/043_member_admin_bridge.sql
+2) Deploy v1.40.0 to GitHub/Vercel
+3) Owner: confirm existing email admin login still shows 최고관리자
+4) Shanks: logout -> login with existing nickname/password only
+5) Confirm top account badge shows 운영진 and fund admin menus are visible
+6) Confirm member edit/create remains unavailable to operator

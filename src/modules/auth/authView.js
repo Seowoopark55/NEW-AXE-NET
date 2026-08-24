@@ -74,7 +74,7 @@ function renderAuthButton(auth) {
     return `
       <div class="auth-signed-in auth-signed-in--admin">
         <div class="auth-signed-in__text">
-          <span>관리자</span>
+          <span>${auth.admin.admin_level === 'operator' ? '운영진' : '최고관리자'}</span>
           <strong>${escapeHtml(auth.admin.nickname)}</strong>
         </div>
         <button class="auth-logout" type="button" data-auth-logout>로그아웃</button>
@@ -126,8 +126,8 @@ function renderLoginModal(auth) {
           <span>AXE ACCOUNT</span>
           <h3>${mode === 'member' ? 'AXE NET 로그인' : '관리자 인증'}</h3>
           <p>${mode === 'member'
-            ? 'AXE NET에서 사용 중인 닉네임과 비밀번호로 로그인합니다.'
-            : 'NEW AXE NET 관리 기능은 Supabase Auth 관리자 계정으로 인증합니다.'}</p>
+            ? 'AXE NET에서 사용 중인 닉네임과 비밀번호로 로그인합니다. 운영진 권한도 이 로그인으로 자동 적용됩니다.'
+            : '최고관리자용 Supabase Auth 인증입니다. 일반 운영진은 멤버 로그인만 사용하면 됩니다.'}</p>
         </div>
 
         <button type="button" class="auth-modal__close" data-close-login aria-label="닫기">×</button>

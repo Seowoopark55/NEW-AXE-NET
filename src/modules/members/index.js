@@ -58,7 +58,7 @@ export async function initMembersModule() {
           },
         }));
 
-        if (store.getState().auth.admin) {
+        if (isSuperAdmin()) {
           void loadMemberAudit(memberKey);
         }
       },
@@ -83,7 +83,7 @@ export async function initMembersModule() {
       },
 
       onStartEdit(memberKey) {
-        if (!store.getState().auth.admin) return;
+        if (!isSuperAdmin()) return;
 
         store.updateState((state) => ({
           ...state,
@@ -109,7 +109,7 @@ export async function initMembersModule() {
       },
 
       async onSaveMember(memberKey, values) {
-        if (!store.getState().auth.admin) return;
+        if (!isSuperAdmin()) return;
 
         store.updateState((state) => ({
           ...state,
@@ -155,7 +155,7 @@ export async function initMembersModule() {
       },
 
       onOpenCreate() {
-        if (!store.getState().auth.admin) return;
+        if (!isSuperAdmin()) return;
 
         store.updateState((state) => ({
           ...state,
@@ -185,7 +185,7 @@ export async function initMembersModule() {
       },
 
       async onCreateMember(values) {
-        if (!store.getState().auth.admin) return;
+        if (!isSuperAdmin()) return;
 
         store.updateState((state) => ({
           ...state,
@@ -288,7 +288,7 @@ export async function initMembersModule() {
 }
 
 async function loadMemberAudit(memberKey) {
-  if (!store.getState().auth.admin) return;
+  if (!isSuperAdmin()) return;
 
   store.updateState((state) => ({
     ...state,
@@ -342,6 +342,10 @@ async function loadMemberAudit(memberKey) {
       },
     }));
   }
+}
+
+function isSuperAdmin() {
+  return store.getState().auth.admin?.admin_level === 'superadmin';
 }
 
 function validateMemberValues(values) {

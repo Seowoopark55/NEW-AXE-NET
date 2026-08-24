@@ -1,4 +1,4 @@
-# NEW AXE NET v1.38.0
+# NEW AXE NET v1.40.0
 
 공금 **FINAL CUTOVER — CURRENT AXE NET → NEW AXE NET** 단계입니다.
 
@@ -60,3 +60,20 @@ BOT은 CURRENT AXE NET의 `fund_refresh` payload에서 공금멤버/신청/원�
 
 ## 주의
 최종 전환 명령을 실행하는 짧은 시간 동안 CURRENT AXE NET에서 공금 등록/승인/수정을 잠시 멈춰주세요. 성공 메시지가 나온 시점부터 기존 AXE NET 공금 화면은 더 이상 운영 원본으로 사용하지 않습니다.
+
+## v1.39.0 · FUND Runtime Final Cleanup
+- 공금 운영 원본 NEW AXE NET Supabase 고정
+- Discord 계정연동 저장/해제용 service_role RPC 추가
+- Apps Script 공금 운영 경로 종료를 위한 BOT V14 대응
+- Web/Vercel 프론트 변경 없음
+
+
+## v1.40.0 · MEMBER ADMIN BRIDGE
+- 최고관리자: 기존 Supabase Auth 이메일 인증 유지
+- 운영진: `members.role = admin`이면 기존 닉네임/비밀번호 로그인만으로 관리자 권한 자동 적용 (`admin_level=operator`)
+- 운영진용 내부 Auth 계정은 Vercel 서버가 자동 생성/연결하며 사용자는 이메일을 입력하지 않음
+- `is_admin()`은 `admin_accounts.enabled + members.role=admin + members.status=active`를 모두 확인
+- 멤버 생성/수정/권한 부여는 `superadmin`만 가능하고 운영진은 건드릴 수 없음
+- role을 user로 내리면 기존 내부 Auth 연결이 남아 있어도 관리자 권한은 즉시 DB에서 거부됨
+- 신규 환경변수 없음
+- 적용 SQL: `supabase/043_member_admin_bridge.sql`

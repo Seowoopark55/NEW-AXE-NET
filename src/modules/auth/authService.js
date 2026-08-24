@@ -48,7 +48,7 @@ export async function fetchAdminSession() {
 
   const { data, error } = await client
     .from('admin_session')
-    .select('user_id,member_key,nickname,role,enabled')
+    .select('user_id,member_key,nickname,role,enabled,admin_level')
     .maybeSingle();
 
   if (error) {

@@ -47,7 +47,7 @@ export function renderMembersView(root, state, actions = {}) {
         </div>
         <div class="ops-members__actions">
           ${
-            state.auth.admin
+            state.auth.admin?.admin_level === 'superadmin'
               ? `
                 <button class="ops-member-primary" type="button" data-open-member-create>
                   + 멤버 추가
@@ -74,7 +74,7 @@ export function renderMembersView(root, state, actions = {}) {
     }
 
     ${
-      members.create.open && state.auth.admin
+      members.create.open && state.auth.admin?.admin_level === 'superadmin'
         ? renderMemberCreateModal(members.create)
         : ''
     }
@@ -394,8 +394,8 @@ function renderMemberCreateModal(createState) {
         </div>
 
         <div class="member-create-help">
-          role=admin으로 등록해도 로그인 관리자 권한이 자동 부여되지는 않습니다.
-          실제 관리자 로그인 권한은 별도의 admin_accounts 연결로 관리됩니다.
+          role=admin으로 지정한 멤버는 다음 로그인부터 닉네임/비밀번호만으로 관리자 권한이 자동 적용됩니다.
+          최고관리자 이메일 인증은 별도로 유지됩니다.
         </div>
 
         ${
@@ -480,13 +480,13 @@ function renderMemberReadOnly(item, auth, membersState) {
     ${renderDetailItem('전체 정렬 순서', escapeHtml(item.sort_order ?? '—'))}
 
     ${
-      auth.admin
+      auth.admin?.admin_level === 'superadmin'
         ? `
           <button class="member-edit-button" type="button" data-member-edit>
             멤버 정보 수정
           </button>
           <div class="member-detail__note">
-            관리자 <strong>${escapeHtml(auth.admin.nickname)}</strong>으로 인증되었습니다.
+            최고관리자 <strong>${escapeHtml(auth.admin.nickname)}</strong>으로 인증되었습니다.
             수정 내용은 Supabase에 즉시 반영됩니다.
           </div>
 
@@ -494,7 +494,7 @@ function renderMemberReadOnly(item, auth, membersState) {
         `
         : `
           <div class="member-detail__note">
-            현재는 조회 전용입니다. 수정 기능은 관리자 로그인 후 사용할 수 있습니다.
+            멤버 정보 수정과 권한 부여는 최고관리자만 사용할 수 있습니다.
           </div>
         `
     }
