@@ -5,6 +5,7 @@ import {
   saveKnowledge,
   setKnowledgeActive,
   updateUnknownStatus,
+  resolveUnknownWithKnowledge,
 } from './aiService.js';
 import { renderAiView } from './aiView.js';
 
@@ -36,6 +37,23 @@ export async function initAiModule() {
       onEditKnowledge(id) { openEditor(Number(id), null); },
       onOpenUnknown(id) { openEditor(null, Number(id)); },
       onCloseEditor() { closeEditor(); },
+      async onLinkUnknownToKnowledge(unknownId, knowledgeId) {
+        if (!isAdmin()) return;
+        const state = store.getState();
+        const knowledge = state.ai.knowledge.find((item) => Number(item.id) === Number(knowledgeId));
+        const question = state.ai.unknown.find((item) => Number(item.id) === Number(unknownId));
+        if (!knowledge || !question) return;
+        if (!window.confirm(`"${question.question}"\n\n미답변을 기존 지식 "${knowledge.title}"에 연결할까요?`)) return;
+        try {
+          await resolveUnknownWithKnowledge(unknownId, knowledgeId);
+          closeEditor();
+          await reloadAiWorkspace({ silent: true });
+          store.updateState((current) => ({
+            ...current,
+            ai: { ...current.ai, message: `미답변을 기존 지식 "${knowledge.title}"에 연결했습니다.` },
+          }));
+        } catch (error) { window.alert(formatError(error)); }
+      },
       async onSaveKnowledge(values) { await handleSave(values); },
       async onToggleKnowledge(id, active) {
         if (!isAdmin()) return;
@@ -147,6 +165,7 @@ async function reloadAiWorkspace(options = {}) {
 function formatError(error) {
   const message = error?.message || String(error);
   if (/row-level security|permission denied/i.test(message)) return 'AXE AI 관리 권한이 없습니다. 관리자 로그인 상태를 확인하세요.';
-  if (/duplicate key/i.test(message)) return '이미 같은 source key 또는 별칭이 등록되어 있습니다.';
+  if (error?.code === 'AXE_AI_DUPLICATE_KNOWLEDGE') return '이미 같은 제목 또는 별칭의 AI 지식이 있습니다. 기존 지식에 연결하거나 기존 지식을 수정하세요.';
+  if (/duplicate key/i.test(message)) return '이미 같은 원본 키 또는 별칭이 등록되어 있습니다.';
   return message;
 }

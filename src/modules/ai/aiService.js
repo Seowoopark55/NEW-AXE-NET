@@ -18,6 +18,37 @@ function cleanAliases(aliases) {
     });
 }
 
+function normalizeKnowledgeKey(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/\s+/g, '')
+    .replace(/[^0-9a-z가-힣]/g, '');
+}
+
+async function findExactDuplicateKnowledge(client, title, aliases, excludeId = null) {
+  const result = await client.from('ai_knowledge_admin')
+    .select('id,title,aliases,active')
+    .limit(1000);
+  if (result.error) throw result.error;
+
+  const wanted = new Set([
+    normalizeKnowledgeKey(title),
+    ...cleanAliases(aliases).map(normalizeKnowledgeKey),
+  ].filter(Boolean));
+
+  if (!wanted.size) return null;
+
+  for (const row of result.data || []) {
+    if (excludeId && Number(row.id) === Number(excludeId)) continue;
+    const keys = [
+      normalizeKnowledgeKey(row.title),
+      ...(Array.isArray(row.aliases) ? row.aliases : []).map(normalizeKnowledgeKey),
+    ].filter(Boolean);
+    if (keys.some((key) => wanted.has(key))) return row;
+  }
+  return null;
+}
+
 export async function fetchAiWorkspace() {
   const client = requireSupabase();
   const today = new Date();
@@ -83,6 +114,19 @@ export async function saveKnowledge(values, knowledgeId = null) {
   };
 
   if (!payload.title || !payload.content) throw new Error('제목과 내용은 필수입니다.');
+
+  const duplicate = await findExactDuplicateKnowledge(
+    client,
+    payload.title,
+    values.aliases,
+    knowledgeId,
+  );
+  if (duplicate) {
+    const error = new Error(`이미 같은 지식이 있습니다: ${duplicate.title}`);
+    error.code = 'AXE_AI_DUPLICATE_KNOWLEDGE';
+    error.duplicateKnowledge = duplicate;
+    throw error;
+  }
 
   let saved;
   if (knowledgeId) {
@@ -158,5 +202,30 @@ export async function updateUnknownStatus(id, status, adminNote = '') {
     values.resolved_by = actor;
   }
   const result = await client.from('ai_unknown_questions').update(values).eq('id', Number(id));
+  if (result.error) throw result.error;
+}
+
+
+export async function resolveUnknownWithKnowledge(unknownId, knowledgeId, adminNote = '') {
+  const client = requireSupabase();
+  const auth = await client.auth.getUser();
+  const actor = auth.data?.user?.email || 'admin';
+
+  const knowledgeResult = await client.from('ai_knowledge_admin')
+    .select('id,title,active')
+    .eq('id', Number(knowledgeId))
+    .maybeSingle();
+  if (knowledgeResult.error) throw knowledgeResult.error;
+  if (!knowledgeResult.data) throw new Error('연결할 AI 지식을 찾을 수 없습니다.');
+
+  const result = await client.from('ai_unknown_questions')
+    .update({
+      status: 'resolved',
+      resolved_knowledge_id: Number(knowledgeId),
+      resolved_at: new Date().toISOString(),
+      resolved_by: actor,
+      admin_note: String(adminNote || '').trim() || `기존 지식 연결: ${knowledgeResult.data.title}`,
+    })
+    .eq('id', Number(unknownId));
   if (result.error) throw result.error;
 }
