@@ -146,7 +146,6 @@ function renderNavigation(activeModule) {
 
   subnav.innerHTML = `
     <div class="ops-subnav__inner">
-      <span class="ops-subnav__label">${group.label}</span>
       <nav class="ops-subnav__items" aria-label="${group.label} 2차 메뉴">
         ${group.modules.map((item) => `
           <button

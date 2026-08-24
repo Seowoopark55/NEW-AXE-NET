@@ -11,7 +11,7 @@ export function renderHomeView(root, state, actions = {}) {
   const recentNotices = (state.notice?.notices ?? [])
     .slice()
     .sort((a, b) => Number(Boolean(b.important)) - Number(Boolean(a.important)) || dateValue(b.published_at) - dateValue(a.published_at))
-    .slice(0, 3);
+    .slice(0, 2);
   const recentVideos = (state.tube?.videos ?? [])
     .slice()
     .sort((a, b) => dateValue(b.published_at) - dateValue(a.published_at))

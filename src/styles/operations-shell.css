@@ -1,4 +1,4 @@
-/* NEW AXE NET v1.41.0 · Brand shell + hierarchical navigation */
+/* NEW AXE NET v1.41.1 · Brand shell + hierarchical navigation */
 
 .ops-shell {
   min-height: 100vh;
@@ -72,14 +72,14 @@
   position: relative;
   isolation: isolate;
   width: 100%;
-  height: 160px;
+  height: 124px;
   overflow: hidden;
   padding: 0;
   border: 1px solid rgba(255,181,46,.18);
-  border-radius: 12px 12px 4px 4px;
+  border-radius: 11px 11px 4px 4px;
   color: inherit;
   background:
-    linear-gradient(90deg, rgba(4,5,7,.42), transparent 28%, transparent 72%, rgba(4,5,7,.42)),
+    linear-gradient(90deg, rgba(4,5,7,.52), transparent 30%, transparent 70%, rgba(4,5,7,.52)),
     url('/assets/axe-hero-premium.webp') center / cover no-repeat;
   box-shadow:
     0 18px 50px rgba(0,0,0,.28),
@@ -113,22 +113,22 @@
 .ops-hero__copy {
   position: absolute;
   z-index: 2;
-  left: 18px;
-  bottom: 15px;
+  left: 16px;
+  bottom: 12px;
   display: grid;
-  gap: 3px;
+  gap: 2px;
   text-align: left;
   pointer-events: none;
 }
 .ops-hero__copy span {
   color: rgba(255,211,126,.72);
-  font-size: 8px;
+  font-size: 7px;
   font-weight: 950;
   letter-spacing: .18em;
 }
 .ops-hero__copy strong {
   color: rgba(255,246,226,.92);
-  font-size: 14px;
+  font-size: 11px;
   font-weight: 950;
   letter-spacing: .04em;
   text-shadow: 0 3px 12px rgba(0,0,0,.65);
@@ -136,10 +136,10 @@
 .ops-hero__meta {
   position: absolute;
   z-index: 2;
-  right: 18px;
-  bottom: 18px;
+  right: 14px;
+  bottom: 14px;
   color: rgba(255,255,255,.42);
-  font-size: 7.5px;
+  font-size: 6.5px;
   font-weight: 900;
   letter-spacing: .13em;
   pointer-events: none;
@@ -202,17 +202,16 @@
   min-height: 42px;
   display: flex;
   align-items: center;
-  gap: 18px;
   padding: 0 4px;
 }
 .ops-subnav__label {
   flex: 0 0 auto;
   color: #6c727b;
-  font-size: 8px;
+  font-size: 7px;
   font-weight: 950;
   letter-spacing: .14em;
 }
-.ops-subnav__items { display: flex; align-items: stretch; gap: 2px; min-width: 0; }
+ .ops-subnav__items { display: flex; align-items: stretch; gap: 2px; min-width: 0; }
 .ops-subnav__item {
   position: relative;
   height: 41px;
@@ -259,17 +258,16 @@ button.ops-brand:focus-visible { outline: 2px solid rgba(255,181,46,.42); outlin
   .ops-brand__copy { display: none; }
   .ops-topbar__utility .status-pill { display: none; }
   .ops-sitehead__inner { padding-top: 9px; }
-  .ops-hero { height: 108px; border-radius: 9px 9px 3px 3px; }
-  .ops-hero__copy { left: 11px; bottom: 10px; }
-  .ops-hero__copy strong { font-size: 11px; }
+  .ops-hero { height: 92px; border-radius: 9px 9px 3px 3px; }
+  .ops-hero__copy { left: 10px; bottom: 8px; }
+  .ops-hero__copy strong { font-size: 9.5px; }
   .ops-hero__meta { display: none; }
   .ops-module-rail { min-height: 44px; }
   .ops-module-nav { overflow-x: auto; scrollbar-width: none; }
   .ops-module-nav::-webkit-scrollbar { display: none; }
   .ops-module-nav__item { flex: 1 0 auto; min-width: 76px; height: 43px; padding-inline: 12px; font-size: 11.5px; }
   .ops-module-nav__item::after { left: 12px; right: 12px; }
-  .ops-subnav__inner { min-height: 39px; gap: 8px; overflow-x: auto; }
-  .ops-subnav__label { display: none; }
+  .ops-subnav__inner { min-height: 39px; overflow-x: auto; }
   .ops-subnav__item { flex: 0 0 auto; height: 38px; padding-inline: 10px; }
   .ops-main__inner { padding-top: 18px; }
 }
