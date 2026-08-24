@@ -296,6 +296,40 @@ const initialState = {
     },
   },
 
+
+  ai: {
+    initialized: false,
+    loading: false,
+    error: null,
+    message: null,
+    tab: 'dashboard',
+    knowledge: [],
+    unknown: [],
+    logs: [],
+    summary: {
+      knowledgeCount: 0,
+      activeKnowledgeCount: 0,
+      pendingEmbeddingCount: 0,
+      unknownOpenCount: 0,
+      todayQueryCount: 0,
+      supabaseQueryCount: 0,
+      fallbackQueryCount: 0,
+    },
+    filters: {
+      knowledgeSearch: '',
+      knowledgeDomain: 'all',
+      unknownStatus: 'open',
+      logSearch: '',
+    },
+    editor: {
+      open: false,
+      knowledgeId: null,
+      sourceUnknownId: null,
+      saving: false,
+      error: null,
+    },
+  },
+
   ui: {
     activeModule: 'home',
   },

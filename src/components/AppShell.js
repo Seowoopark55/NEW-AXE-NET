@@ -31,6 +31,7 @@ const NAV_GROUPS = {
       { module: 'fund', label: '공금' },
       { module: 'assets', label: '자산·계좌' },
       { module: 'members', label: '멤버' },
+      { module: 'ai', label: 'AXE AI', adminOnly: true },
     ],
   },
 };
@@ -109,11 +110,11 @@ export function renderAppShell(root) {
   });
 
   renderConnectionStatus(store.getState().system);
-  renderNavigation(store.getState().ui.activeModule);
+  renderNavigation(store.getState().ui.activeModule, store.getState().auth);
 
   store.subscribe((state) => {
     renderConnectionStatus(state.system);
-    renderNavigation(state.ui.activeModule);
+    renderNavigation(state.ui.activeModule, state.auth);
   });
 }
 
@@ -124,7 +125,7 @@ function navigateTo(moduleName) {
   }));
 }
 
-function renderNavigation(activeModule) {
+function renderNavigation(activeModule, auth = {}) {
   const activeGroupKey = MODULE_GROUP[activeModule] || 'home';
 
   document.querySelectorAll('[data-nav-group]').forEach((button) => {
@@ -137,7 +138,8 @@ function renderNavigation(activeModule) {
   if (!subnav) return;
 
   const group = NAV_GROUPS[activeGroupKey];
-  const showSubnav = group && group.modules.length > 1;
+  const visibleModules = (group?.modules || []).filter((item) => !item.adminOnly || Boolean(auth?.admin));
+  const showSubnav = group && visibleModules.length > 1;
   subnav.hidden = !showSubnav;
 
   if (!showSubnav) {
@@ -148,7 +150,7 @@ function renderNavigation(activeModule) {
   subnav.innerHTML = `
     <div class="ops-subnav__inner">
       <nav class="ops-subnav__items" aria-label="${group.label} 2차 메뉴">
-        ${group.modules.map((item) => `
+        ${visibleModules.map((item) => `
           <button
             class="ops-subnav__item ${item.module === activeModule ? 'is-active' : ''}"
             type="button"

@@ -9,6 +9,7 @@ import './modules/info/info.css';
 import './modules/assets/assets.css';
 import './modules/outlaw/outlaw.css';
 import './modules/tube/tube.css';
+import './modules/ai/ai.css';
 import { store } from './state/store.js';
 import { renderAppShell } from './components/AppShell.js';
 import { initAuthModule } from './modules/auth/index.js';
@@ -21,6 +22,7 @@ import { initAssetsModule } from './modules/assets/index.js';
 import { initOutlawModule } from './modules/outlaw/index.js';
 import { initTubeModule } from './modules/tube/index.js';
 import { initFundModule } from './modules/fund/index.js';
+import { initAiModule } from './modules/ai/index.js';
 import { runSupabaseHealthCheck } from './modules/system/systemService.js';
 
 const app = document.querySelector('#app');
@@ -49,6 +51,7 @@ async function bootstrap() {
   await initOutlawModule();
   await initTubeModule();
   await initFundModule();
+  await initAiModule();
 
   store.updateState((state) => ({
     ...state,
