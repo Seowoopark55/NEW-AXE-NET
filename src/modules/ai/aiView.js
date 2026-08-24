@@ -50,6 +50,20 @@ function resultStatusLabel(value){ return RESULT_STATUS_LABELS[String(value||'')
 function embeddingStatusLabel(value){ return EMBEDDING_STATUS_LABELS[String(value||'')] || String(value||'-'); }
 function sourceTypeLabel(value){ return SOURCE_TYPE_LABELS[String(value||'')] || String(value||'-'); }
 
+const DOMAIN_OPTIONS = [
+  ['general','일반'], ['craft','제작'], ['processing','가공·재련'], ['cooking','요리'],
+  ['skill','스킬'], ['quest','퀘스트'], ['member','멤버'], ['assets','회사 자산'],
+  ['fund','공금'], ['outlaw','무법지대'], ['modbook','개조서'], ['notice','공지'],
+  ['rules','운영기준'], ['map','맵·공략'], ['community','커뮤니티'], ['account','플리카 계좌'],
+  ['info','정보'], ['system','시스템'],
+];
+function domainOptions(selected) {
+  const known = new Set(DOMAIN_OPTIONS.map(([value]) => value));
+  const rows = DOMAIN_OPTIONS.slice();
+  if (selected && !known.has(selected)) rows.unshift([selected, domainLabel(selected)]);
+  return rows.map(([value,label]) => `<option value="${attr(value)}" ${value===selected?'selected':''}>${escapeHtml(label)}</option>`).join('');
+}
+
 function normalizeKey(value) {
   return String(value || '').toLowerCase().replace(/\s+/g, '').replace(/[^0-9a-z가-힣]/g, '');
 }
@@ -118,7 +132,7 @@ export function renderAiView(root, state, actions) {
   root.innerHTML = `
     <section class="ops-ai">
       <header class="ops-ai__head">
-        <div><span class="ops-ai__eyebrow">AXE INTELLIGENCE · ADMIN 1.2</span><h1>AXE AI 관리</h1><p>Discord 질문에 사용하는 지식과 학습 대기 항목을 관리합니다.</p></div>
+        <div><span class="ops-ai__eyebrow">AXE INTELLIGENCE · ADMIN 1.3</span><h1>AXE AI 관리</h1><p>Discord 질문에 사용하는 지식과 학습 대기 항목을 관리합니다.</p></div>
         <div class="ops-ai__head-actions">
           <button type="button" class="ops-ai-button" data-ai-refresh>새로고침</button>
           <button type="button" class="ops-ai-button ops-ai-button--primary" data-ai-create>+ 지식 등록</button>
@@ -240,15 +254,15 @@ function renderEditor(ai){
   return `<div class="ops-ai-modal"><div class="ops-ai-modal__backdrop" data-ai-close></div><section class="ops-ai-editor" role="dialog" aria-modal="true"><header><div><span>${unknown?'LEARN FROM QUESTION':item?'EDIT KNOWLEDGE':'NEW KNOWLEDGE'}</span><h2>${unknown?'미답변을 지식으로 등록':item?'AI 지식 수정':'AI 지식 등록'}</h2>${unknown?`<p>질문: ${escapeHtml(unknown.question)} · ${num(unknown.ask_count)}회</p>`:'<p>저장 즉시 AXE AI 검색 카탈로그에 반영됩니다.</p>'}</div><button type="button" data-ai-close>×</button></header>
     ${unknown&&candidates.length?`<div class="ops-ai-existing-match"><div><span>기존 지식 후보</span><strong>새로 만들지 않고 기존 지식에 연결할 수 있습니다.</strong></div>${candidates.map(({item,score})=>`<button type="button" data-ai-link-existing="${item.id}" data-ai-link-unknown="${unknown.id}"><b>${escapeHtml(item.title)}</b><small>${escapeHtml(domainLabel(item.domain))}${item.category?` · ${escapeHtml(item.category)}`:''} · 일치 ${score}%</small><em>이 지식에 연결</em></button>`).join('')}</div>`:''}
     <form data-ai-form><div class="ops-ai-form-grid">
-    <label><span>분야 코드 *</span><input name="domain" value="${attr(defaults.domain)}" required placeholder="processing" /><small>예: 제작 craft · 가공 processing · 요리 cooking</small></label>
+    <label><span>분야 *</span><select name="domain" required>${domainOptions(defaults.domain)}</select><small>화면에는 한글로 표시되고 내부에는 기존 코드값이 저장됩니다.</small></label>
     <label><span>분류</span><input name="category" value="${attr(defaults.category)}" placeholder="제작법" /></label>
     <label class="is-wide"><span>제목 *</span><input name="title" value="${attr(defaults.title)}" required maxlength="180" /></label>
     <label class="is-wide"><span>내용 *</span><textarea name="content" rows="8" required placeholder="AI가 그대로 참고할 정확한 내용을 입력하세요.">${escapeHtml(defaults.content)}</textarea></label>
     <label class="is-wide"><span>별칭</span><textarea name="aliases" rows="4" placeholder="한 줄에 하나 또는 쉼표로 구분">${escapeHtml(defaults.aliases)}</textarea><small>예: 상급목재 / 고급목재 / 상급 나무</small></label>
     <label><span>데이터 원본</span><select name="source_type">${['manual','info','fund','member','asset','outlaw','notice','rules','map','community','legacy'].map((v)=>`<option value="${v}" ${v===defaults.source_type?'selected':''}>${escapeHtml(sourceTypeLabel(v))}</option>`).join('')}</select></label>
     <label><span>우선순위</span><input name="priority" type="number" min="-100" max="100" value="${attr(defaults.priority)}" /></label>
-    <label><span>원본 테이블</span><input name="source_table" value="${attr(defaults.source_table)}" placeholder="선택 사항" /></label>
-    <label><span>원본 고유 키</span><input name="source_key" value="${attr(defaults.source_key)}" placeholder="선택 사항" /></label>
+    <label class="ops-ai-advanced"><span>원본 테이블 <em>고급</em></span><input name="source_table" value="${attr(defaults.source_table)}" placeholder="직접 연동 지식만 사용" /></label>
+    <label class="ops-ai-advanced"><span>원본 고유 키 <em>고급</em></span><input name="source_key" value="${attr(defaults.source_key)}" placeholder="직접 연동 지식만 사용" /></label>
     <label class="ops-ai-check"><input name="active" type="checkbox" ${defaults.active?'checked':''}/><span>활성 지식으로 사용</span></label>
     ${unknown?'<label class="is-wide"><span>관리자 메모</span><input name="admin_note" placeholder="선택" /></label>':''}
   </div>${ai.editor.error?`<div class="ops-ai-editor-error">${escapeHtml(ai.editor.error)}</div>`:''}<footer><button type="button" data-ai-close ${ai.editor.saving?'disabled':''}>취소</button><button type="submit" class="is-primary" ${ai.editor.saving?'disabled':''}>${ai.editor.saving?'저장 중…':'저장'}</button></footer></form></section></div>`;
