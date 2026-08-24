@@ -367,3 +367,26 @@
   .ops-notice-row time { padding-left: 0; }
   .ops-notice-editor__row--split { grid-template-columns: 1fr; }
 }
+
+/* v1.41.0 · alignment polish ----------------------------------------- */
+.ops-notice {
+  width: min(var(--axe-ui-ops-workspace), 100%);
+}
+.ops-notice__header { padding-inline: 2px; }
+.ops-notice__header h1 { font-size: 21px; letter-spacing: -.02em; }
+.ops-notice-tabs { margin-bottom: 18px; }
+.ops-notice-board {
+  width: 100%;
+  margin: 0;
+}
+.ops-notice-board__head,
+.ops-notice-row {
+  grid-template-columns: minmax(0, 1fr) 115px;
+}
+.ops-notice-detail {
+  width: min(780px, 100%);
+}
+.ops-operation-filter,
+.ops-operation-workspace {
+  width: 100%;
+}

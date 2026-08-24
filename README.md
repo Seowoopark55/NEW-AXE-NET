@@ -1,79 +1,37 @@
-# NEW AXE NET v1.40.0
+# NEW AXE NET v1.41.0
 
-공금 **FINAL CUTOVER — CURRENT AXE NET → NEW AXE NET** 단계입니다.
+## UI / IA REDESIGN
+실사용 기능 이전 이후 첫 전체 UI 정돈 버전입니다. 데이터 구조나 Supabase RPC는 변경하지 않고, 화면의 정보 구조와 AXE 브랜드 표현을 재설계했습니다.
 
-## 이번 버전의 목적
-현재 실제 운영 중인 AXE NET의 공금 `fund_refresh` 상태를 **한 번만 최종 기준점**으로 사용해 NEW AXE NET 공금 데이터를 교체합니다. 전환이 끝나면 Legacy Live Bridge/계속 동기화는 운영 경로에서 사용하지 않습니다.
+### 이번 버전 핵심
+- 상단 1차 메뉴를 `홈 / 소식 / 정보 / 콘텐츠 / 운영` 5개로 축소
+- `무법지대 / AXE TUBE`를 `콘텐츠` 2차 메뉴로 이동
+- `공금 / 자산·계좌 / 멤버`를 `운영` 2차 메뉴로 이동
+- 홈의 KPI/바로가기/공금 진행률 박스를 제거하고 `공지 3건 / 최근 공금 4건 / AXE TUBE 3건` 미리보기만 노출
+- 홈 전체 폭을 배너/카테고리 축에 맞춰 정렬
+- 공지사항 페이지의 헤더·탭·목록 폭을 같은 축으로 통일
+- 정보 페이지의 헤더·탭 축을 운영 워크스페이스와 통일
+- AXE TUBE의 영상/조회/추천/분류 KPI, Runtime Primary 안내, 관리자 운영 상태 패널 제거
+- AXE TUBE 검색·필터 직후 바로 콘텐츠 시작
+- AXE TUBE 카드 제목/작성자/메타 가독성 상향
+- 기존 `axe-hero-premium.webp`를 활용한 와이드 브랜드 배너로 재설계
 
-전환 후 구조:
+## 배포
+기존 GitHub `NEW-AXE-NET` 저장소에 이 버전의 파일을 덮어쓰고 Push하면 Vercel 자동 배포됩니다.
 
-`Discord/NEW AXE NET → new_axe_net Supabase → Realtime → Discord 상시 현황판`
-
-기존 AXE NET은 최종 전환 시점의 이관 원본일 뿐, 전환 이후 공금 원본이 아닙니다.
-
-## DB 변경
-Supabase SQL Editor에서 `supabase/041_fund_final_cutover.sql` 전체를 **1회 실행**합니다.
-
-041은 다음을 추가합니다.
-- `fund_cutover_archives`: 전환 직전 NEW 공금 전체 백업 + CURRENT AXE 원본 스냅샷 보관
-- `fund_runtime_config`: 공금 원본이 NEW로 전환됐는지 영구 기록
-- `apply_current_axe_fund_snapshot(jsonb)`: CURRENT AXE 스냅샷을 한 트랜잭션으로 적용
-- `bot_submit_fund_request(...)`: Discord 공금 제출 NEW Supabase 직결
-- `bot_review_fund_request(...)`: Discord 승인/반려 NEW Supabase 직결
-
-`apply_current_axe_fund_snapshot`은 적용 전·후 공용계좌 잔액이 CURRENT AXE 기준값과 1원이라도 다르면 예외를 발생시켜 **트랜잭션 전체를 롤백**합니다.
-
-## 최종 전환
-SQL 실행 후 AXE BOT V11을 배포하고 Discord 관리자 계정으로 아래 명령을 **딱 한 번** 실행합니다.
-
-`!공금최종전환`
-
-BOT은 CURRENT AXE NET의 `fund_refresh` payload에서 공금멤버/신청/원장/면제/요율을 한 번에 읽습니다. Legacy Supabase의 공금 테이블을 별도로 섞지 않습니다.
-
-성공 시:
-- CURRENT AXE 기준 공용계좌 잔액 = NEW 적용 잔액
-- 이전 NEW 공금 상태 자동 백업
-- DB `primary_source = new_axe_net` 저장
-- 제출/검수 NEW Supabase 직결
-- Discord 상시 현황판 NEW Realtime 자동 갱신
-
-## Discord 현황판
-현황판은 데스크톱에서 Discord inline field를 이용해:
-- 좌측: `📋 주차별 납부 현황`
-- 우측: `📌 미납자 명단` (주차별 인원수 + 이름)
-- 하단: 이번 주 면제·가입 전 / 범례
-
-형태로 표시됩니다. 좁은 화면에서는 Discord가 자동으로 세로 배치합니다.
-
-## 운영 명령
-최종 전환 후:
-- `!공금업데이트`: NEW 상태/검수카드/현황판 강제 새로고침
-- `!공금현황판설정`: 상시 현황판 채널 설정
-- `!공금현황판해제`: 상시 현황판 해제
-
-기존 `!공금최종동기화`, `!공금충돌`, `!공금잔액감사`는 종료 안내만 반환합니다.
+## SQL
+**없음.** Supabase SQL Editor에서 실행할 작업이 없습니다.
 
 ## 환경변수
-새 환경변수는 없습니다. 기존 BOT의 `NEW_AXE_NET_SUPABASE_URL`, `NEW_AXE_NET_SUPABASE_SECRET_KEY`를 그대로 사용합니다.
+**변경 없음.**
 
-`AXE_FUND_REFERENCE_SOURCE`를 수동으로 바꿀 필요가 없습니다. 최종 전환 성공 여부는 `fund_runtime_config`와 BOT 상태에 저장되고, BOT 재시작 시 DB 설정을 다시 읽습니다.
+## AXE BOT
+**변경 없음.**
 
-## 주의
-최종 전환 명령을 실행하는 짧은 시간 동안 CURRENT AXE NET에서 공금 등록/승인/수정을 잠시 멈춰주세요. 성공 메시지가 나온 시점부터 기존 AXE NET 공금 화면은 더 이상 운영 원본으로 사용하지 않습니다.
+자세한 UI 기준은 `docs/UI_REDESIGN_1.0.md`를 참고하세요.
 
-## v1.39.0 · FUND Runtime Final Cleanup
-- 공금 운영 원본 NEW AXE NET Supabase 고정
-- Discord 계정연동 저장/해제용 service_role RPC 추가
-- Apps Script 공금 운영 경로 종료를 위한 BOT V14 대응
-- Web/Vercel 프론트 변경 없음
-
-
-## v1.40.0 · MEMBER ADMIN BRIDGE
-- 최고관리자: 기존 Supabase Auth 이메일 인증 유지
-- 운영진: `members.role = admin`이면 기존 닉네임/비밀번호 로그인만으로 관리자 권한 자동 적용 (`admin_level=operator`)
-- 운영진용 내부 Auth 계정은 Vercel 서버가 자동 생성/연결하며 사용자는 이메일을 입력하지 않음
-- `is_admin()`은 `admin_accounts.enabled + members.role=admin + members.status=active`를 모두 확인
-- 멤버 생성/수정/권한 부여는 `superadmin`만 가능하고 운영진은 건드릴 수 없음
-- role을 user로 내리면 기존 내부 Auth 연결이 남아 있어도 관리자 권한은 즉시 DB에서 거부됨
-- 신규 환경변수 없음
-- 적용 SQL: `supabase/043_member_admin_bridge.sql`
+## 이전 버전 유지사항
+- v1.40.0 MEMBER ADMIN BRIDGE 유지
+- 공금 NEW AXE NET Supabase 런타임 유지
+- AXE TUBE Supabase-first 런타임 유지
+- 자산·계좌 / 무법지대 / 정보 / 공지 모듈 기능 로직 변경 없음

@@ -1,5 +1,45 @@
 import { store } from '../state/store.js';
 
+const NAV_GROUPS = {
+  home: {
+    label: '홈',
+    landing: 'home',
+    modules: [{ module: 'home', label: '홈' }],
+  },
+  news: {
+    label: '소식',
+    landing: 'notice',
+    modules: [{ module: 'notice', label: '공지사항' }],
+  },
+  info: {
+    label: '정보',
+    landing: 'info',
+    modules: [{ module: 'info', label: '정보' }],
+  },
+  content: {
+    label: '콘텐츠',
+    landing: 'outlaw',
+    modules: [
+      { module: 'outlaw', label: '무법지대' },
+      { module: 'tube', label: 'AXE TUBE' },
+    ],
+  },
+  operations: {
+    label: '운영',
+    landing: 'fund',
+    modules: [
+      { module: 'fund', label: '공금' },
+      { module: 'assets', label: '자산·계좌' },
+      { module: 'members', label: '멤버' },
+    ],
+  },
+};
+
+const MODULE_GROUP = Object.entries(NAV_GROUPS).reduce((map, [groupKey, group]) => {
+  for (const item of group.modules) map[item.module] = groupKey;
+  return map;
+}, {});
+
 export function renderAppShell(root) {
   root.innerHTML = `
     <div class="ops-shell">
@@ -22,24 +62,25 @@ export function renderAppShell(root) {
         </div>
       </header>
 
-      <section class="ops-sitehead" aria-label="NEW AXE NET 배너와 주요 메뉴">
+      <section class="ops-sitehead" aria-label="NEW AXE NET 브랜드 배너와 주요 메뉴">
         <div class="ops-sitehead__inner">
-          <button class="ops-hero ops-home-trigger" type="button" data-nav-home aria-label="운영 홈으로 이동" title="홈으로 이동">
-            <img class="ops-hero__mark" src="/assets/axe-brand-mark.webp" alt="" aria-hidden="true" />
+          <button class="ops-hero ops-home-trigger" type="button" data-nav-home aria-label="NEW AXE NET 홈으로 이동" title="홈으로 이동">
+            <span class="ops-hero__copy" aria-hidden="true">
+              <span>AXE OPERATIONS NETWORK</span>
+              <strong>NEW AXE NET</strong>
+            </span>
+            <span class="ops-hero__meta" aria-hidden="true">EST. 2026 · LAC OPERATIONS</span>
           </button>
 
           <div class="ops-module-rail">
-            <nav class="ops-module-nav" aria-label="주요 메뉴">
-              <button class="ops-module-nav__item" type="button" data-nav-module="home">홈</button>
-              <button class="ops-module-nav__item" type="button" data-nav-module="notice">공지</button>
-              <button class="ops-module-nav__item" type="button" data-nav-module="info">정보</button>
-              <button class="ops-module-nav__item" type="button" data-nav-module="members">멤버</button>
-              <button class="ops-module-nav__item" type="button" data-nav-module="assets">자산·계좌</button>
-              <button class="ops-module-nav__item" type="button" data-nav-module="outlaw">무법지대</button>
-              <button class="ops-module-nav__item" type="button" data-nav-module="tube">AXE TUBE</button>
-              <button class="ops-module-nav__item" type="button" data-nav-module="fund">공금</button>
+            <nav class="ops-module-nav" aria-label="1차 메뉴">
+              ${Object.entries(NAV_GROUPS).map(([key, group]) => `
+                <button class="ops-module-nav__item" type="button" data-nav-group="${key}">${group.label}</button>
+              `).join('')}
             </nav>
           </div>
+
+          <div id="ops-subnav" class="ops-subnav" hidden></div>
         </div>
       </section>
 
@@ -51,10 +92,14 @@ export function renderAppShell(root) {
     </div>
   `;
 
-  root.querySelectorAll('[data-nav-module]').forEach((button) => {
+  root.querySelectorAll('[data-nav-group]').forEach((button) => {
     button.addEventListener('click', () => {
-      const moduleName = button.dataset.navModule;
-      navigateTo(moduleName);
+      const group = NAV_GROUPS[button.dataset.navGroup];
+      if (!group) return;
+
+      const activeModule = store.getState().ui.activeModule;
+      const groupModules = new Set(group.modules.map((item) => item.module));
+      navigateTo(groupModules.has(activeModule) ? activeModule : group.landing);
     });
   });
 
@@ -79,10 +124,44 @@ function navigateTo(moduleName) {
 }
 
 function renderNavigation(activeModule) {
-  document.querySelectorAll('[data-nav-module]').forEach((button) => {
-    const active = button.dataset.navModule === activeModule;
+  const activeGroupKey = MODULE_GROUP[activeModule] || 'home';
+
+  document.querySelectorAll('[data-nav-group]').forEach((button) => {
+    const active = button.dataset.navGroup === activeGroupKey;
     button.classList.toggle('ops-module-nav__item--active', active);
     button.setAttribute('aria-current', active ? 'page' : 'false');
+  });
+
+  const subnav = document.querySelector('#ops-subnav');
+  if (!subnav) return;
+
+  const group = NAV_GROUPS[activeGroupKey];
+  const showSubnav = group && group.modules.length > 1;
+  subnav.hidden = !showSubnav;
+
+  if (!showSubnav) {
+    subnav.innerHTML = '';
+    return;
+  }
+
+  subnav.innerHTML = `
+    <div class="ops-subnav__inner">
+      <span class="ops-subnav__label">${group.label}</span>
+      <nav class="ops-subnav__items" aria-label="${group.label} 2차 메뉴">
+        ${group.modules.map((item) => `
+          <button
+            class="ops-subnav__item ${item.module === activeModule ? 'is-active' : ''}"
+            type="button"
+            data-nav-submodule="${item.module}"
+            ${item.module === activeModule ? 'aria-current="page"' : ''}
+          >${item.label}</button>
+        `).join('')}
+      </nav>
+    </div>
+  `;
+
+  subnav.querySelectorAll('[data-nav-submodule]').forEach((button) => {
+    button.addEventListener('click', () => navigateTo(button.dataset.navSubmodule));
   });
 }
 

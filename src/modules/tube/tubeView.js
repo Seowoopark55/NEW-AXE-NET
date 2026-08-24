@@ -7,8 +7,6 @@ export function renderTubeView(root, state, actions) {
     : null;
   const categories = [...new Set((tube.videos || []).map((item) => String(item.category || '일반').trim() || '일반'))]
     .sort((a, b) => a.localeCompare(b, 'ko'));
-  const totals = aggregate(tube.videos || []);
-  const runtime = runtimeHealth(tube.videos || []);
   const isMember = Boolean(state.auth?.member);
   const isAdmin = Boolean(state.auth?.admin);
   const canCreate = isMember || isAdmin;
@@ -33,13 +31,6 @@ export function renderTubeView(root, state, actions) {
       ${tube.message ? `<div class="ops-tube-alert ${tube.messageType === 'success' ? 'ops-tube-alert--success' : tube.messageType === 'error' ? 'ops-tube-alert--error' : ''}">${h(tube.message)}</div>` : ''}
       ${tube.loading && !tube.initialized ? '<div class="ops-tube-loading">AXE TUBE 데이터를 불러오는 중입니다.</div>' : ''}
 
-      <section class="ops-tube-summary" aria-label="AXE TUBE 요약">
-        ${summary('영상', `${totals.count}개`, '현재 활성 영상')}
-        ${summary('조회', formatNumber(totals.views), 'Supabase 누적')}
-        ${summary('추천', formatNumber(totals.likes), 'Supabase 누적')}
-        ${summary('분류', `${totals.categories}개`, '영상 카테고리')}
-      </section>
-
       <section class="ops-tube-panel">
         <div class="ops-tube-toolbar">
           <label class="ops-tube-search">
@@ -61,15 +52,7 @@ export function renderTubeView(root, state, actions) {
               ${option('likes', '추천순', tube.filters.sort)}
             </select>
           </label>
-          <div class="ops-tube-toolbar__meta">${videos.length} VIDEOS</div>
         </div>
-
-        <div class="ops-tube-note ops-tube-note--primary">
-          <strong>Runtime Primary</strong>
-          <span>AXE TUBE의 읽기·쓰기·Discord 포럼 원본은 NEW AXE NET Supabase입니다. 기존 Apps Script / Google Sheet는 NEW → Legacy 단방향 백업 전용이며, 기존 AXE TUBE의 변경은 기본적으로 다시 가져오지 않습니다.</span>
-        </div>
-
-        ${isAdmin ? renderRuntimeHealth(runtime) : ''}
 
         ${videos.length
           ? `<div class="ops-tube-grid">${videos.map((video) => renderCard(video, {
@@ -121,8 +104,6 @@ function renderCard(video, options = {}) {
           <div class="ops-tube-card__writer">
             <strong>${h(video.writer || 'AXE')}</strong>
             ${badge(video.writer_badge)}
-            ${syncBadge(video.sync_owner)}
-            ${discordSyncBadge(video.discord_sync_status)}
           </div>
           <p>${h(compact(video.content || '등록된 설명이 없습니다.', 96))}</p>
           <div class="ops-tube-card__meta">
@@ -167,9 +148,7 @@ function renderDetail(video, options = {}) {
             <div>
               <strong>${h(video.writer || 'AXE')}</strong>
               ${badge(video.writer_badge)}
-              ${syncBadge(video.sync_owner)}
-              ${discordSyncBadge(video.discord_sync_status)}
-              ${legacyBackupBadge(video.legacy_backup_status)}
+              ${options.isAdmin ? `${syncBadge(video.sync_owner)}${discordSyncBadge(video.discord_sync_status)}${legacyBackupBadge(video.legacy_backup_status)}` : ''}
               <span>${h(video.category || '일반')}</span>
             </div>
             <time>${formatDateTime(video.published_at)}</time>
@@ -445,59 +424,6 @@ function filterVideos(videos, filters) {
 }
 
 
-function runtimeHealth(videos) {
-  const rows = Array.isArray(videos) ? videos : [];
-  const primary = rows.filter((item) => String(item.sync_owner || '').toLowerCase() === 'supabase');
-  const discordPending = rows.filter((item) => String(item.discord_sync_status || 'pending').toLowerCase() === 'pending').length;
-  const discordError = rows.filter((item) => String(item.discord_sync_status || '').toLowerCase() === 'error').length;
-  const backupPending = primary.filter((item) => ['none', 'pending'].includes(String(item.legacy_backup_status || 'none').toLowerCase())).length;
-  const backupError = primary.filter((item) => String(item.legacy_backup_status || '').toLowerCase() === 'error').length;
-  const legacySource = rows.filter((item) => String(item.sync_owner || 'legacy').toLowerCase() !== 'supabase').length;
-  return {
-    primary: primary.length,
-    legacySource,
-    discordPending,
-    discordError,
-    backupPending,
-    backupError,
-  };
-}
-
-function renderRuntimeHealth(runtime) {
-  const discordProblem = Number(runtime.discordPending || 0) + Number(runtime.discordError || 0);
-  const backupProblem = Number(runtime.backupPending || 0) + Number(runtime.backupError || 0);
-  return `
-    <section class="ops-tube-runtime" aria-label="AXE TUBE 운영 상태">
-      <div class="ops-tube-runtime__head">
-        <strong>관리자 운영 상태</strong>
-        <span>Legacy inbound OFF · Sheet outbound backup only</span>
-      </div>
-      <div class="ops-tube-runtime__grid">
-        ${runtimeMetric('NEW 관리', `${runtime.primary}개`, 'Supabase가 원본인 영상', runtime.primary > 0 ? 'ok' : '')}
-        ${runtimeMetric('Discord', discordProblem ? `${discordProblem}건 확인` : '정상', `대기 ${runtime.discordPending} · 오류 ${runtime.discordError}`, discordProblem ? 'warn' : 'ok')}
-        ${runtimeMetric('Sheet 백업', backupProblem ? `${backupProblem}건 확인` : '정상', `대기 ${runtime.backupPending} · 오류 ${runtime.backupError}`, backupProblem ? 'warn' : 'ok')}
-        ${runtimeMetric('기존 이관', `${runtime.legacySource}개`, '읽기 기준은 Supabase에 고정', '')}
-      </div>
-    </section>
-  `;
-}
-
-function runtimeMetric(label, value, sub, tone = '') {
-  return `<div class="ops-tube-runtime__metric ${tone ? `ops-tube-runtime__metric--${tone}` : ''}"><span>${h(label)}</span><strong>${h(value)}</strong><small>${h(sub)}</small></div>`;
-}
-
-function aggregate(videos) {
-  return {
-    count: videos.length,
-    views: videos.reduce((sum, item) => sum + number(item.views), 0),
-    likes: videos.reduce((sum, item) => sum + number(item.likes), 0),
-    categories: new Set(videos.map((item) => String(item.category || '일반'))).size,
-  };
-}
-
-function summary(label, value, sub) {
-  return `<div class="ops-tube-summary__card"><span>${h(label)}</span><strong>${h(value)}</strong><small>${h(sub)}</small></div>`;
-}
 
 function option(value, label, selected) {
   return `<option value="${h(value)}" ${String(value) === String(selected) ? 'selected' : ''}>${h(label)}</option>`;

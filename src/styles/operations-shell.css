@@ -1,18 +1,14 @@
-/* NEW AXE NET v1.24.0 · Canonical site shell
-   ------------------------------------------------------------------
-   Brand at the top, one connected site navigation rail under the banner,
-   then a centered operational workspace. No floating segmented menus.
-*/
+/* NEW AXE NET v1.41.0 · Brand shell + hierarchical navigation */
 
 .ops-shell {
   min-height: 100vh;
   color: #ece8df;
   background:
-    radial-gradient(circle at 50% -180px, rgba(206,143,31,.055), transparent 520px),
+    radial-gradient(circle at 50% -180px, rgba(206,143,31,.065), transparent 520px),
     #08090b;
 }
 
-/* Top utility bar --------------------------------------------------------- */
+/* Top utility bar ------------------------------------------------------ */
 .ops-topbar {
   position: sticky;
   top: 0;
@@ -64,53 +60,42 @@
 .ops-topbar .auth-signed-in__text span { font-size: 8px; }
 .ops-topbar .auth-signed-in__text strong { font-size: 10.5px; }
 
-/* Banner + primary navigation --------------------------------------------
-   v1.21.2: the hero is deliberately quieter than the previous generated
-   banner. The original AXE artwork is framed by CSS, not stretched to fill
-   the strip. Navigation remains a completely separate site layer.
-*/
-.ops-sitehead {
-  background: transparent;
-}
+/* Premium banner ------------------------------------------------------ */
+.ops-sitehead { background: transparent; }
 .ops-sitehead__inner {
   width: min(var(--axe-ui-site-max), calc(100% - 32px));
   margin: 0 auto;
-  padding: 16px 0 0;
+  padding: 14px 0 0;
 }
 
 .ops-hero {
   position: relative;
   isolation: isolate;
-  display: grid;
-  place-items: center;
   width: 100%;
-  height: 142px;
+  height: 160px;
   overflow: hidden;
   padding: 0;
-  border: 1px solid rgba(255,181,46,.13);
-  border-radius: 12px;
+  border: 1px solid rgba(255,181,46,.18);
+  border-radius: 12px 12px 4px 4px;
   color: inherit;
   background:
-    radial-gradient(ellipse at 50% 48%, rgba(205,132,24,.12) 0%, rgba(82,48,12,.05) 30%, transparent 61%),
-    linear-gradient(180deg, #0b0c0e 0%, #070809 100%);
+    linear-gradient(90deg, rgba(4,5,7,.42), transparent 28%, transparent 72%, rgba(4,5,7,.42)),
+    url('/assets/axe-hero-premium.webp') center / cover no-repeat;
   box-shadow:
-    0 16px 36px rgba(0,0,0,.24),
-    inset 0 1px rgba(255,255,255,.022),
-    inset 0 -1px rgba(255,181,46,.035);
+    0 18px 50px rgba(0,0,0,.28),
+    inset 0 1px rgba(255,255,255,.035);
   appearance: none;
   cursor: pointer;
-  transition: border-color .16s ease, transform .16s ease, box-shadow .16s ease;
 }
 
-/* Atmospheric artwork stays subtle and only provides texture/depth. */
 .ops-hero::before {
   content: "";
   position: absolute;
-  inset: -18% -5%;
+  inset: 0;
   z-index: 0;
-  background: url('/assets/axe-brand-hero.webp') center 52% / cover no-repeat;
-  filter: saturate(.72) contrast(1.08) brightness(.34) blur(.2px);
-  opacity: .62;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,.04) 0%, rgba(0,0,0,.08) 56%, rgba(0,0,0,.68) 100%),
+    radial-gradient(circle at 50% 52%, transparent 0 35%, rgba(0,0,0,.12) 75%);
   pointer-events: none;
 }
 
@@ -119,89 +104,75 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  border-radius: inherit;
-  background:
-    linear-gradient(90deg,
-      rgba(5,6,7,.94) 0%,
-      rgba(5,6,7,.60) 15%,
-      rgba(5,6,7,.16) 34%,
-      rgba(5,6,7,.16) 66%,
-      rgba(5,6,7,.60) 85%,
-      rgba(5,6,7,.94) 100%),
-    linear-gradient(180deg, rgba(255,255,255,.012), transparent 48%, rgba(0,0,0,.19));
+  background: repeating-linear-gradient(180deg, transparent 0 3px, rgba(255,255,255,.008) 3px 4px);
+  mix-blend-mode: soft-light;
+  opacity: .45;
   pointer-events: none;
 }
 
-.ops-hero__mark {
-  position: relative;
+.ops-hero__copy {
+  position: absolute;
   z-index: 2;
-  display: block;
-  width: clamp(360px, 46%, 515px);
-  max-height: 96px;
-  object-fit: contain;
-  opacity: .93;
-  filter:
-    saturate(.88)
-    contrast(1.04)
-    brightness(.94)
-    drop-shadow(0 8px 22px rgba(0,0,0,.46))
-    drop-shadow(0 0 14px rgba(235,154,28,.10));
-  transform: translateY(-1px);
-  transition: opacity .16s ease, filter .16s ease, transform .16s ease;
+  left: 18px;
+  bottom: 15px;
+  display: grid;
+  gap: 3px;
+  text-align: left;
   pointer-events: none;
 }
+.ops-hero__copy span {
+  color: rgba(255,211,126,.72);
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: .18em;
+}
+.ops-hero__copy strong {
+  color: rgba(255,246,226,.92);
+  font-size: 14px;
+  font-weight: 950;
+  letter-spacing: .04em;
+  text-shadow: 0 3px 12px rgba(0,0,0,.65);
+}
+.ops-hero__meta {
+  position: absolute;
+  z-index: 2;
+  right: 18px;
+  bottom: 18px;
+  color: rgba(255,255,255,.42);
+  font-size: 7.5px;
+  font-weight: 900;
+  letter-spacing: .13em;
+  pointer-events: none;
+}
+.ops-hero:hover { border-color: rgba(255,181,46,.30); }
+.ops-hero:focus-visible { outline: 2px solid rgba(255,181,46,.46); outline-offset: 3px; }
 
-.ops-hero:hover {
-  border-color: rgba(255,181,46,.23);
-  box-shadow:
-    0 18px 40px rgba(0,0,0,.26),
-    inset 0 1px rgba(255,255,255,.028),
-    inset 0 -1px rgba(255,181,46,.055);
-}
-.ops-hero:hover .ops-hero__mark {
-  opacity: .98;
-  filter:
-    saturate(.92)
-    contrast(1.05)
-    brightness(.98)
-    drop-shadow(0 8px 24px rgba(0,0,0,.50))
-    drop-shadow(0 0 18px rgba(235,154,28,.14));
-}
-.ops-hero:active { transform: translateY(1px); }
-.ops-hero:focus-visible {
-  outline: 2px solid rgba(255,181,46,.46);
-  outline-offset: 3px;
-}
-
-/* Category navigation is intentionally detached from the artwork. It reads
-   as site navigation, not as a footer inside the banner card. */
+/* Primary category navigation ---------------------------------------- */
 .ops-module-rail {
-  min-height: 48px;
+  min-height: 50px;
   display: flex;
   align-items: stretch;
-  margin-top: 12px;
-  border-top: 1px solid rgba(255,255,255,.065);
-  border-bottom: 1px solid rgba(255,255,255,.065);
-  background: rgba(12,14,17,.72);
-  box-shadow: none;
+  margin-top: 0;
+  border-bottom: 1px solid rgba(255,255,255,.075);
+  background: rgba(10,12,15,.94);
 }
 .ops-module-nav {
   width: 100%;
   display: flex;
   align-items: stretch;
-  padding: 0 8px;
-  gap: 2px;
+  padding: 0;
+  gap: 0;
 }
 .ops-module-nav__item {
   position: relative;
-  min-width: 100px;
-  height: 47px;
-  padding: 0 18px;
+  min-width: 122px;
+  height: 49px;
+  padding: 0 22px;
   border: 0;
-  color: #8f939a;
+  color: #898e96;
   background: transparent;
   font-size: 12.5px;
-  font-weight: 820;
+  font-weight: 850;
   letter-spacing: -.01em;
   cursor: pointer;
   transition: color .15s ease, background .15s ease;
@@ -209,30 +180,77 @@
 .ops-module-nav__item::after {
   content: "";
   position: absolute;
-  left: 18px;
-  right: 18px;
+  left: 22px;
+  right: 22px;
   bottom: -1px;
   height: 2px;
-  border-radius: 999px 999px 0 0;
   transform: scaleX(0);
   background: #ffb52e;
   transition: transform .15s ease;
 }
-.ops-module-nav__item:hover {
-  color: #e4e0d8;
-  background: rgba(255,255,255,.012);
-}
-.ops-module-nav__item--active { color: #fff2d5; }
+.ops-module-nav__item:hover { color: #ddd8cf; background: rgba(255,255,255,.012); }
+.ops-module-nav__item--active { color: #fff0d1; }
 .ops-module-nav__item--active::after { transform: scaleX(1); }
 
-/* Workspace -------------------------------------------------------------- */
+/* Secondary navigation ------------------------------------------------ */
+.ops-subnav {
+  border-bottom: 1px solid rgba(255,255,255,.055);
+  background: rgba(8,10,12,.66);
+}
+.ops-subnav[hidden] { display: none; }
+.ops-subnav__inner {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 4px;
+}
+.ops-subnav__label {
+  flex: 0 0 auto;
+  color: #6c727b;
+  font-size: 8px;
+  font-weight: 950;
+  letter-spacing: .14em;
+}
+.ops-subnav__items { display: flex; align-items: stretch; gap: 2px; min-width: 0; }
+.ops-subnav__item {
+  position: relative;
+  height: 41px;
+  padding: 0 14px;
+  border: 0;
+  color: #737982;
+  background: transparent;
+  font-size: 10.5px;
+  font-weight: 850;
+  cursor: pointer;
+}
+.ops-subnav__item::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: -1px;
+  height: 1px;
+  transform: scaleX(0);
+  background: rgba(255,181,46,.85);
+}
+.ops-subnav__item:hover { color: #c9c5bd; }
+.ops-subnav__item.is-active { color: #e8d6b4; }
+.ops-subnav__item.is-active::after { transform: scaleX(1); }
+
+/* Workspace ----------------------------------------------------------- */
 .ops-main { min-width: 0; }
 .ops-main__inner {
   width: min(var(--axe-ui-site-max), calc(100% - 32px));
   margin: 0 auto;
-  padding: 26px 0 58px;
+  padding: 24px 0 58px;
 }
 .ops-main .module-root { min-width: 0; }
+
+.ops-home-trigger { font: inherit; text-align: inherit; cursor: pointer; }
+button.ops-brand { padding: 0; border: 0; color: inherit; background: transparent; }
+button.ops-brand:hover .ops-brand__copy strong { color: #ffd78a; }
+button.ops-brand:focus-visible { outline: 2px solid rgba(255,181,46,.42); outline-offset: 3px; border-radius: 7px; }
 
 @media (max-width: 720px) {
   .ops-topbar__inner,
@@ -240,27 +258,18 @@
   .ops-main__inner { width: min(100% - 20px, var(--axe-ui-site-max)); }
   .ops-brand__copy { display: none; }
   .ops-topbar__utility .status-pill { display: none; }
-  .ops-sitehead__inner { padding-top: 10px; }
-  .ops-hero { height: 104px; border-radius: 10px; }
-  .ops-hero__mark { width: min(64%, 360px); max-height: 72px; }
-  .ops-module-rail { min-height: 44px; margin-top: 9px; }
-  .ops-module-nav { padding-inline: 3px; gap: 0; overflow-x: auto; scrollbar-width: none; }
+  .ops-sitehead__inner { padding-top: 9px; }
+  .ops-hero { height: 108px; border-radius: 9px 9px 3px 3px; }
+  .ops-hero__copy { left: 11px; bottom: 10px; }
+  .ops-hero__copy strong { font-size: 11px; }
+  .ops-hero__meta { display: none; }
+  .ops-module-rail { min-height: 44px; }
+  .ops-module-nav { overflow-x: auto; scrollbar-width: none; }
   .ops-module-nav::-webkit-scrollbar { display: none; }
-  .ops-module-nav__item { flex: 0 0 auto; min-width: 82px; height: 43px; padding-inline: 10px; font-size: 12px; }
-  .ops-main__inner { padding-top: 20px; }
+  .ops-module-nav__item { flex: 1 0 auto; min-width: 76px; height: 43px; padding-inline: 12px; font-size: 11.5px; }
+  .ops-module-nav__item::after { left: 12px; right: 12px; }
+  .ops-subnav__inner { min-height: 39px; gap: 8px; overflow-x: auto; }
+  .ops-subnav__label { display: none; }
+  .ops-subnav__item { flex: 0 0 auto; height: 38px; padding-inline: 10px; }
+  .ops-main__inner { padding-top: 18px; }
 }
-
-/* v1.21 · home navigation ------------------------------------------------ */
-.ops-home-trigger {
-  font: inherit;
-  text-align: inherit;
-  cursor: pointer;
-}
-button.ops-brand {
-  padding: 0;
-  border: 0;
-  color: inherit;
-  background: transparent;
-}
-button.ops-brand:hover .ops-brand__copy strong { color: #ffd78a; }
-button.ops-brand:focus-visible,
