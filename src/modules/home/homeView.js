@@ -15,7 +15,7 @@ export function renderHomeView(root, state, actions = {}) {
   const recentVideos = (state.tube?.videos ?? [])
     .slice()
     .sort((a, b) => dateValue(b.published_at) - dateValue(a.published_at))
-    .slice(0, 3);
+    .slice(0, 4);
   const dataLoading = Boolean(fund.loading || !fund.initialized || state.notice?.loading || state.tube?.loading);
 
   root.innerHTML = `
