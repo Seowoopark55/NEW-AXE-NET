@@ -1,0 +1,38 @@
+NEW AXE NET v1.37.0 · FUND LIVE BRIDGE & CATCH-UP
+
+[운영 단계]
+기존 AXE NET 공금 쓰기 = 아직 authoritative
+NEW AXE NET = 실시간 복제 + 정합성 검증
+Discord 상시 현황판 = 검증 중 legacy 표시, 0/0 확인 후 NEW 표시
+
+[초기 안전모드]
+AXE_FUND_REFERENCE_SOURCE=legacy
+
+[Catch-up]
+- fund_requests
+- fund_ledger
+- fund_status 기반 면제/요율 보정
+- Apps Script fundMembers 기반 공금 대상/가입일 보정(full sync 시)
+- NEW-origin과 내용이 충돌하면 자동 덮어쓰기 금지
+- 충돌은 new_axe_net.fund_bridge_conflicts에 저장
+
+[정합성]
+최근 최대 6개월의 Legacy fund_status와 NEW get_fund_month_matrix 결과 비교
+!공금업데이트 응답에서:
+- 열린 충돌 0건
+- 월별 상태 불일치 0건
+둘 다 확인 후 NEW 기준으로 전환
+
+[Realtime]
+Legacy public fund_status/fund_ledger 변경
+→ Catch-up
+→ NEW new_axe_net 원본 변경
+→ AXE BOT이 Discord 상시 현황판 직접 PATCH
+
+Apps Script의 Discord 현황판 PATCH 콜백은 사용하지 않음.
+
+[수동 복구]
+!공금업데이트
+
+[폐기 방향]
+!공금현황
