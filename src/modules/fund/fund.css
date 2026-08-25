@@ -491,13 +491,15 @@
 }
 .fund-dialog {
   position: fixed;
-  top: 50%;
-  left: 50%;
+  /* Viewport-centered, slightly above mathematical center for desktop eye level. */
+  top: 48dvh;
+  left: 50vw;
   z-index: 93;
   width: min(620px,calc(100vw - 32px));
-  max-height: calc(100vh - 40px);
+  max-height: min(720px,calc(100dvh - 48px));
   transform: translate(-50%,-50%);
   overflow-y: auto;
+  overscroll-behavior: contain;
   border: 1px solid rgba(255,181,46,.18);
   border-radius: 15px;
   background: #101216;

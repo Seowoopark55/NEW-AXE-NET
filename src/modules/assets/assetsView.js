@@ -36,6 +36,7 @@ export function renderAssetsView(root, state, actions) {
   `;
 
   bindEvents(root, actions);
+  restoreImeSearchFocus(root, searchFocus);
 }
 
 function renderAccounts(asset, auth, members, canReadAccounts, isAdmin) {
@@ -336,7 +337,6 @@ function bindEvents(root, actions) {
   root.querySelector('[data-assets-login]')?.addEventListener('click', () => actions.onOpenLogin?.());
 
   root.querySelectorAll('[data-assets-search]').forEach((input) => bindImeSafeInput(input, (value) => actions.onFilterChange?.(input.dataset.assetsSearch, value), { delay: 220 }));
-  restoreImeSearchFocus(root, searchFocus);
   root.querySelectorAll('[data-assets-filter]').forEach((select) => select.addEventListener('change', () => actions.onFilterChange?.(select.dataset.assetsFilter, select.value)));
 
   root.querySelectorAll('[data-assets-copy]').forEach((button) => button.addEventListener('click', () => actions.onCopy?.(button.dataset.assetsCopy)));

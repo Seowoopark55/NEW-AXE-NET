@@ -21,6 +21,17 @@ for (const file of [
   expect(text.includes('data-ime-search'), `${file} does not expose a stable search focus key.`);
 }
 
+for (const file of [
+  'src/modules/assets/assetsView.js',
+  'src/modules/outlaw/outlawView.js',
+]) {
+  const text = read(file);
+  const renderClose = text.indexOf('restoreImeSearchFocus(root, searchFocus);');
+  const bindStart = text.indexOf('function bindEvents(');
+  expect(renderClose >= 0 && bindStart >= 0 && renderClose < bindStart,
+    `${file} restores IME focus from an out-of-scope binding function; this can abort all later button bindings.`);
+}
+
 const tube = read('src/modules/tube/tubeView.js');
 expect(tube.includes('patchTubeDetail'), 'AXE TUBE detail patch path is missing.');
 expect(tube.includes('data-tube-modal-id'), 'AXE TUBE modal identity marker is missing.');
@@ -43,7 +54,7 @@ if (fail.length) {
 }
 
 console.log('UX AUDIT: PASS');
-console.log('- Korean IME-safe search binding is installed across searchable modules');
+console.log('- Korean IME-safe search binding is installed without breaking module action bindings');
 console.log('- AXE TUBE uses body-only detail updates to preserve the active player');
 console.log('- Quick access is promoted in both top utility and home launcher');
 console.log('- Professional polish stylesheet is active');

@@ -62,8 +62,10 @@ a:focus-visible {
 .ops-subnav__item.is-active { color: #f1d7a5; }
 
 .ops-main__inner { padding-top: 26px; }
-.module-root > section { animation: axe-pro-enter .16s ease-out both; }
-@keyframes axe-pro-enter { from { opacity: .72; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+.module-root > section { animation: axe-pro-enter .14s ease-out both; }
+/* Keep route transitions transform-free: transformed ancestors change the containing block
+   of position:fixed dialogs and can push admin modals away from the viewport center. */
+@keyframes axe-pro-enter { from { opacity: .72; } to { opacity: 1; } }
 
 /* Unified page heads */
 .ops-info__header,

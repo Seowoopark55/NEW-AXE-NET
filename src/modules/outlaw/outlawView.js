@@ -37,6 +37,7 @@ export function renderOutlawView(root, state, actions) {
   `;
 
   bindEvents(root, actions);
+  restoreImeSearchFocus(root, searchFocus);
 }
 
 function renderGate() {
@@ -453,7 +454,6 @@ function bindEvents(root, actions) {
     }
     bindImeSafeInput(input, (value) => actions.onFilterChange(input.dataset.outlawFilter, value), { delay: 220 });
   });
-  restoreImeSearchFocus(root, searchFocus);
 
   root.querySelectorAll('[data-outlaw-stat]').forEach((element) => {
     element.addEventListener('click', (event) => {
