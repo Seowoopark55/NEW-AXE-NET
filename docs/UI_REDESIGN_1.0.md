@@ -1,7 +1,7 @@
-# NEW AXE NET v1.41.0 · UI / IA REDESIGN
+# AXE NET v1.41.0 · UI / IA REDESIGN
 
 ## 목표
-실사용 기능 이전이 끝난 뒤 NEW AXE NET을 기능 목록형 관리자 화면에서 AXE 브랜드 운영 포털 형태로 정돈한다.
+실사용 기능 이전이 끝난 뒤 AXE NET을 기능 목록형 관리자 화면에서 AXE 브랜드 운영 포털 형태로 정돈한다.
 
 ## 1차 메뉴 구조
 - 홈

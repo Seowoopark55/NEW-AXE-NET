@@ -1,4 +1,4 @@
--- NEW AXE NET v1.26.0
+-- AXE NET v1.26.0
 -- 023_info_module.sql
 -- 정보 모듈: 제작 / 퀘스트 / 가공·재련 / 개조서 / 스킬랭크
 --

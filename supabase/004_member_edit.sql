@@ -1,9 +1,9 @@
--- NEW AXE NET v0.6
+-- AXE NET v0.6
 -- 004_member_edit.sql
 -- AXE WAR Supabase 프로젝트 > SQL Editor에서 전체 실행
 
 -- 관리자에게 members 전체 컬럼 UPDATE 권한을 주지 않고
--- NEW AXE NET UI에서 실제로 수정하는 컬럼만 허용합니다.
+-- AXE NET UI에서 실제로 수정하는 컬럼만 허용합니다.
 revoke update on table new_axe_net.members from authenticated;
 
 grant update (

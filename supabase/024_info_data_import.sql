@@ -1,4 +1,4 @@
--- NEW AXE NET v1.26.0
+-- AXE NET v1.26.0
 -- 024_info_data_import.sql
 -- 기존 AXE NET 정보 데이터 이관 (재실행 가능)
 

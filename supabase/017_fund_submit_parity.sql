@@ -1,4 +1,4 @@
--- NEW AXE NET v1.12.0
+-- AXE NET v1.12.0
 -- 017_fund_submit_parity.sql
 -- 기존 AXE NET 공금납부 / 내 제출 / 검수대기 패리티 1차
 --

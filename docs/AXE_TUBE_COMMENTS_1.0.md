@@ -1,6 +1,6 @@
 # AXE TUBE Comments 1.0 · v1.35.0
 
-AXE TUBE의 남아 있던 기능 공백인 댓글을 NEW AXE NET Supabase 기준으로 추가합니다.
+AXE TUBE의 남아 있던 기능 공백인 댓글을 AXE NET Supabase 기준으로 추가합니다.
 
 ## 포함
 - 활성 영상 댓글 공개 조회

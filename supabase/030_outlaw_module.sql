@@ -1,8 +1,8 @@
--- NEW AXE NET v1.29.0
+-- AXE NET v1.29.0
 -- 030_outlaw_module.sql
 -- AXE WAR Supabase 프로젝트 > SQL Editor에서 전체 실행
 --
--- NEW AXE NET 무법지대 모듈 기반 스키마
+-- AXE NET 무법지대 모듈 기반 스키마
 -- - 현재 무법지대 통계
 -- - 통계 기록 히스토리
 -- - 무법지대 공략(지역 + 단계)
@@ -11,7 +11,7 @@
 -- 보안 원칙
 -- - anon 직접 조회 금지
 -- - 일반 멤버는 HttpOnly member session -> Vercel server(service_role) 경로로 조회
--- - Supabase authenticated 직접 조회는 NEW AXE NET 관리자만 허용
+-- - Supabase authenticated 직접 조회는 AXE NET 관리자만 허용
 -- - Google Sheet / Apps Script 런타임 의존 없음
 
 create schema if not exists new_axe_net;

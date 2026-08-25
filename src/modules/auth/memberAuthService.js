@@ -50,7 +50,7 @@ export async function signOutMember() {
   } catch (error) {
     // 세션이 이미 만료된 경우도 클라이언트에서는 로그아웃 완료로 취급합니다.
     if (error.status !== 401 && error.status !== 403) {
-      console.warn('[NEW AXE NET] member session revoke failed:', error);
+      console.warn('[AXE NET] member session revoke failed:', error);
     }
   }
 }

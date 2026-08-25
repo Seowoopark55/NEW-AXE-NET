@@ -1,9 +1,9 @@
--- NEW AXE NET v1.2
+-- AXE NET v1.2
 -- 010_fund_ledger_write.sql
 -- AXE WAR Supabase 프로젝트 > SQL Editor에서 전체 실행
 --
 -- 핵심:
--- 1) NEW AXE NET에서 주간 공금 납부 등록
+-- 1) AXE NET에서 주간 공금 납부 등록
 -- 2) 일반 수입 / 지출 / 조정 등록
 -- 3) 원장 행은 삭제하지 않고 cancelled 처리
 -- 4) 모든 쓰기 RPC에서 is_admin() 재검사

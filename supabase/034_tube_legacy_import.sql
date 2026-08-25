@@ -1,4 +1,4 @@
--- NEW AXE NET v1.30.0
+-- AXE NET v1.30.0
 -- 034_tube_legacy_import.sql
 -- 사용자 제공 `AXE NET - AXE_TUBE.csv` 12건을 new_axe_net.tube_videos로 1회 이관합니다.
 -- 전제: 033_tube_module.sql 실행 완료
@@ -9,8 +9,8 @@
 --   분류: 일반 11 / 무법 1
 --
 -- 중요
--- - CSV의 password 해시는 NEW AXE NET에 이관하지 않습니다.
---   NEW AXE NET은 멤버/관리자 인증을 사용하므로 레거시 게시글 비밀번호가 필요 없습니다.
+-- - CSV의 password 해시는 AXE NET에 이관하지 않습니다.
+--   AXE NET은 멤버/관리자 인증을 사용하므로 레거시 게시글 비밀번호가 필요 없습니다.
 -- - thumbnail 값이 비어 있던 행은 YouTube video id 기준 hqdefault 썸네일 URL로 보완합니다.
 -- - writer_member_key는 현재 members.nickname과 작성자명이 일치할 때만 연결합니다.
 -- - tube_id 기준 UPSERT라 재실행해도 중복되지 않습니다.

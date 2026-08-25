@@ -1,4 +1,4 @@
-NEW AXE NET members migration audit
+AXE NET members migration audit
 ===================================
 Supabase public.members rows: 25
 Legacy Excel/CSV rows:        25

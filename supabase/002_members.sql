@@ -1,7 +1,7 @@
--- NEW AXE NET v0.3
+-- AXE NET v0.3
 -- 002_members.sql
 -- AXE WAR Supabase 프로젝트의 SQL Editor에서 실행합니다.
--- NEW AXE NET 전용 new_axe_net schema만 사용합니다.
+-- AXE NET 전용 new_axe_net schema만 사용합니다.
 
 create schema if not exists new_axe_net;
 

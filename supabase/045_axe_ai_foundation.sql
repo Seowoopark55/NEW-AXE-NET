@@ -1,9 +1,9 @@
--- NEW AXE NET v1.43.0
+-- AXE NET v1.43.0
 -- 045_axe_ai_foundation.sql
 -- AXE AI · Supabase Foundation
 --
 -- 목적
--- 1) NEW AXE NET 전용 AI 지식 / 별칭 / 미답변 / 질문 로그 저장소
+-- 1) AXE NET 전용 AI 지식 / 별칭 / 미답변 / 질문 로그 저장소
 -- 2) pgvector + pg_trgm 기반 Hybrid Search 준비
 -- 3) 브라우저 일반 사용자에게는 원본 AI 테이블 비공개
 -- 4) 관리자(Auth + new_axe_net.is_admin())와 service_role만 관리 가능

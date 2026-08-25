@@ -1,4 +1,4 @@
-# NEW AXE NET · Unified UI 1.0
+# AXE NET · Unified UI 1.0
 
 v1.20.0부터 사이트 외곽과 업무화면을 하나의 시각 규칙으로 묶는다.
 

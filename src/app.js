@@ -76,7 +76,7 @@ async function bootstrap() {
       },
     }));
   } catch (error) {
-    console.error('[NEW AXE NET] Supabase health check failed:', error);
+    console.error('[AXE NET] Supabase health check failed:', error);
 
     store.updateState((state) => ({
       ...state,
@@ -91,5 +91,5 @@ async function bootstrap() {
 }
 
 bootstrap().catch((error) => {
-  console.error('[NEW AXE NET] bootstrap failed:', error);
+  console.error('[AXE NET] bootstrap failed:', error);
 });

@@ -818,7 +818,7 @@ export default async function handler(req, res) {
 
     return sendJson(res, 400, { ok: false, message: '지원하지 않는 세션 작업입니다.' });
   } catch (error) {
-    console.error('[NEW AXE NET] member session action failed:', error);
+    console.error('[AXE NET] member session action failed:', error);
     const normalized = normalizeApiError(error);
     if (normalized.status === 401 || normalized.status === 403) clearMemberSessionCookie(req, res);
     return sendJson(res, normalized.status, {

@@ -1,6 +1,6 @@
 # AXE UI SYSTEM 1.0
 
-NEW AXE NET의 UI/UX 기준서는 기존 AXE NET입니다.
+AXE NET의 UI/UX 기준서는 기존 AXE NET입니다.
 NEW에서 화면마다 임의의 글자 크기/간격/행 높이를 새로 정하지 않습니다.
 
 ## 1. 기준 수치

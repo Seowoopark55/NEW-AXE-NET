@@ -79,7 +79,7 @@ export async function initAuthModule() {
               const adminSession = await signInWithPassword(session.admin_bridge.email, session.admin_bridge.secret);
               await applyAdminSession(adminSession, { closeLogin: true });
             } catch (adminError) {
-              console.error('[NEW AXE NET] member admin auto sign-in failed:', adminError);
+              console.error('[AXE NET] member admin auto sign-in failed:', adminError);
               store.updateState((state) => ({
                 ...state,
                 auth: {
@@ -146,10 +146,10 @@ export async function initAuthModule() {
   const memberSession = memberSessionResult.status === 'fulfilled' ? memberSessionResult.value : null;
 
   if (adminSessionResult.status === 'rejected') {
-    console.error('[NEW AXE NET] admin session restore failed:', adminSessionResult.reason);
+    console.error('[AXE NET] admin session restore failed:', adminSessionResult.reason);
   }
   if (memberSessionResult.status === 'rejected') {
-    console.error('[NEW AXE NET] member session restore failed:', memberSessionResult.reason);
+    console.error('[AXE NET] member session restore failed:', memberSessionResult.reason);
   }
 
   await applyAdminSession(adminSession, { suppressInitialized: true });
@@ -179,7 +179,7 @@ async function applyAdminSession(session, options = {}) {
     try {
       admin = await fetchAdminSession();
     } catch (adminError) {
-      console.error('[NEW AXE NET] admin session lookup failed:', adminError);
+      console.error('[AXE NET] admin session lookup failed:', adminError);
       error = adminError?.message ?? String(adminError);
     }
   }

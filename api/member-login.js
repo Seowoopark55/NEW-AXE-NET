@@ -44,13 +44,13 @@ export default async function handler(req, res) {
       if (!member) throw invalidMemberLoginError();
     } else {
       // v1.27 이관 브리지:
-      // 자격증명이 아직 NEW AXE NET에 없는 멤버만 기존 로그인 서버에서 1회 검증합니다.
+      // 자격증명이 아직 AXE NET에 없는 멤버만 기존 로그인 서버에서 1회 검증합니다.
       // 성공한 비밀번호는 평문 저장 없이 Supabase pgcrypto bcrypt 해시로 즉시 이관됩니다.
       const legacyUser = await legacyLogin(nickname, password);
       const legacyMember = await findNewMemberForLegacyUser(legacyUser);
 
       if (String(legacyMember.member_key) !== String(target.member.member_key)) {
-        throw invalidMemberLoginError('로그인 계정과 NEW AXE NET 멤버 정보가 일치하지 않습니다. 관리자에게 문의하세요.');
+        throw invalidMemberLoginError('로그인 계정과 AXE NET 멤버 정보가 일치하지 않습니다. 관리자에게 문의하세요.');
       }
 
       await setMemberPassword(legacyMember.member_key, password, 'legacy_first_login');
@@ -63,7 +63,7 @@ export default async function handler(req, res) {
       try {
         adminBridge = await ensureMemberAdminBridge(member, password);
       } catch (bridgeError) {
-        console.error('[NEW AXE NET] member admin bridge failed:', bridgeError);
+        console.error('[AXE NET] member admin bridge failed:', bridgeError);
         adminBridge = {
           mode: 'error',
           auto_signin: false,
@@ -84,7 +84,7 @@ export default async function handler(req, res) {
       admin_bridge: adminBridge,
     });
   } catch (error) {
-    console.error('[NEW AXE NET] member login failed:', error);
+    console.error('[AXE NET] member login failed:', error);
     const normalized = normalizeApiError(error);
     return sendJson(res, normalized.status, {
       ok: false,

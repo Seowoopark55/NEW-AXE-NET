@@ -1,11 +1,11 @@
-NEW AXE NET v1.36.0 · AXE TUBE RUNTIME CUTOVER
+AXE NET v1.36.0 · AXE TUBE RUNTIME CUTOVER
 
 PRIMARY
-- NEW AXE NET Supabase: 읽기/쓰기/영상/댓글/추천/조회 원본
+- AXE NET Supabase: 읽기/쓰기/영상/댓글/추천/조회 원본
 - Discord Forum: Supabase 활성 영상 기준 동기화
 
 BACKUP ONLY
-- Apps Script / Google Sheet: NEW AXE NET → Legacy 단방향 백업
+- Apps Script / Google Sheet: AXE NET → Legacy 단방향 백업
 
 DEFAULT DISABLED
 - Legacy → Supabase 자동 흡수

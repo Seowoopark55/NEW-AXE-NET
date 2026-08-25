@@ -1,4 +1,4 @@
--- NEW AXE NET v1.25.0
+-- AXE NET v1.25.0
 -- 021_notice_operations.sql
 -- 공지사항 + 운영기준 Supabase-first 전환
 --

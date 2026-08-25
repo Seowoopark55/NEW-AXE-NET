@@ -1,6 +1,6 @@
-# AXE NET → NEW AXE NET 기능 패리티 기준
+# AXE NET → AXE NET 기능 패리티 기준
 
-NEW AXE NET은 기존 AXE NET 기능을 다시 발명하지 않습니다.
+AXE NET은 기존 AXE NET 기능을 다시 발명하지 않습니다.
 기존 AXE NET의 화면 흐름과 운영 규칙을 기능 명세로 사용하고, NEW에서는 Supabase-first 구조와 코드 분리/권한 설계만 개선합니다.
 
 ## 공금관리 기본 구조

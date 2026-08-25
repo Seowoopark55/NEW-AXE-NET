@@ -1,4 +1,4 @@
-NEW AXE NET v1.29.2 · OUTLAW ADMIN MANAGEMENT VALIDATION
+AXE NET v1.29.2 · OUTLAW ADMIN MANAGEMENT VALIDATION
 
 [PASS] JS syntax: outlawView.js / outlawService.js / outlaw index.js / store.js
 [PASS] AXE STYLE audit

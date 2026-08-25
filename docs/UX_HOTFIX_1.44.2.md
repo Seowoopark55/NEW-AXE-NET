@@ -1,4 +1,4 @@
-# NEW AXE NET UX HOTFIX 1.44.2
+# AXE NET UX HOTFIX 1.44.2
 
 ## Scope
 Console-noise cleanup only. No database schema change.

@@ -652,7 +652,7 @@ async function loadFundBase() {
       void ensureAdminWorkspace();
     }
   } catch (error) {
-    console.error('[NEW AXE NET] fund base load failed:', error);
+    console.error('[AXE NET] fund base load failed:', error);
     store.updateState((state) => ({
       ...state,
       fund: {

@@ -1,4 +1,4 @@
-# NEW AXE NET — HOME WORKSPACE 1.0
+# AXE NET — HOME WORKSPACE 1.0
 
 ## 목적
 
@@ -6,7 +6,7 @@
 
 ## 이동 규칙
 
-- 상단 NEW AXE NET 로고 클릭 → 홈
+- 상단 AXE NET 로고 클릭 → 홈
 - AXE 배너 클릭 → 홈
 - 배너 아래 주요 메뉴의 `홈` 클릭 → 홈
 - 홈의 바로가기 → 해당 모듈/공금 섹션으로 직접 이동

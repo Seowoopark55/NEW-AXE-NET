@@ -1,4 +1,4 @@
-NEW AXE NET v1.25.0 · NOTICE & OPERATIONS VALIDATION
+AXE NET v1.25.0 · NOTICE & OPERATIONS VALIDATION
 Date: 2026-08-23
 
 1. JavaScript / MJS syntax
@@ -37,5 +37,5 @@ Date: 2026-08-23
 
 7. Database migration
 - Required migration: supabase/021_notice_operations.sql
-- SQL was statically reviewed against prior NEW AXE NET schema conventions.
+- SQL was statically reviewed against prior AXE NET schema conventions.
 - A live PostgreSQL/Supabase execution was not available in this environment; apply in Supabase SQL Editor before deploying the UI.

@@ -1,9 +1,9 @@
--- NEW AXE NET v1.28.0
+-- AXE NET v1.28.0
 -- 027_plika_legacy_import_optional.sql
--- 선택 실행: 기존 AXE WAR/public.member_accounts -> NEW AXE NET 계좌 1회 복사
+-- 선택 실행: 기존 AXE WAR/public.member_accounts -> AXE NET 계좌 1회 복사
 --
 -- 이 SQL은 public 데이터를 수정하지 않습니다.
--- NEW AXE NET 런타임도 public을 읽지 않습니다.
+-- AXE NET 런타임도 public을 읽지 않습니다.
 -- 026_assets_plika.sql 실행 후, 기존 public.member_accounts가 있는 경우에만 실행하세요.
 
 DO $$
@@ -52,7 +52,7 @@ BEGIN
   )
   SELECT count(*) INTO v_imported FROM upserted;
 
-  RAISE NOTICE 'NEW AXE NET 플리카 계좌 %건 복사 완료', v_imported;
+  RAISE NOTICE 'AXE NET 플리카 계좌 %건 복사 완료', v_imported;
 END
 $$;
 

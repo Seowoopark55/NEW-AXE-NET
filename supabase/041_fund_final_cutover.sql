@@ -1,6 +1,6 @@
--- NEW AXE NET v1.38.0
+-- AXE NET v1.38.0
 -- 041_fund_final_cutover.sql
--- CURRENT AXE NET -> NEW AXE NET 공금 최종 전환
+-- CURRENT AXE NET -> AXE NET 공금 최종 전환
 --
 -- 핵심 원칙
 -- 1) 기존 AXE NET의 '현재 운영 스냅샷'을 단 한 번 정답으로 가져옵니다.
@@ -114,7 +114,7 @@ begin
     select 1 from new_axe_net.fund_runtime_config c
     where c.id = 1 and c.primary_source = 'new_axe_net'
   ) then
-    raise exception '공금은 이미 NEW AXE NET으로 최종 전환되었습니다.' using errcode = '22023';
+    raise exception '공금은 이미 AXE NET으로 최종 전환되었습니다.' using errcode = '22023';
   end if;
 
   v_expected := nullif(p_payload->>'expected_public_balance', '')::bigint;
@@ -194,7 +194,7 @@ begin
   where m.member_key is null;
 
   if v_missing is not null then
-    raise exception 'NEW AXE NET에서 찾을 수 없는 멤버가 있습니다: %', v_missing using errcode = '22023';
+    raise exception 'AXE NET에서 찾을 수 없는 멤버가 있습니다: %', v_missing using errcode = '22023';
   end if;
 
   select coalesce(sum(
@@ -533,7 +533,7 @@ begin
   if nullif(btrim(p_discord_user_id),'') is null
      or nullif(btrim(v_member.discord_user_id),'') is null
      or btrim(v_member.discord_user_id) <> btrim(p_discord_user_id) then
-    raise exception 'Discord 계정과 NEW AXE NET 멤버 연결이 일치하지 않습니다.' using errcode = '42501';
+    raise exception 'Discord 계정과 AXE NET 멤버 연결이 일치하지 않습니다.' using errcode = '42501';
   end if;
 
   select coalesce(s.join_date_override, v_member.joined_date)

@@ -1,15 +1,15 @@
-# NEW AXE NET · OUTLAW MODULE 1.0
+# AXE NET · OUTLAW MODULE 1.0
 
 ## 범위
 
-v1.29.0은 기존 AXE NET의 다음 4개 시트를 NEW AXE NET Supabase 구조로 이관한다.
+v1.29.0은 기존 AXE NET의 다음 4개 시트를 AXE NET Supabase 구조로 이관한다.
 
 - 무법지대통계: 19명 현재값
 - 무법지대통계기록: 472건 히스토리
 - 브리핑맵: 17개 지역
 - 무법지대공략: 3개 지역 / 10개 단계
 
-## NEW AXE NET 구조
+## AXE NET 구조
 
 ### outlaw_stats_current
 현재 누적 킬/데스와 K/D. member_key가 authority이며 기존 Discord ID는 향후 AXE BOT 연동 키로 보존한다.

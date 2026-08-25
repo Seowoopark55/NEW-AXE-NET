@@ -1,4 +1,4 @@
-NEW AXE NET v1.32.0 · AXE TUBE Supabase-first validation
+AXE NET v1.32.0 · AXE TUBE Supabase-first validation
 
 PASS · JS syntax
 PASS · relative import path check

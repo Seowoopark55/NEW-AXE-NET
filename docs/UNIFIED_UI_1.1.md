@@ -1,4 +1,4 @@
-# NEW AXE NET — Unified UI 1.1
+# AXE NET — Unified UI 1.1
 
 v1.20.1은 v1.20.0의 디자인 방향을 유지하면서 **정렬 기준선과 시각적 리듬을 고정하는 마감 패스**입니다.
 
@@ -12,7 +12,7 @@ v1.20.1은 v1.20.0의 디자인 방향을 유지하면서 **정렬 기준선과 
 
 ## 배너
 
-- 상단 로고의 `NEW AXE NET`과 배너 안의 동일 문구가 중복되던 구조 제거
+- 상단 로고의 `AXE NET`과 배너 안의 동일 문구가 중복되던 구조 제거
 - 배너 캡션은 `AXE OPERATIONS NETWORK / OPERATIONS / MEMBERS · FUND`로 축약
 - 배경 AXE 그래픽이 브랜드의 주인공이 되도록 텍스트 비중 축소
 

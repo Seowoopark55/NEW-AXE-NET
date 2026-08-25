@@ -1,4 +1,4 @@
--- NEW AXE NET v1.29.2
+-- AXE NET v1.29.2
 -- 032_outlaw_admin_management.sql
 -- 무법지대 공략 / 브리핑맵 관리자 관리 RPC
 -- 전제: 030_outlaw_module.sql 적용 완료

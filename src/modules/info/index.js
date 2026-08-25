@@ -249,7 +249,7 @@ async function reloadInfoData(options = {}) {
       },
     }));
   } catch (error) {
-    console.error('[NEW AXE NET] info load failed:', error);
+    console.error('[AXE NET] info load failed:', error);
     store.updateState((state) => ({
       ...state,
       info: { ...state.info, initialized: true, loading: false, error: formatInfoError(error) },

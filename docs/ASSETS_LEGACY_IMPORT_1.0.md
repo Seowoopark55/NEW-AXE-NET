@@ -1,4 +1,4 @@
-# NEW AXE NET · 회사자산 / 반납 레거시 이관 1.0
+# AXE NET · 회사자산 / 반납 레거시 이관 1.0
 
 버전: v1.28.1
 
@@ -9,7 +9,7 @@
 - `supabase/data/company_asset_returns_legacy_source.csv`
   - 퇴사자반납 3건
 
-원본 CSV는 이관 추적용으로만 포함하며 NEW AXE NET 런타임에서는 읽지 않습니다.
+원본 CSV는 이관 추적용으로만 포함하며 AXE NET 런타임에서는 읽지 않습니다.
 
 ## 정규화
 

@@ -1,4 +1,4 @@
--- NEW AXE NET v1.25.x
+-- AXE NET v1.25.x
 -- 022_notice_operations_data_import.sql
 -- 기존 AXE NET 공지사항 / 운영기준 실데이터 이관
 -- 재실행 가능: legacy_id 기준 UPSERT

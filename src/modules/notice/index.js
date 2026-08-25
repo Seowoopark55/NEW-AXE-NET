@@ -127,7 +127,7 @@ export async function initNoticeModule() {
             },
           }));
         } catch (error) {
-          console.error('[NEW AXE NET] notice save failed:', error);
+          console.error('[AXE NET] notice save failed:', error);
           setEditorSaving(false, formatNoticeError(error));
         }
       },
@@ -197,7 +197,7 @@ async function reloadNoticeData(options = {}) {
       },
     }));
   } catch (error) {
-    console.error('[NEW AXE NET] notices load failed:', error);
+    console.error('[AXE NET] notices load failed:', error);
     store.updateState((state) => ({
       ...state,
       notice: {

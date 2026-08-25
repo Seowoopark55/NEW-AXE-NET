@@ -22,7 +22,7 @@ export function renderHomeView(root, state, actions = {}) {
   const shortcuts = Array.isArray(state.shortcuts?.items) ? state.shortcuts.items : [];
 
   root.innerHTML = `
-    <section class="ops-home" aria-label="NEW AXE NET 홈">
+    <section class="ops-home" aria-label="AXE NET 홈">
       ${dataLoading ? '<div class="ops-home__loading">최신 데이터를 불러오는 중입니다.</div>' : ''}
       ${shortcuts.length ? `
         <section class="ops-home-quickpanel" aria-label="내 바로가기">

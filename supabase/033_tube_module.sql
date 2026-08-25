@@ -1,4 +1,4 @@
--- NEW AXE NET v1.30.0
+-- AXE NET v1.30.0
 -- 033_tube_module.sql
 -- AXE TUBE 1차 기반: 기존 영상 이관 + 공개 조회 + 조회수 증가
 -- 새 영상 작성/수정/댓글/추천 쓰기는 아직 기존 AXE TUBE 흐름을 유지합니다.
@@ -55,7 +55,7 @@ grant select on table new_axe_net.tube_videos to anon, authenticated;
 grant select, insert, update, delete on table new_axe_net.tube_videos to service_role;
 
 -- 기존 AXE TUBE는 비밀번호를 제외한 영상 목록을 공개 제공해 왔으므로
--- NEW AXE NET 1차도 active 영상의 읽기만 공개합니다.
+-- AXE NET 1차도 active 영상의 읽기만 공개합니다.
 drop policy if exists tube_videos_public_read
 on new_axe_net.tube_videos;
 create policy tube_videos_public_read

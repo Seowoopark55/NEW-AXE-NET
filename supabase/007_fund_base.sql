@@ -1,4 +1,4 @@
--- NEW AXE NET v0.9
+-- AXE NET v0.9
 -- 007_fund_base.sql
 -- AXE WAR Supabase 프로젝트 > SQL Editor에서 전체 실행
 --

@@ -1,7 +1,7 @@
--- NEW AXE NET v1.34.0
+-- AXE NET v1.34.0
 -- 038_tube_discord_supabase_first.sql
 -- AXE TUBE의 신규 입력을 Supabase-first로 확정하고,
--- 기존 Apps Script / Google Sheet를 NEW AXE NET의 단방향 백업 경로로 유지합니다.
+-- 기존 Apps Script / Google Sheet를 AXE NET의 단방향 백업 경로로 유지합니다.
 -- 전제: 033 ~ 037 적용 완료
 
 alter table new_axe_net.tube_videos
@@ -18,7 +18,7 @@ alter table new_axe_net.tube_videos
   check (legacy_backup_status in ('none', 'legacy_source', 'pending', 'synced', 'error', 'deleted'));
 
 -- 기존 Apps Script/Sheet에서 이관된 행은 그 자체가 레거시 원본입니다.
--- 비밀번호 원문을 보유하지 않으므로 NEW AXE NET이 이 백업 행을 수정/삭제하려고 하지 않습니다.
+-- 비밀번호 원문을 보유하지 않으므로 AXE NET이 이 백업 행을 수정/삭제하려고 하지 않습니다.
 update new_axe_net.tube_videos
 set
   legacy_backup_id = coalesce(legacy_backup_id, tube_id),
@@ -28,7 +28,7 @@ set
 where source like 'legacy%'
   and legacy_backup_status = 'none';
 
--- v1.32~v1.33에서 NEW AXE NET에 새로 생성된 영상도 다음 BOT 동기화에서
+-- v1.32~v1.33에서 AXE NET에 새로 생성된 영상도 다음 BOT 동기화에서
 -- 기존 Sheet 백업을 만들 수 있도록 pending으로 올립니다.
 update new_axe_net.tube_videos
 set
@@ -45,7 +45,7 @@ create unique index if not exists tube_videos_legacy_backup_id_uidx
 create index if not exists tube_videos_legacy_backup_status_idx
   on new_axe_net.tube_videos(legacy_backup_status, active, updated_at desc);
 
--- NEW AXE NET이 관리하는 신규 영상의 메타데이터/활성 상태가 바뀌면
+-- AXE NET이 관리하는 신규 영상의 메타데이터/활성 상태가 바뀌면
 -- Sheet 백업 동기화를 pending으로 되돌립니다.
 -- legacy_source는 원래 레거시 행의 비밀번호 원문이 없으므로 자동 백업 갱신 대상에서 제외합니다.
 create or replace function new_axe_net.mark_tube_legacy_backup_pending()

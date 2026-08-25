@@ -140,7 +140,7 @@ export async function initMembersModule() {
 
           await loadMemberAudit(memberKey);
         } catch (error) {
-          console.error('[NEW AXE NET] member update failed:', error);
+          console.error('[AXE NET] member update failed:', error);
 
           store.updateState((state) => ({
             ...state,
@@ -231,7 +231,7 @@ export async function initMembersModule() {
 
           await loadMemberAudit(memberKey);
         } catch (error) {
-          console.error('[NEW AXE NET] member create failed:', error);
+          console.error('[AXE NET] member create failed:', error);
 
           store.updateState((state) => ({
             ...state,
@@ -274,7 +274,7 @@ export async function initMembersModule() {
       },
     }));
   } catch (error) {
-    console.error('[NEW AXE NET] members load failed:', error);
+    console.error('[AXE NET] members load failed:', error);
 
     store.updateState((state) => ({
       ...state,
@@ -323,7 +323,7 @@ async function loadMemberAudit(memberKey) {
       },
     }));
   } catch (error) {
-    console.error('[NEW AXE NET] member audit load failed:', error);
+    console.error('[AXE NET] member audit load failed:', error);
 
     if (store.getState().members.selectedMemberKey !== memberKey) {
       return;

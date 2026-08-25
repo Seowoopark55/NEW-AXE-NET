@@ -1,9 +1,9 @@
--- NEW AXE NET v1.6
+-- AXE NET v1.6
 -- 014_fund_axe_parity.sql
 -- 목적:
 -- 1) 기존 AXE NET 공금 월별현황의 '멤버 x 주차' 표 구조를 NEW에서도 구현
 -- 2) 검수대기 요청을 월별현황 셀에서 별도 상태로 표시
--- 3) 내부 계산은 기존 NEW AXE NET LIVE ENGINE을 그대로 사용
+-- 3) 내부 계산은 기존 AXE NET LIVE ENGINE을 그대로 사용
 --
 -- 추가 CSV Import 없음.
 

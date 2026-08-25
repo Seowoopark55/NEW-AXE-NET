@@ -238,7 +238,7 @@ export async function findNewMemberForLegacyUser(legacyUser) {
   }
 
   if (!member) {
-    throw new Error('NEW AXE NET 멤버 목록에서 로그인 계정을 찾을 수 없습니다. 관리자에게 문의하세요.');
+    throw new Error('AXE NET 멤버 목록에서 로그인 계정을 찾을 수 없습니다. 관리자에게 문의하세요.');
   }
 
   if (String(member.status || '').toLowerCase() !== 'active') {
@@ -267,7 +267,7 @@ export async function createMemberSession(member) {
   try {
     await client.rpc('cleanup_expired_member_web_sessions');
   } catch (error) {
-    console.warn('[NEW AXE NET] expired member session cleanup skipped:', error?.message || error);
+    console.warn('[AXE NET] expired member session cleanup skipped:', error?.message || error);
   }
 
   const { error } = await client.from('member_web_sessions').insert({
@@ -498,7 +498,7 @@ export async function ensureMemberAdminBridge(member, password) {
       try {
         await client.auth.admin.deleteUser(authUser.id);
       } catch (cleanupError) {
-        console.warn('[NEW AXE NET] orphan member admin auth cleanup skipped:', cleanupError?.message || cleanupError);
+        console.warn('[AXE NET] orphan member admin auth cleanup skipped:', cleanupError?.message || cleanupError);
       }
     }
     throw accountError;
@@ -527,7 +527,7 @@ export function normalizeApiError(error) {
   if (lower.includes('member_credentials') || lower.includes('get_member_login_target') || lower.includes('verify_member_credentials')) {
     return {
       status: 500,
-      message: 'NEW AXE NET 멤버 로그인 DB가 준비되지 않았습니다. 025_member_credentials.sql 실행 여부를 확인하세요.',
+      message: 'AXE NET 멤버 로그인 DB가 준비되지 않았습니다. 025_member_credentials.sql 실행 여부를 확인하세요.',
     };
   }
 
@@ -583,7 +583,7 @@ export function normalizeApiError(error) {
   if (lower.includes('member_web_sessions')) {
     return {
       status: 500,
-      message: 'NEW AXE NET 웹 세션 테이블이 준비되지 않았습니다. 016_member_web_sessions.sql 실행 여부를 확인하세요.',
+      message: 'AXE NET 웹 세션 테이블이 준비되지 않았습니다. 016_member_web_sessions.sql 실행 여부를 확인하세요.',
     };
   }
 
@@ -656,7 +656,7 @@ export async function removeFundEvidence(client, path) {
   try {
     await client.storage.from(FUND_EVIDENCE_BUCKET).remove([path]);
   } catch (error) {
-    console.warn('[NEW AXE NET] orphan fund evidence cleanup skipped:', error?.message || error);
+    console.warn('[AXE NET] orphan fund evidence cleanup skipped:', error?.message || error);
   }
 }
 

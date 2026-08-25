@@ -1,6 +1,6 @@
--- NEW AXE NET v1.22.0
+-- AXE NET v1.22.0
 -- 020_fund_parity_audit.sql
--- AXE NET -> NEW AXE NET 공금 기능 패리티 감사 보강
+-- AXE NET -> AXE NET 공금 기능 패리티 감사 보강
 --
 -- 적용 내용
 -- 1) 월별현황 상태 판정: 부족 / 검수대기 / 반려 복원

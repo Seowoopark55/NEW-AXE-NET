@@ -1,4 +1,4 @@
-NEW AXE NET v1.33.0 · AXE TUBE Discord Forum Primary validation
+AXE NET v1.33.0 · AXE TUBE Discord Forum Primary validation
 
 PASS
 - JavaScript syntax check: src / api / server

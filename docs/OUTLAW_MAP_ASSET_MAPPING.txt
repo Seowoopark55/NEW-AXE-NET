@@ -1,4 +1,4 @@
-NEW AXE NET v1.29.1 — OUTLAW MAP ASSET MAPPING
+AXE NET v1.29.1 — OUTLAW MAP ASSET MAPPING
 
 브리핑맵 좌표/근사좌표 기준 연결
 01 남부항구 10100 -> 10100.png -> map_001.png (exact)

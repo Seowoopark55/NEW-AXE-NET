@@ -1,6 +1,6 @@
--- NEW AXE NET v1.33.0
+-- AXE NET v1.33.0
 -- 037_tube_discord_forum_primary.sql
--- AXE TUBE Discord 포럼을 NEW AXE NET Supabase 기준으로 동기화하기 위한 상태 컬럼
+-- AXE TUBE Discord 포럼을 AXE NET Supabase 기준으로 동기화하기 위한 상태 컬럼
 -- 전제: 033 ~ 036 적용 완료
 
 alter table new_axe_net.tube_videos

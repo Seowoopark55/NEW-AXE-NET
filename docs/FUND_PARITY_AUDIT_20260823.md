@@ -1,7 +1,7 @@
-# AXE NET → NEW AXE NET 공금 패리티 감사
+# AXE NET → AXE NET 공금 패리티 감사
 
 기준일: 2026-08-23  
-대상 버전: NEW AXE NET v1.22.0
+대상 버전: AXE NET v1.22.0
 
 ## 결론
 

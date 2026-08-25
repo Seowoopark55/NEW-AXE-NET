@@ -1,4 +1,4 @@
--- NEW AXE NET v1.13.0
+-- AXE NET v1.13.0
 -- 018_fund_admin_parity.sql
 -- 기존 AXE NET 공금 관리자 기능 패리티 2차
 -- - 공금대상 멤버 설정(활성/제외, 가입일 보정, 메모)

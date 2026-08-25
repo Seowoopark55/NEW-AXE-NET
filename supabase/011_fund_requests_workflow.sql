@@ -1,4 +1,4 @@
--- NEW AXE NET v1.3
+-- AXE NET v1.3
 -- 011_fund_requests_workflow.sql
 -- AXE WAR Supabase 프로젝트 > SQL Editor에서 전체 실행
 --

@@ -1,4 +1,4 @@
--- NEW AXE NET v1.40.0
+-- AXE NET v1.40.0
 -- 043_member_admin_bridge.sql
 -- MEMBER ADMIN BRIDGE
 --

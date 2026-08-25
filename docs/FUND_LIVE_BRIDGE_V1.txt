@@ -1,8 +1,8 @@
-NEW AXE NET v1.37.0 · FUND LIVE BRIDGE & CATCH-UP
+AXE NET v1.37.0 · FUND LIVE BRIDGE & CATCH-UP
 
 [운영 단계]
 기존 AXE NET 공금 쓰기 = 아직 authoritative
-NEW AXE NET = 실시간 복제 + 정합성 검증
+AXE NET = 실시간 복제 + 정합성 검증
 Discord 상시 현황판 = 검증 중 legacy 표시, 0/0 확인 후 NEW 표시
 
 [초기 안전모드]

@@ -349,7 +349,7 @@ function renderEditor(video, options = {}) {
           <div>
             <span>AXE TUBE · ${isEdit ? 'EDIT' : 'UPLOAD'}</span>
             <h2>${isEdit ? '영상 정보 수정' : '새 영상 등록'}</h2>
-            <p>${isEdit ? '저장하는 순간 이 영상은 NEW AXE NET 기준으로 관리됩니다.' : 'YouTube 링크를 기준으로 썸네일과 재생 정보를 자동 연결합니다.'}</p>
+            <p>${isEdit ? '저장하는 순간 이 영상은 AXE NET 기준으로 관리됩니다.' : 'YouTube 링크를 기준으로 썸네일과 재생 정보를 자동 연결합니다.'}</p>
           </div>
           <button type="button" data-tube-editor-close aria-label="편집창 닫기">×</button>
         </header>
@@ -383,7 +383,7 @@ function renderEditor(video, options = {}) {
           </label>
 
           ${isEdit && String(video.sync_owner || '') !== 'supabase'
-            ? '<div class="ops-tube-editor__takeover"><strong>기존 미러 영상</strong><span>이 영상을 저장하거나 내리면 이후 메타데이터는 NEW AXE NET이 우선합니다. 기존 Shadow Mirror가 다시 덮어쓰지 않습니다.</span></div>'
+            ? '<div class="ops-tube-editor__takeover"><strong>기존 미러 영상</strong><span>이 영상을 저장하거나 내리면 이후 메타데이터는 AXE NET이 우선합니다. 기존 Shadow Mirror가 다시 덮어쓰지 않습니다.</span></div>'
             : ''}
         </div>
 

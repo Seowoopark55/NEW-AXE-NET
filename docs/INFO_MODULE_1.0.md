@@ -1,7 +1,7 @@
-# NEW AXE NET v1.26.0 — INFO MODULE 1.0
+# AXE NET v1.26.0 — INFO MODULE 1.0
 
 ## 목적
-기존 AXE NET의 `정보` 영역을 NEW AXE NET의 Supabase-first 구조로 이관합니다.
+기존 AXE NET의 `정보` 영역을 AXE NET의 Supabase-first 구조로 이관합니다.
 
 ## 메뉴
 - 제작

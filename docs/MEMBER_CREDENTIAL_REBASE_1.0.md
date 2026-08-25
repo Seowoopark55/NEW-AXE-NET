@@ -1,8 +1,8 @@
-# NEW AXE NET · MEMBER CREDENTIAL REBASE 1.0
+# AXE NET · MEMBER CREDENTIAL REBASE 1.0
 
 ## 목적
 
-NEW AXE NET 일반 멤버 로그인에서 기존 Apps Script 의존을 제거하기 위한 단계적 자격증명 이관입니다.
+AXE NET 일반 멤버 로그인에서 기존 Apps Script 의존을 제거하기 위한 단계적 자격증명 이관입니다.
 
 ## 동작
 

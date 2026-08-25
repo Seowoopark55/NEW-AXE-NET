@@ -1,11 +1,11 @@
--- NEW AXE NET v1.31.0
+-- AXE NET v1.31.0
 -- 035_tube_reactions_bridge.sql
 -- AXE TUBE 병행운영 반응/카운터 브리지
 -- 전제: 033_tube_module.sql + 034_tube_legacy_import.sql 적용 완료
 -- 목적:
--- 1) NEW AXE NET 멤버 추천/비추천을 별도 기록
+-- 1) AXE NET 멤버 추천/비추천을 별도 기록
 -- 2) 기존 AXE TUBE의 조회/추천/비추천 변화량을 Shadow Mirror로 합산
--- 3) 기존 카운터가 증가/감소해도 NEW AXE NET에서 발생한 반응은 보존
+-- 3) 기존 카운터가 증가/감소해도 AXE NET에서 발생한 반응은 보존
 
 alter table new_axe_net.tube_videos
   add column if not exists legacy_views integer,
@@ -26,7 +26,7 @@ alter table new_axe_net.tube_videos
     check (legacy_dislikes is null or legacy_dislikes >= 0);
 
 -- 034 최초 이관 시점의 정확한 기존 AXE TUBE 카운터를 baseline으로 저장합니다.
--- 이미 NEW AXE NET에서 조회수가 증가했더라도 views 총계는 건드리지 않습니다.
+-- 이미 AXE NET에서 조회수가 증가했더라도 views 총계는 건드리지 않습니다.
 with seed(tube_id, legacy_views, legacy_likes, legacy_dislikes) as (
   values
     ('tube_1778054050329_b85dc6a1', 51, 5, 0),
@@ -86,7 +86,7 @@ grant select, insert, update, delete
 on table new_axe_net.tube_reactions
 to service_role;
 
--- 멤버 1명의 NEW AXE NET 추천/비추천을 원자적으로 토글/변경합니다.
+-- 멤버 1명의 AXE NET 추천/비추천을 원자적으로 토글/변경합니다.
 -- 브라우저에서 직접 호출하지 않고 member-session 서버 경로에서 service_role로만 호출합니다.
 create or replace function new_axe_net.set_tube_reaction(
   p_tube_id text,
@@ -189,9 +189,9 @@ grant execute
 on function new_axe_net.set_tube_reaction(text, text, text)
 to service_role;
 
--- 기존 AXE TUBE 카운터를 NEW AXE NET 총계에 '차이만' 반영합니다.
+-- 기존 AXE TUBE 카운터를 AXE NET 총계에 '차이만' 반영합니다.
 -- legacy_* baseline과 현재 원본 값의 signed delta를 적용하므로,
--- NEW AXE NET에서 별도로 발생한 조회/추천/비추천은 덮어쓰지 않습니다.
+-- AXE NET에서 별도로 발생한 조회/추천/비추천은 덮어쓰지 않습니다.
 create or replace function new_axe_net.apply_tube_legacy_metrics(
   p_tube_id text,
   p_views integer,

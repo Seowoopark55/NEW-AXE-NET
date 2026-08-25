@@ -1,4 +1,4 @@
--- NEW AXE NET v1.5
+-- AXE NET v1.5
 -- 013_fund_workspace_reorg.sql
 -- AXE WAR Supabase 프로젝트 > SQL Editor에서 전체 실행
 --

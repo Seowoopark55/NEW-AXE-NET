@@ -1,4 +1,4 @@
--- NEW AXE NET bootstrap
+-- AXE NET bootstrap
 -- AXE WAR 프로젝트의 SQL Editor에서 실행합니다.
 
 create schema if not exists new_axe_net;
@@ -24,7 +24,7 @@ to anon, authenticated
 using (true);
 
 insert into new_axe_net.app_meta (key, value)
-values ('health', 'NEW AXE NET DB READY')
+values ('health', 'AXE NET DB READY')
 on conflict (key)
 do update set
   value = excluded.value,

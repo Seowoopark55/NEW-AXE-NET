@@ -1,4 +1,4 @@
-NEW AXE NET v1.30.0 · AXE TUBE 1차
+AXE NET v1.30.0 · AXE TUBE 1차
 
 - 원본 AXE_TUBE.csv: 12개 영상
 - 조회수 합계: 182
@@ -12,7 +12,7 @@ NEW AXE NET v1.30.0 · AXE TUBE 1차
 - 기존 12개 영상 이관
 - YouTube 썸네일 자동 보완
 - 공개 읽기 / 상세 열람 조회수 +1
-- NEW AXE NET AXE TUBE 피드 / 검색 / 분류 / 정렬 / 상세 재생
+- AXE NET AXE TUBE 피드 / 검색 / 분류 / 정렬 / 상세 재생
 
 이번 단계에 의도적으로 미포함:
 - 신규 영상 등록/수정/삭제
@@ -26,4 +26,4 @@ NEW AXE NET v1.30.0 · AXE TUBE 1차
 다음 단계에서 기존 저장 성공 후 Supabase에 복사하는 Shadow Mirror를 추가한다.
 
 CSV의 password 컬럼은 이관하지 않는다.
-NEW AXE NET은 기존 게시글 비밀번호 대신 멤버/관리자 인증을 사용한다.
+AXE NET은 기존 게시글 비밀번호 대신 멤버/관리자 인증을 사용한다.

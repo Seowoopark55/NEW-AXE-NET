@@ -1,6 +1,6 @@
 # AXE UI SYSTEM 2.0
 
-AXE NET의 실제 화면 비율을 기준으로 NEW AXE NET의 크기 체계를 고정한다.
+AXE NET의 실제 화면 비율을 기준으로 AXE NET의 크기 체계를 고정한다.
 
 ## Shell
 - max width: 1280px

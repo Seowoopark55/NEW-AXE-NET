@@ -1,9 +1,9 @@
--- NEW AXE NET v1.26.0 · SQL Editor 실행 순서
+-- AXE NET v1.26.0 · SQL Editor 실행 순서
 -- 1) 023_info_module.sql 전체 실행
 -- 2) 024_info_data_import.sql 전체 실행
 
 -- ===================== 023 =====================
--- NEW AXE NET v1.26.0
+-- AXE NET v1.26.0
 -- 023_info_module.sql
 -- 정보 모듈: 제작 / 퀘스트 / 가공·재련 / 개조서 / 스킬랭크
 --
@@ -564,7 +564,7 @@ grant execute on function new_axe_net.review_info_modbook_request(bigint,text,te
 notify pgrst, 'reload schema';
 
 -- ===================== 024 =====================
--- NEW AXE NET v1.26.0
+-- AXE NET v1.26.0
 -- 024_info_data_import.sql
 -- 기존 AXE NET 정보 데이터 이관 (재실행 가능)
 

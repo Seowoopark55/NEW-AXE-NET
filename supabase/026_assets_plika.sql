@@ -1,4 +1,4 @@
--- NEW AXE NET v1.28.0
+-- AXE NET v1.28.0
 -- 026_assets_plika.sql
 -- 회사자산 + 플리카 계좌 Supabase-native 전환
 -- 전제: 001 ~ 025 적용 완료

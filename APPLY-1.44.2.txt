@@ -1,4 +1,4 @@
-NEW AXE NET 1.44.2 CONSOLE CLEANUP HOTFIX
+AXE NET 1.44.2 CONSOLE CLEANUP HOTFIX
 
 목적
 - 기능은 유지하고 브라우저 콘솔의 불필요한 빨간 오류를 정리합니다.

@@ -1,4 +1,4 @@
--- NEW AXE NET v0.8
+-- AXE NET v0.8
 -- 006_member_create.sql
 -- AXE WAR Supabase 프로젝트 > SQL Editor에서 전체 실행
 

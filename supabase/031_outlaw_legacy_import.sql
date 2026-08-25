@@ -1,4 +1,4 @@
--- NEW AXE NET v1.29.0
+-- AXE NET v1.29.0
 -- 031_outlaw_legacy_import.sql
 -- 사용자 제공 CSV 4종을 new_axe_net 무법지대 모듈로 1회 이관합니다.
 -- SOURCE: 현재통계 19 / 기록 472 / 브리핑맵 17 / 공략 3지역 10단계

@@ -1,4 +1,4 @@
-NEW AXE NET 1.44.1 HOTFIX
+AXE NET 1.44.1 HOTFIX
 
 증상
 - 무법지대 기록/공략/브리핑맵 일부 버튼 동작 안 함

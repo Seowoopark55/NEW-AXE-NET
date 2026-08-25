@@ -46,12 +46,12 @@ export function renderAppShell(root) {
     <div class="ops-shell">
       <header class="ops-topbar">
         <div class="ops-topbar__inner">
-          <button class="ops-brand ops-home-trigger" type="button" data-nav-home aria-label="NEW AXE NET 홈으로 이동">
+          <button class="ops-brand ops-home-trigger" type="button" data-nav-home aria-label="AXE NET 홈으로 이동">
             <span class="ops-brand__mark">
               <img src="/assets/axe-brand-mark.webp" alt="AXE" />
             </span>
             <span class="ops-brand__copy">
-              <strong>NEW AXE NET</strong>
+              <strong>AXE NET</strong>
               <span>OPERATIONS</span>
             </span>
           </button>
@@ -64,12 +64,12 @@ export function renderAppShell(root) {
         </div>
       </header>
 
-      <section class="ops-sitehead" aria-label="NEW AXE NET 브랜드 배너와 주요 메뉴">
+      <section class="ops-sitehead" aria-label="AXE NET 브랜드 배너와 주요 메뉴">
         <div class="ops-sitehead__inner">
-          <button class="ops-hero ops-home-trigger" type="button" data-nav-home aria-label="NEW AXE NET 홈으로 이동" title="홈으로 이동">
+          <button class="ops-hero ops-home-trigger" type="button" data-nav-home aria-label="AXE NET 홈으로 이동" title="홈으로 이동">
             <span class="ops-hero__copy" aria-hidden="true">
               <span>AXE OPERATIONS NETWORK</span>
-              <strong>NEW AXE NET</strong>
+              <strong>AXE NET</strong>
             </span>
             <span class="ops-hero__meta" aria-hidden="true">EST. 2026 · LAC OPERATIONS</span>
           </button>

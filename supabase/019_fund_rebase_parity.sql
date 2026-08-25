@@ -1,4 +1,4 @@
--- NEW AXE NET v1.17.0 · FUND REBASE PARITY
+-- AXE NET v1.17.0 · FUND REBASE PARITY
 -- 019_fund_rebase_parity.sql
 -- Supabase SQL Editor에서 한 번만 전체 실행하세요.
 --

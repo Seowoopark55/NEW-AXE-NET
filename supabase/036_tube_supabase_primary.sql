@@ -1,11 +1,11 @@
--- NEW AXE NET v1.32.0
+-- AXE NET v1.32.0
 -- 036_tube_supabase_primary.sql
 -- AXE TUBE Supabase-first 등록/수정/삭제 전환 기반
 -- 전제: 033_tube_module.sql + 035_tube_reactions_bridge.sql 적용 완료
 --
 -- 핵심 원칙
 -- - legacy : 기존 AXE TUBE/Apps Script가 메타데이터 원본인 행
--- - supabase : NEW AXE NET에서 생성되었거나, NEW AXE NET에서 수정/삭제되어
+-- - supabase : AXE NET에서 생성되었거나, AXE NET에서 수정/삭제되어
 --              이후 기존 Shadow Mirror가 메타데이터/active를 되돌리면 안 되는 행
 -- - 조회/추천/비추천의 legacy delta bridge는 sync_owner와 무관하게 계속 사용할 수 있습니다.
 

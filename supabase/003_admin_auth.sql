@@ -1,9 +1,9 @@
--- NEW AXE NET v0.5
+-- AXE NET v0.5
 -- 003_admin_auth.sql
 -- AXE WAR Supabase 프로젝트의 SQL Editor에서 실행합니다.
 --
 -- 목적:
--- 1) Supabase Auth 사용자를 NEW AXE NET 관리자 멤버와 연결
+-- 1) Supabase Auth 사용자를 AXE NET 관리자 멤버와 연결
 -- 2) 관리자 여부를 DB에서 판정
 -- 3) members base table의 쓰기 권한을 관리자에게만 허용할 준비
 --

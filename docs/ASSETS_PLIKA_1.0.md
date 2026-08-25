@@ -1,10 +1,10 @@
-# NEW AXE NET · 자산·계좌 모듈 1.0
+# AXE NET · 자산·계좌 모듈 1.0
 
 버전: v1.28.0
 
 ## 목적
 
-기존 AXE NET의 회사자산 / 퇴사자 반납내역 / 플리카 계좌 기능을 NEW AXE NET의 `new_axe_net` schema로 재구축합니다.
+기존 AXE NET의 회사자산 / 퇴사자 반납내역 / 플리카 계좌 기능을 AXE NET의 `new_axe_net` schema로 재구축합니다.
 운영 중 조회·등록·수정·승인 경로는 Supabase를 기준으로 하며 Google Sheet / Apps Script를 런타임 데이터 소스로 사용하지 않습니다.
 
 ## 상위 메뉴
@@ -58,7 +58,7 @@
 기존 AXE NET이 과거 동기화해 둔 `public.member_accounts`가 존재하는 경우에만 해당 테이블을 읽어서 `new_axe_net.member_accounts`로 한 번 복사합니다.
 
 - `public` 데이터 수정 없음
-- NEW AXE NET 런타임에서 `public` 조회 없음
+- AXE NET 런타임에서 `public` 조회 없음
 - 닉네임 또는 기존 member_key로 NEW 멤버와 매칭되는 행만 이관
 - `026_assets_plika.sql` 실행 후 사용
 

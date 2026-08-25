@@ -1,4 +1,4 @@
--- NEW AXE NET v1.8
+-- AXE NET v1.8
 -- 015_fund_monthly_legacy_density.sql
 -- AXE WAR Supabase 프로젝트 > SQL Editor에서 전체 실행
 --

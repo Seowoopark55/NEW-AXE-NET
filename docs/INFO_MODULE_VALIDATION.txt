@@ -1,4 +1,4 @@
-NEW AXE NET v1.26.0 · INFO MODULE VALIDATION
+AXE NET v1.26.0 · INFO MODULE VALIDATION
 ==============================================
 
 [DATA]

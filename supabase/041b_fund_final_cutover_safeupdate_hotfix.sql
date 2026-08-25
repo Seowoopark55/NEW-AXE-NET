@@ -1,4 +1,4 @@
--- NEW AXE NET / FUND FINAL CUTOVER V11.1 HOTFIX
+-- AXE NET / FUND FINAL CUTOVER V11.1 HOTFIX
 -- Supabase pg-safeupdate 대응: 전체 DELETE/UPDATE에 명시적 WHERE 조건 추가
 -- 기존 041을 이미 실행한 DB에서 이 SQL만 실행하면 됩니다.
 -- 데이터 자체를 수정하지 않고 apply_current_axe_fund_snapshot 함수 정의만 교체합니다.

@@ -61,7 +61,7 @@ export async function initTubeModule() {
         commentDeleteId: null,
       }));
       loadTubeComments(tubeId).catch((error) => {
-        console.warn('[NEW AXE NET] AXE TUBE comments load failed:', error);
+        console.warn('[AXE NET] AXE TUBE comments load failed:', error);
       });
 
       try {
@@ -75,7 +75,7 @@ export async function initTubeModule() {
           }));
         }
       } catch (error) {
-        console.warn('[NEW AXE NET] AXE TUBE view increment failed:', error);
+        console.warn('[AXE NET] AXE TUBE view increment failed:', error);
       }
     },
 
@@ -121,7 +121,7 @@ export async function initTubeModule() {
           };
         });
       } catch (error) {
-        console.error('[NEW AXE NET] AXE TUBE reaction failed:', error);
+        console.error('[AXE NET] AXE TUBE reaction failed:', error);
         updateTube((tube) => ({
           ...tube,
           reactionSavingTubeId: null,
@@ -183,7 +183,7 @@ export async function initTubeModule() {
         }));
         await loadTubeComments(tubeId);
       } catch (error) {
-        console.error('[NEW AXE NET] AXE TUBE comment save failed:', error);
+        console.error('[AXE NET] AXE TUBE comment save failed:', error);
         updateTube((tube) => ({
           ...tube,
           commentSaving: false,
@@ -234,7 +234,7 @@ export async function initTubeModule() {
         }));
         await loadTubeComments(tubeId);
       } catch (error) {
-        console.error('[NEW AXE NET] AXE TUBE comment delete failed:', error);
+        console.error('[AXE NET] AXE TUBE comment delete failed:', error);
         updateTube((tube) => ({
           ...tube,
           commentSaving: false,
@@ -341,7 +341,7 @@ export async function initTubeModule() {
         updateTube((tube) => ({
           ...tube,
           selectedTubeId: savedId || tube.selectedTubeId,
-          message: existing ? '영상 정보를 저장했습니다. 이제 이 영상은 NEW AXE NET 기준으로 관리됩니다.' : 'AXE TUBE 영상을 등록했습니다.',
+          message: existing ? '영상 정보를 저장했습니다. 이제 이 영상은 AXE NET 기준으로 관리됩니다.' : 'AXE TUBE 영상을 등록했습니다.',
           messageType: 'success',
           editor: {
             open: false,
@@ -354,7 +354,7 @@ export async function initTubeModule() {
         }));
         await reloadTubeData({ silent: true, preserveMessage: true });
       } catch (error) {
-        console.error('[NEW AXE NET] AXE TUBE save failed:', error);
+        console.error('[AXE NET] AXE TUBE save failed:', error);
         updateEditor({ saving: false, error: formatTubeError(error) });
       }
     },
@@ -400,7 +400,7 @@ export async function initTubeModule() {
         }));
         await reloadTubeData({ silent: true, preserveMessage: true });
       } catch (error) {
-        console.error('[NEW AXE NET] AXE TUBE delete failed:', error);
+        console.error('[AXE NET] AXE TUBE delete failed:', error);
         updateEditor({ saving: false, error: formatTubeError(error) });
       }
     },
@@ -460,7 +460,7 @@ async function reloadTubeData(options = {}) {
           : null,
       }));
     } catch (error) {
-      console.error('[NEW AXE NET] AXE TUBE load failed:', error);
+      console.error('[AXE NET] AXE TUBE load failed:', error);
       updateTube((tube) => ({
         ...tube,
         initialized: true,

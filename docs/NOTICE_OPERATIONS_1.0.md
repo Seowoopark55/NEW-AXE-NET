@@ -1,4 +1,4 @@
-# NEW AXE NET v1.25.0 · 공지사항 / 운영기준 이관 기준
+# AXE NET v1.25.0 · 공지사항 / 운영기준 이관 기준
 
 ## 목적
 
@@ -40,11 +40,11 @@ UI는 v1.24.0 AXE STYLE 4.0을 그대로 사용하며, 넓은 빈 공간을 만�
 
 목록은 `order` 숫자로 정렬한다.
 
-## NEW AXE NET 데이터 구조
+## AXE NET 데이터 구조
 
 ### `new_axe_net.notices`
 
-| 기존 AXE NET | NEW AXE NET | 설명 |
+| 기존 AXE NET | AXE NET | 설명 |
 | --- | --- | --- |
 | id | legacy_id | 기존 데이터 이관용 원본 ID |
 | date | published_at | 공지 작성/게시 시각 |
@@ -59,7 +59,7 @@ NEW 내부 PK는 bigint `id`를 별도로 사용한다. 삭제 시 실제 행을
 
 ### `new_axe_net.operation_rules`
 
-| 기존 AXE NET | NEW AXE NET | 설명 |
+| 기존 AXE NET | AXE NET | 설명 |
 | --- | --- | --- |
 | id | legacy_id | 기존 데이터 이관용 원본 ID |
 | category | category | 분류 |

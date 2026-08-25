@@ -151,7 +151,7 @@ async function reloadAiWorkspace(options = {}) {
       }));
     })
     .catch((error) => {
-      console.error('[NEW AXE NET] AXE AI workspace load failed:', error);
+      console.error('[AXE NET] AXE AI workspace load failed:', error);
       store.updateState((state) => ({
         ...state,
         ai: { ...state.ai, initialized: true, loading: false, error: formatError(error) },

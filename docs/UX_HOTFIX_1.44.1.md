@@ -1,4 +1,4 @@
-# NEW AXE NET 1.44.1 Hotfix
+# AXE NET 1.44.1 Hotfix
 
 ## Fixed
 - 무법지대 `searchFocus is not defined` 런타임 오류 제거.

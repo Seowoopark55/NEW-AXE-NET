@@ -1,7 +1,7 @@
 # AXE NET FUND REBASE 1.0
 
 ## 기준
-기존 AXE NET의 최신 공금 운영 화면과 동작을 NEW AXE NET의 **기능·UI 명세서**로 사용한다.
+기존 AXE NET의 최신 공금 운영 화면과 동작을 AXE NET의 **기능·UI 명세서**로 사용한다.
 
 NEW에서 자유롭게 바꿀 수 있는 것은 내부 구현이다.
 - 모듈 분리

@@ -1,4 +1,4 @@
--- NEW AXE NET v1.28.1
+-- AXE NET v1.28.1
 -- 028_assets_legacy_import.sql
 -- 기존 Google Sheet CSV의 회사자산 / 퇴사자반납 데이터를 new_axe_net로 1회 이관합니다.
 --
@@ -16,7 +16,7 @@
 --   v1.28.1 UI에서는 legacy 행의 YYYY-MM-01을 YYYY-MM로 표시해 거짓 일자 정밀도를 피합니다.
 -- - 퇴사자반납의 MM/DD 두 행은 2026년 데이터로 해석합니다.
 --   이옥순 06/09는 members.resigned_at=2026-06-09와도 일치합니다.
--- - legacy '야미'는 현재 NEW AXE NET 멤버 닉네임 '얌이'와 연결합니다.
+-- - legacy '야미'는 현재 AXE NET 멤버 닉네임 '얌이'와 연결합니다.
 -- - '미배정' 자산은 member_key=NULL로 유지합니다.
 
 -- =========================================================

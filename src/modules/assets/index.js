@@ -117,7 +117,7 @@ export async function initAssetsModule() {
         closeModal();
         await reloadAssetsData({ preserveMessage: true });
       } catch (error) {
-        console.error('[NEW AXE NET] asset modal save failed:', error);
+        console.error('[AXE NET] asset modal save failed:', error);
         setModalSaving(false, formatAssetError(error));
       }
     },
@@ -234,7 +234,7 @@ async function reloadAssetsData(options = {}) {
         tab: asset.tab !== 'accounts' && !isAdmin ? 'accounts' : asset.tab,
       }));
     } catch (error) {
-      console.error('[NEW AXE NET] asset data load failed:', error);
+      console.error('[AXE NET] asset data load failed:', error);
       updateAssets((asset) => ({
         ...asset,
         initialized: true,

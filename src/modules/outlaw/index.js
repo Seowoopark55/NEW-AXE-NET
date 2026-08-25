@@ -136,7 +136,7 @@ export async function initOutlawModule() {
           throw new Error('지원하지 않는 관리 작업입니다.');
         }
       } catch (error) {
-        console.error('[NEW AXE NET] outlaw admin save failed:', error);
+        console.error('[AXE NET] outlaw admin save failed:', error);
         setAdminModalSaving(false, formatOutlawError(error));
       }
     },
@@ -235,7 +235,7 @@ async function reloadOutlawData(options = {}) {
         await loadHistory(selected, { silent: true });
       }
     } catch (error) {
-      console.error('[NEW AXE NET] outlaw data load failed:', error);
+      console.error('[AXE NET] outlaw data load failed:', error);
       updateOutlaw((outlaw) => ({
         ...outlaw,
         initialized: true,
@@ -276,7 +276,7 @@ async function loadHistory(memberKey, options = {}) {
     }));
   } catch (error) {
     if (historyRequestKey !== requestKey) return;
-    console.error('[NEW AXE NET] outlaw history load failed:', error);
+    console.error('[AXE NET] outlaw history load failed:', error);
     updateOutlaw((outlaw) => ({
       ...outlaw,
       history: [],

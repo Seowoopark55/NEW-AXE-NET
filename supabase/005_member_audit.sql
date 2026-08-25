@@ -1,4 +1,4 @@
--- NEW AXE NET v0.7
+-- AXE NET v0.7
 -- 005_member_audit.sql
 -- AXE WAR Supabase 프로젝트 > SQL Editor에서 전체 실행
 

@@ -1,9 +1,9 @@
--- NEW AXE NET v1.27.0
+-- AXE NET v1.27.0
 -- 025_member_credentials.sql
 -- AXE WAR Supabase 프로젝트 > SQL Editor에서 전체 실행
 --
 -- 목적
--- 1) 일반 멤버 로그인 자격증명을 NEW AXE NET 전용 schema에 서버 전용으로 보관
+-- 1) 일반 멤버 로그인 자격증명을 AXE NET 전용 schema에 서버 전용으로 보관
 -- 2) 브라우저 / anon / authenticated 역할에는 비밀번호 해시조차 노출하지 않음
 -- 3) 기존 AXE NET 비밀번호는 첫 로그인 성공 시에만 안전하게 해시 이관
 -- 4) 자격증명 이관이 끝난 멤버는 Apps Script를 거치지 않고 Supabase에서 바로 검증

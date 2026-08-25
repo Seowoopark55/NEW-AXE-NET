@@ -1,10 +1,10 @@
--- NEW AXE NET v1.37.0
+-- AXE NET v1.37.0
 -- 040_fund_live_bridge.sql
 -- FUND LIVE BRIDGE & CATCH-UP 기반
 -- 전제: 001 ~ 020 공금 마이그레이션 적용 완료
 --
 -- 목적
--- 1) 기존 AXE NET에서 운영 중 발생한 공금 변경분을 NEW AXE NET으로 안전하게 흡수할 수 있게 한다.
+-- 1) 기존 AXE NET에서 운영 중 발생한 공금 변경분을 AXE NET으로 안전하게 흡수할 수 있게 한다.
 -- 2) BOT(service_role)이 공금 원본/상태 RPC를 읽고 bridge audit를 기록할 수 있게 한다.
 -- 3) new_axe_net 공금 변경을 Supabase Realtime으로 AXE BOT이 직접 감지할 수 있게 한다.
 -- 4) 충돌은 덮어쓰지 않고 fund_bridge_conflicts에 남긴다.

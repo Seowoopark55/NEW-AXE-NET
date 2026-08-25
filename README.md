@@ -1,4 +1,4 @@
-# NEW AXE NET v1.42.1
+# AXE NET v1.42.1
 
 ## UI / IA REDESIGN
 실사용 기능 이전 이후 첫 전체 UI 정돈 버전입니다. 데이터 구조나 Supabase RPC는 변경하지 않고, 화면의 정보 구조와 AXE 브랜드 표현을 재설계했습니다.
@@ -32,7 +32,7 @@
 
 ## 이전 버전 유지사항
 - v1.40.0 MEMBER ADMIN BRIDGE 유지
-- 공금 NEW AXE NET Supabase 런타임 유지
+- 공금 AXE NET Supabase 런타임 유지
 - AXE TUBE Supabase-first 런타임 유지
 - 자산·계좌 / 무법지대 / 정보 / 공지 모듈 기능 로직 변경 없음
 

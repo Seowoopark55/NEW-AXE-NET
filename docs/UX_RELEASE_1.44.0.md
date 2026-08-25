@@ -1,4 +1,4 @@
-# NEW AXE NET 1.44.0 · Professional UX Release
+# AXE NET 1.44.0 · Professional UX Release
 
 ## 핵심 수정
 

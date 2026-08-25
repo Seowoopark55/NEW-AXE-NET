@@ -1,8 +1,8 @@
--- NEW AXE NET v1.39.0
+-- AXE NET v1.39.0
 -- 042_fund_runtime_final_cleanup.sql
 -- 공금 최종 런타임 정리
 -- 목적:
--- 1) 공금 운영 원본을 NEW AXE NET Supabase로 고정
+-- 1) 공금 운영 원본을 AXE NET Supabase로 고정
 -- 2) Discord ↔ 멤버 계정연동 저장/해제를 Apps Script 없이 NEW Supabase에서 직접 처리
 -- 3) BOT은 service_role 전용 RPC만 사용
 
@@ -17,7 +17,7 @@ begin
     where id = 1
       and primary_source = 'new_axe_net'
   ) then
-    raise exception '공금이 아직 NEW AXE NET 최종 전환 상태가 아닙니다.';
+    raise exception '공금이 아직 AXE NET 최종 전환 상태가 아닙니다.';
   end if;
 end
 $$;
@@ -56,7 +56,7 @@ begin
     select 1 from new_axe_net.fund_runtime_config
     where id = 1 and primary_source = 'new_axe_net'
   ) then
-    raise exception '공금 운영 원본이 NEW AXE NET이 아닙니다.' using errcode = '55000';
+    raise exception '공금 운영 원본이 AXE NET이 아닙니다.' using errcode = '55000';
   end if;
 
   if v_discord_id is null or v_discord_id !~ '^[0-9]+$' then
@@ -64,7 +64,7 @@ begin
   end if;
 
   if v_nickname is null then
-    raise exception 'NEW AXE NET 멤버 이름이 필요합니다.' using errcode = '22023';
+    raise exception 'AXE NET 멤버 이름이 필요합니다.' using errcode = '22023';
   end if;
 
   select count(*)
@@ -74,11 +74,11 @@ begin
     and lower(btrim(m.nickname)) = lower(v_nickname);
 
   if v_match_count = 0 then
-    raise exception '활성 NEW AXE NET 멤버를 찾을 수 없습니다: %', v_nickname using errcode = '22023';
+    raise exception '활성 AXE NET 멤버를 찾을 수 없습니다: %', v_nickname using errcode = '22023';
   end if;
 
   if v_match_count > 1 then
-    raise exception '같은 닉네임의 활성 멤버가 여러 명입니다. NEW AXE NET 멤버 정보를 먼저 정리해주세요: %', v_nickname using errcode = '21000';
+    raise exception '같은 닉네임의 활성 멤버가 여러 명입니다. AXE NET 멤버 정보를 먼저 정리해주세요: %', v_nickname using errcode = '21000';
   end if;
 
   select m.*
@@ -168,7 +168,7 @@ begin
     select 1 from new_axe_net.fund_runtime_config
     where id = 1 and primary_source = 'new_axe_net'
   ) then
-    raise exception '공금 운영 원본이 NEW AXE NET이 아닙니다.' using errcode = '55000';
+    raise exception '공금 운영 원본이 AXE NET이 아닙니다.' using errcode = '55000';
   end if;
 
   if v_discord_id is null or v_discord_id !~ '^[0-9]+$' then

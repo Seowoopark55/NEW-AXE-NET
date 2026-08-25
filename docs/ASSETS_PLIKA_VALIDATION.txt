@@ -1,4 +1,4 @@
-NEW AXE NET v1.28.0 · ASSETS / PLIKA VALIDATION
+AXE NET v1.28.0 · ASSETS / PLIKA VALIDATION
 
 [정적 검사]
 PASS · 모든 src/api/server/scripts JS node --check

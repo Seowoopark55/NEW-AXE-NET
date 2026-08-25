@@ -1,9 +1,9 @@
--- NEW AXE NET v1.11.0
+-- AXE NET v1.11.0
 -- 016_member_web_sessions.sql
 -- AXE WAR Supabase 프로젝트 > SQL Editor에서 전체 실행
 --
 -- 목적
--- 1) 기존 AXE NET 닉네임/비밀번호 로그인을 NEW AXE NET 웹 세션으로 안전하게 연결
+-- 1) 기존 AXE NET 닉네임/비밀번호 로그인을 AXE NET 웹 세션으로 안전하게 연결
 -- 2) 일반 멤버가 Discord 숫자 ID를 직접 입력하지 않아도 본인 공금정보를 조회/제출
 -- 3) 세션 원문 토큰은 HttpOnly 쿠키로 전달하고 DB에는 SHA-256 해시만 저장
 -- 4) 브라우저에서 이 테이블을 직접 읽거나 수정하지 못하도록 차단
