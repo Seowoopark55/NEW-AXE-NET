@@ -423,13 +423,43 @@ function adminFormActions(deactivateType, itemId, saving = false) {
     </div>`;
 }
 
+const OUTLAW_UNAVAILABLE_IMAGE_FILES = new Set([
+  'prison_a1.png',
+  'prison_a2.png',
+  'prison_b1.png',
+  'prison_b2.png',
+  'humane_b.png',
+  'chiliad_a1.png',
+  'chiliad_a2.png',
+  'chiliad_a3.png',
+]);
+
+function isUnavailableOutlawImage(filename) {
+  return OUTLAW_UNAVAILABLE_IMAGE_FILES.has(
+    String(filename || '').trim().toLowerCase(),
+  );
+}
+
 function renderImage(filename, label, className = '') {
-  if (!filename) return `<div class="ops-outlaw-image is-missing ${className}"><div class="ops-outlaw-image__fallback"><strong>IMAGE PENDING</strong><span>${h(label)}</span></div></div>`;
+  if (!filename || isUnavailableOutlawImage(filename)) {
+    return `
+      <div class="ops-outlaw-image is-missing ${className}">
+        <div class="ops-outlaw-image__fallback">
+          <strong>이미지 준비 중</strong>
+          <span>${h(label || filename || '무법지대 이미지')}</span>
+        </div>
+      </div>
+    `;
+  }
+
   const src = `/assets/outlaw/${encodeURIComponent(String(filename))}`;
   return `
     <div class="ops-outlaw-image ${className}" data-outlaw-image-wrap>
       <img src="${h(src)}" alt="${h(label)}" loading="lazy" data-outlaw-image />
-      <div class="ops-outlaw-image__fallback"><strong>IMAGE NOT MIGRATED</strong><span>${h(filename)}</span></div>
+      <div class="ops-outlaw-image__fallback">
+        <strong>이미지 준비 중</strong>
+        <span>${h(label || filename)}</span>
+      </div>
     </div>
   `;
 }

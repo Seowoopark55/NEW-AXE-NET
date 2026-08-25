@@ -47,6 +47,19 @@ const app = read('src/app.js');
 expect(app.includes("./styles/professional-polish.css"), 'Professional polish stylesheet is not imported.');
 expect(!fs.existsSync('src/modules/fund/views/settingsView.js'), 'Unused legacy settingsView.js still exists.');
 
+
+const outlaw = read('src/modules/outlaw/outlawView.js');
+expect(outlaw.includes('OUTLAW_UNAVAILABLE_IMAGE_FILES'),
+  'Known missing outlaw images are not guarded before browser requests.');
+expect(outlaw.includes('이미지 준비 중'),
+  'Outlaw missing-image fallback copy is missing.');
+
+const fundIndex = read('src/modules/fund/index.js');
+expect(fundIndex.includes('이미 동일한 공금 규칙이 적용 중입니다.'),
+  'Duplicate fund fee-rule no-op guard is missing.');
+expect(fundIndex.includes('같은 주차에 활성 공금 규칙이 있습니다.'),
+  'Conflicting fund fee-rule UX guard is missing.');
+
 if (fail.length) {
   console.error('UX AUDIT: FAIL');
   for (const item of fail) console.error(`- ${item}`);
@@ -58,3 +71,5 @@ console.log('- Korean IME-safe search binding is installed without breaking modu
 console.log('- AXE TUBE uses body-only detail updates to preserve the active player');
 console.log('- Quick access is promoted in both top utility and home launcher');
 console.log('- Professional polish stylesheet is active');
+console.log('- Missing outlaw step images use a no-request fallback instead of browser 404s');
+console.log('- Duplicate fund fee-rule submissions are handled client-side without noisy 409s');

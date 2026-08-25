@@ -14,7 +14,7 @@ export function renderFeeRulesView(state) {
       ${admin.error ? `<div class="fund-inline-error">${escapeHtml(admin.error)}</div>` : ''}
 
       <section class="fund-admin-panel fund-admin-panel--form fund-admin-panel--rule-form">
-        ${panelHead('공금 금액 변경', '지정한 주차부터 새 금액이 적용됩니다.')}
+        ${panelHead('공금 금액 변경', '지정한 주차부터 새 금액이 적용됩니다. 같은 주차의 활성 규칙은 중복 등록되지 않습니다.')}
         <form class="fund-admin-inline-form" data-fee-rule-form>
           <div class="fund-form-grid">
             <label class="fund-field"><span>연도</span><input type="number" name="start_year" min="2020" max="2100" value="${period?.year ?? new Date().getFullYear()}" required /></label>

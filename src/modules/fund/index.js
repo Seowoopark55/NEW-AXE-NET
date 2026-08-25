@@ -495,6 +495,40 @@ function buildActions() {
     },
 
     async onCreateFeeRule(values) {
+      const state = store.getState();
+      const rules = state.fund.admin.feeRules ?? [];
+      const startYear = Number(values.start_year);
+      const startMonth = Number(values.start_month);
+      const startWeek = Number(values.start_week);
+      const weeklyFee = Number(values.weekly_fee);
+
+      const samePeriodRule = rules.find((rule) =>
+        rule.enabled &&
+        Number(rule.start_year) === startYear &&
+        Number(rule.start_month) === startMonth &&
+        Number(rule.start_week) === startWeek
+      );
+
+      if (samePeriodRule) {
+        const sameFee = Number(samePeriodRule.weekly_fee) === weeklyFee;
+
+        store.updateState((current) => ({
+          ...current,
+          fund: {
+            ...current.fund,
+            admin: {
+              ...current.fund.admin,
+              saving: false,
+              error: null,
+              message: sameFee
+                ? '이미 동일한 공금 규칙이 적용 중입니다.'
+                : '같은 주차에 활성 공금 규칙이 있습니다. 기존 규칙을 비활성화한 뒤 새 규칙을 등록하세요.',
+            },
+          },
+        }));
+        return;
+      }
+
       await runAdminMutation(async () => {
         await createFundFeeRule(values);
         return '새 공금 금액 설정을 추가했습니다.';
@@ -1182,7 +1216,7 @@ function formatError(error) {
   if (message.includes('Discord 사용자 ID')) return message;
   if (message.includes('검토 대기')) return '이미 해당 주차에 검수대기 중인 제출이 있습니다.';
   if (message.includes('납부가 완료') || message.includes('활성 납부 기록')) return '이미 해당 주차의 납부가 완료되어 있습니다.';
-  if (message.includes('duplicate key value')) return '이미 같은 조건의 데이터가 존재합니다.';
+  if (message.includes('duplicate key value') || message.includes('23505')) return '이미 같은 주차에 활성 공금 규칙이 존재합니다.';
   if (message.includes('관리자 권한')) return '관리자 권한이 필요합니다.';
   return message;
 }
