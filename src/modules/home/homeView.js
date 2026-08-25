@@ -17,13 +17,14 @@ export function renderHomeView(root, state, actions = {}) {
     .slice()
     .sort((a, b) => dateValue(b.published_at) - dateValue(a.published_at))
     .slice(0, 4);
-  const dataLoading = Boolean(fund.loading || !fund.initialized || state.notice?.loading || state.tube?.loading);
+  const fundLoading = Boolean(fund.loading || !fund.initialized);
+  const noticeLoading = Boolean(state.notice?.loading || !state.notice?.initialized);
+  const tubeLoading = Boolean(state.tube?.loading || !state.tube?.initialized);
 
   const shortcuts = Array.isArray(state.shortcuts?.items) ? state.shortcuts.items : [];
 
   root.innerHTML = `
     <section class="ops-home" aria-label="AXE NET 홈">
-      ${dataLoading ? '<div class="ops-home__loading">최신 데이터를 불러오는 중입니다.</div>' : ''}
       ${shortcuts.length ? `
         <section class="ops-home-quickpanel" aria-label="내 바로가기">
           <header class="ops-home-quickpanel__head">
@@ -51,7 +52,9 @@ export function renderHomeView(root, state, actions = {}) {
           <div class="ops-home-notices">
             ${recentNotices.length
               ? recentNotices.map(renderRecentNoticeRow).join('')
-              : '<div class="ops-home-empty">등록된 공지사항이 없습니다.</div>'}
+              : noticeLoading
+                ? '<div class="ops-home-empty">공지사항을 불러오는 중입니다.</div>'
+                : '<div class="ops-home-empty">등록된 공지사항이 없습니다.</div>'}
           </div>
         </section>
 
@@ -68,7 +71,9 @@ export function renderHomeView(root, state, actions = {}) {
           <div class="ops-home-recent">
             ${recentLedger.length
               ? recentLedger.map(renderRecentLedgerRow).join('')
-              : '<div class="ops-home-empty">최근 공금 기록이 없습니다.</div>'}
+              : fundLoading
+                ? '<div class="ops-home-empty">최근 공금 흐름을 불러오는 중입니다.</div>'
+                : '<div class="ops-home-empty">최근 공금 기록이 없습니다.</div>'}
           </div>
         </section>
       </div>
@@ -83,7 +88,9 @@ export function renderHomeView(root, state, actions = {}) {
         </header>
         ${recentVideos.length
           ? `<div class="ops-home-videos">${recentVideos.map(renderVideoPreview).join('')}</div>`
-          : '<div class="ops-home-empty">등록된 AXE TUBE 영상이 없습니다.</div>'}
+          : tubeLoading
+            ? '<div class="ops-home-empty">AXE TUBE를 불러오는 중입니다.</div>'
+            : '<div class="ops-home-empty">등록된 AXE TUBE 영상이 없습니다.</div>'}
       </section>
     </section>
   `;

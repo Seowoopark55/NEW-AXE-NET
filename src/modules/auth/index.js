@@ -137,22 +137,31 @@ export async function initAuthModule() {
   render();
   store.subscribe(render);
 
-  const [adminSessionResult, memberSessionResult] = await Promise.allSettled([
-    getCurrentSession(),
-    restoreMemberSession(),
+  // 관리자 세션 + 관리자 프로필 조회를 멤버 세션 검증과 병렬로 처리합니다.
+  const adminSessionTask = (async () => {
+    try {
+      const session = await getCurrentSession();
+      await applyAdminSession(session, { suppressInitialized: true });
+      return session;
+    } catch (error) {
+      console.error('[AXE NET] admin session restore failed:', error);
+      return null;
+    }
+  })();
+
+  const memberSessionTask = (async () => {
+    try {
+      return await restoreMemberSession();
+    } catch (error) {
+      console.error('[AXE NET] member session restore failed:', error);
+      return null;
+    }
+  })();
+
+  const [, memberSession] = await Promise.all([
+    adminSessionTask,
+    memberSessionTask,
   ]);
-
-  const adminSession = adminSessionResult.status === 'fulfilled' ? adminSessionResult.value : null;
-  const memberSession = memberSessionResult.status === 'fulfilled' ? memberSessionResult.value : null;
-
-  if (adminSessionResult.status === 'rejected') {
-    console.error('[AXE NET] admin session restore failed:', adminSessionResult.reason);
-  }
-  if (memberSessionResult.status === 'rejected') {
-    console.error('[AXE NET] member session restore failed:', memberSessionResult.reason);
-  }
-
-  await applyAdminSession(adminSession, { suppressInitialized: true });
 
   store.updateState((state) => ({
     ...state,
@@ -161,7 +170,7 @@ export async function initAuthModule() {
       initialized: true,
       member: memberSession?.member ?? null,
       memberSessionExpiresAt: memberSession?.expires_at ?? null,
-      error: null,
+      error: state.auth.error,
     },
   }));
 

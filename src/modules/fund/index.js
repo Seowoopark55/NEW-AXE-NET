@@ -47,14 +47,27 @@ const ADMIN_SECTIONS = new Set(['review', 'history', 'balance', 'feeRules', 'exe
 
 let lastFundAuthSignature = '';
 let fundIdentitySyncing = false;
+let fundAdminLoadPromise = null;
 
 export async function initFundModule() {
   const root = document.querySelector('#module-root');
   if (!root) throw new Error('#module-root element not found.');
 
   const rerender = () => {
-    if (store.getState().ui.activeModule !== 'fund') return;
-    renderFundView(root, store.getState(), buildActions());
+    const state = store.getState();
+    if (state.ui.activeModule !== 'fund') return;
+
+    renderFundView(root, state, buildActions());
+
+    // 바로가기 등으로 관리자 섹션에 직접 진입해도 필요한 데이터만 그때 로드합니다.
+    if (
+      state.auth.admin
+      && ADMIN_SECTIONS.has(state.fund.section)
+      && !state.fund.admin.initialized
+      && !state.fund.admin.loading
+    ) {
+      queueMicrotask(() => { void ensureAdminWorkspace(); });
+    }
   };
 
   store.subscribe((state) => {
@@ -613,16 +626,40 @@ async function loadFundBase() {
   }));
 
   try {
+    // 홈에서 쓰는 최근 공금은 도착 즉시 반영합니다.
+    const recentLedgerTask = fetchFundRecentLedger(12).then((recentLedger) => {
+      store.updateState((state) => ({
+        ...state,
+        fund: {
+          ...state.fund,
+          recentLedger: recentLedger ?? [],
+        },
+      }));
+      return recentLedger;
+    });
+
     const [periods, summary, recentLedger] = await Promise.all([
       fetchFundPeriods(),
       fetchFundSummary(),
-      fetchFundRecentLedger(12),
+      recentLedgerTask,
     ]);
 
     const selectedPeriod = summary?.period ?? periods?.[0] ?? null;
     const selectedMonth = selectedPeriod
       ? { year: selectedPeriod.year, month: selectedPeriod.month }
       : currentMonth();
+
+    store.updateState((state) => ({
+      ...state,
+      fund: {
+        ...state.fund,
+        periods: periods ?? [],
+        selectedPeriod,
+        selectedMonth,
+        summary,
+        recentLedger: recentLedger ?? [],
+      },
+    }));
 
     const [monthOverview, monthMatrix, statusItems] = await Promise.all([
       fetchFundMonthOverview(selectedMonth.year, selectedMonth.month),
@@ -637,20 +674,13 @@ async function loadFundBase() {
         initialized: true,
         loading: false,
         error: null,
-        periods: periods ?? [],
-        selectedPeriod,
-        selectedMonth,
         monthOverview,
         monthMatrix,
-        summary,
         statusItems: statusItems ?? [],
-        recentLedger: recentLedger ?? [],
       },
     }));
 
-    if (store.getState().auth.admin) {
-      void ensureAdminWorkspace();
-    }
+    // 관리자 전용 데이터는 관리자 화면 진입 시 ensureAdminWorkspace()에서 로드합니다.
   } catch (error) {
     console.error('[AXE NET] fund base load failed:', error);
     store.updateState((state) => ({
@@ -952,7 +982,12 @@ async function ensureAdminWorkspace() {
   const state = store.getState();
   if (!state.auth.admin) return;
   if (state.fund.admin.initialized && !state.fund.admin.error) return;
-  await refreshAdminWorkspace();
+  if (fundAdminLoadPromise) return fundAdminLoadPromise;
+
+  fundAdminLoadPromise = refreshAdminWorkspace()
+    .finally(() => { fundAdminLoadPromise = null; });
+
+  return fundAdminLoadPromise;
 }
 
 async function refreshAdminWorkspace(message = null) {

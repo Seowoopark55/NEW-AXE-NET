@@ -60,6 +60,35 @@ expect(fundIndex.includes('이미 동일한 공금 규칙이 적용 중입니다
 expect(fundIndex.includes('같은 주차에 활성 공금 규칙이 있습니다.'),
   'Conflicting fund fee-rule UX guard is missing.');
 
+// Performance / startup safeguards
+const appHomeInit = app.indexOf('initHomeModule();');
+const appAuthInit = app.indexOf('await initAuthModule();');
+expect(appHomeInit >= 0 && appAuthInit >= 0 && appHomeInit < appAuthInit,
+  'Home must render before auth/network initialization to avoid a blank main area.');
+expect(app.includes('Promise.allSettled(') && app.includes("['fund', initFundModule]") && app.includes("['tube', initTubeModule]"),
+  'Independent startup modules are not initialized in parallel.');
+
+const authIndex = read('src/modules/auth/index.js');
+expect(authIndex.includes('adminSessionTask') && authIndex.includes('memberSessionTask') && authIndex.includes('await Promise.all(['),
+  'Admin/member session restore is not parallelized.');
+
+const fundPerformance = read('src/modules/fund/index.js');
+expect(fundPerformance.includes('recentLedgerTask') && fundPerformance.includes('fundAdminLoadPromise'),
+  'Fund startup is missing early recent-ledger delivery or lazy admin workspace loading.');
+const fundBaseStart = fundPerformance.indexOf('async function loadFundBase()');
+const fundBaseEnd = fundPerformance.indexOf('async function loadMonth(', fundBaseStart);
+const fundBaseChunk = fundPerformance.slice(fundBaseStart, fundBaseEnd);
+expect(!fundBaseChunk.includes('void ensureAdminWorkspace()') && !fundBaseChunk.includes('await ensureAdminWorkspace()'),
+  'Fund startup still preloads the heavy admin workspace.');
+
+const tubePerformance = read('src/modules/tube/index.js');
+expect(tubePerformance.includes('const reactionsTask') && tubePerformance.includes('const videos = await fetchTubeVideos();'),
+  'AXE TUBE videos are still blocked by member reaction preload.');
+
+const shellCss = read('src/styles/operations-shell.css');
+expect(shellCss.includes('axe-site-banner-20260824.webp'),
+  'Shell banner is not using the optimized WebP asset.');
+
 if (fail.length) {
   console.error('UX AUDIT: FAIL');
   for (const item of fail) console.error(`- ${item}`);
@@ -73,3 +102,5 @@ console.log('- Quick access is promoted in both top utility and home launcher');
 console.log('- Professional polish stylesheet is active');
 console.log('- Missing outlaw step images use a no-request fallback instead of browser 404s');
 console.log('- Duplicate fund fee-rule submissions are handled client-side without noisy 409s');
+console.log('- Home renders before authentication and independent startup modules initialize in parallel');
+console.log('- Auth restore, fund home data, and AXE TUBE preload paths are optimized for first paint');

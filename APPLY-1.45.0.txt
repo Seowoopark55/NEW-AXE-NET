@@ -1,0 +1,19 @@
+AXE NET 1.45.0 · STARTUP PERFORMANCE
+
+전체 최신본을 기존 GitHub AXE NET 프로젝트 폴더에 전부 덮어씁니다.
+
+Supabase SQL 변경 없음
+Vercel 환경변수 변경 없음
+
+검증:
+npm.cmd run audit:styles
+npm.cmd run audit:ux
+npm.cmd run build
+
+핵심:
+- 홈 즉시 렌더링
+- 초기 네트워크 직렬 로딩 제거
+- 인증 병렬화
+- 공금 관리자 데이터 lazy load
+- AXE TUBE 영상 우선 표시
+- 메인 배너 WebP 최적화

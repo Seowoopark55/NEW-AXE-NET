@@ -437,10 +437,29 @@ async function reloadTubeData(options = {}) {
     }));
 
     try {
-      const [videos, reactions] = await Promise.all([
-        fetchTubeVideos(),
-        isMember ? fetchMemberTubeReactions() : Promise.resolve([]),
-      ]);
+      const reactionsTask = isMember
+        ? fetchMemberTubeReactions().catch((error) => {
+            console.warn('[AXE NET] AXE TUBE member reactions preload failed:', error);
+            return [];
+          })
+        : Promise.resolve([]);
+
+      // 영상 목록은 홈에서 바로 사용하므로 멤버 반응 API를 기다리지 않고 먼저 반영합니다.
+      const videos = await fetchTubeVideos();
+
+      updateTube((tube) => ({
+        ...tube,
+        initialized: true,
+        loading: false,
+        error: null,
+        videos,
+        reactionSavingTubeId: null,
+        selectedTubeId: videos.some((item) => item.tube_id === tube.selectedTubeId)
+          ? tube.selectedTubeId
+          : null,
+      }));
+
+      const reactions = await reactionsTask;
       const myReactions = Object.fromEntries(
         reactions
           .filter((row) => row?.tube_id && ['like', 'dislike'].includes(String(row.reaction || '')))
@@ -449,15 +468,7 @@ async function reloadTubeData(options = {}) {
 
       updateTube((tube) => ({
         ...tube,
-        initialized: true,
-        loading: false,
-        error: null,
-        videos,
         myReactions,
-        reactionSavingTubeId: null,
-        selectedTubeId: videos.some((item) => item.tube_id === tube.selectedTubeId)
-          ? tube.selectedTubeId
-          : null,
       }));
     } catch (error) {
       console.error('[AXE NET] AXE TUBE load failed:', error);
