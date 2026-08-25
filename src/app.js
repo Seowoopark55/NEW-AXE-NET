@@ -10,6 +10,7 @@ import './modules/assets/assets.css';
 import './modules/outlaw/outlaw.css';
 import './modules/tube/tube.css';
 import './modules/ai/ai.css';
+import './styles/professional-polish.css';
 import { store } from './state/store.js';
 import { renderAppShell } from './components/AppShell.js';
 import { initAuthModule } from './modules/auth/index.js';

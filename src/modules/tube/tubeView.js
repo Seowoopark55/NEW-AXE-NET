@@ -1,4 +1,7 @@
+import { bindImeSafeInput, captureImeSearchFocus, restoreImeSearchFocus } from '../../utils/dom.js';
+
 export function renderTubeView(root, state, actions) {
+  const searchFocus = captureImeSearchFocus(root);
   const tube = state.tube;
   const videos = filterVideos(tube.videos || [], tube.filters || {});
   const selected = (tube.videos || []).find((item) => item.tube_id === tube.selectedTubeId) || null;
@@ -10,6 +13,25 @@ export function renderTubeView(root, state, actions) {
   const isMember = Boolean(state.auth?.member);
   const isAdmin = Boolean(state.auth?.admin);
   const canCreate = isMember || isAdmin;
+  const detailOptions = selected ? {
+    reaction: tube.myReactions?.[selected.tube_id] || null,
+    isMember,
+    isAdmin,
+    memberKey: state.auth?.member?.member_key || '',
+    saving: tube.reactionSavingTubeId === selected.tube_id,
+    canManage: canManageVideo(state, selected),
+    comments: tube.commentsByTubeId?.[selected.tube_id] || [],
+    commentsLoading: tube.commentsLoadingTubeId === selected.tube_id,
+    commentSaving: Boolean(tube.commentSaving),
+    commentError: tube.commentError,
+    commentEditingId: tube.commentEditingId,
+    commentDeleteId: tube.commentDeleteId,
+  } : null;
+
+  if (selected && patchTubeDetail(root, selected, detailOptions, tube, actions)) {
+    restoreImeSearchFocus(root, searchFocus);
+    return;
+  }
 
   root.innerHTML = `
     <section class="ops-tube">
@@ -27,15 +49,13 @@ export function renderTubeView(root, state, actions) {
         </div>
       </header>
 
-      ${tube.error ? `<div class="ops-tube-alert ops-tube-alert--error">${h(tube.error)}</div>` : ''}
-      ${tube.message ? `<div class="ops-tube-alert ${tube.messageType === 'success' ? 'ops-tube-alert--success' : tube.messageType === 'error' ? 'ops-tube-alert--error' : ''}">${h(tube.message)}</div>` : ''}
-      ${tube.loading && !tube.initialized ? '<div class="ops-tube-loading">AXE TUBE 데이터를 불러오는 중입니다.</div>' : ''}
+      <div data-tube-status-slot>${renderTubeStatus(tube)}</div>
 
       <section class="ops-tube-panel">
         <div class="ops-tube-toolbar">
           <label class="ops-tube-search">
             <span>검색</span>
-            <input type="search" value="${h(tube.filters.search)}" placeholder="제목, 작성자, 내용 검색" data-tube-filter="search" />
+            <input type="search" value="${h(tube.filters.search)}" placeholder="제목, 작성자, 내용 검색" data-tube-filter="search" data-ime-search="tube:search" />
           </label>
           <label class="ops-tube-field">
             <span>분류</span>
@@ -61,20 +81,7 @@ export function renderTubeView(root, state, actions) {
           : '<div class="ops-tube-empty">조건에 맞는 영상이 없습니다.</div>'}
       </section>
 
-      ${selected ? renderDetail(selected, {
-        reaction: tube.myReactions?.[selected.tube_id] || null,
-        isMember,
-        isAdmin,
-        memberKey: state.auth?.member?.member_key || '',
-        saving: tube.reactionSavingTubeId === selected.tube_id,
-        canManage: canManageVideo(state, selected),
-        comments: tube.commentsByTubeId?.[selected.tube_id] || [],
-        commentsLoading: tube.commentsLoadingTubeId === selected.tube_id,
-        commentSaving: Boolean(tube.commentSaving),
-        commentError: tube.commentError,
-        commentEditingId: tube.commentEditingId,
-        commentDeleteId: tube.commentDeleteId,
-      }) : ''}
+      ${selected ? renderDetail(selected, detailOptions) : ''}
 
       ${tube.editor?.open ? renderEditor(editing, {
         saving: Boolean(tube.editor.saving),
@@ -87,6 +94,7 @@ export function renderTubeView(root, state, actions) {
   `;
 
   bindEvents(root, actions);
+  restoreImeSearchFocus(root, searchFocus);
 }
 
 function renderCard(video, options = {}) {
@@ -124,13 +132,14 @@ function renderDetail(video, options = {}) {
   const player = videoId
     ? `<iframe src="https://www.youtube.com/embed/${videoId}?rel=0" title="${h(video.title || 'AXE TUBE')}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>`
     : `<div class="ops-tube-detail__fallback">YouTube 영상을 불러올 수 없습니다.</div>`;
-  const youtubeUrl = normalizeYoutubeUrl(video.url, videoId);
-  const reaction = options.reaction || null;
-  const isMember = Boolean(options.isMember);
-  const saving = Boolean(options.saving);
 
   return `
-    <div class="ops-tube-modal" data-tube-modal-backdrop>
+    <div
+      class="ops-tube-modal"
+      data-tube-modal-backdrop
+      data-tube-modal-id="${h(video.tube_id)}"
+      data-tube-player-video-id="${h(videoId)}"
+    >
       <section class="ops-tube-detail" role="dialog" aria-modal="true" aria-label="AXE TUBE 영상 상세">
         <header>
           <div>
@@ -143,47 +152,112 @@ function renderDetail(video, options = {}) {
           </div>
         </header>
         <div class="ops-tube-detail__player">${player}</div>
-        <div class="ops-tube-detail__body">
-          <div class="ops-tube-detail__meta">
-            <div>
-              <strong>${h(video.writer || 'AXE')}</strong>
-              ${badge(video.writer_badge)}
-              ${options.isAdmin ? `${syncBadge(video.sync_owner)}${discordSyncBadge(video.discord_sync_status)}${legacyBackupBadge(video.legacy_backup_status)}` : ''}
-              <span>${h(video.category || '일반')}</span>
-            </div>
-            <time>${formatDateTime(video.published_at)}</time>
-          </div>
-
-          <div class="ops-tube-detail__engagement">
-            <span class="ops-tube-view-count"><b>${formatNumber(video.views)}</b> 조회</span>
-            <span class="ops-tube-view-count"><b>${formatNumber(video.comment_count)}</b> 댓글</span>
-            <button
-              type="button"
-              class="ops-tube-reaction ${reaction === 'like' ? 'is-active' : ''}"
-              data-tube-react="like"
-              data-tube-id="${h(video.tube_id)}"
-              ${saving ? 'disabled' : ''}
-            >👍 추천 <b>${formatNumber(video.likes)}</b></button>
-            <button
-              type="button"
-              class="ops-tube-reaction ops-tube-reaction--dislike ${reaction === 'dislike' ? 'is-active' : ''}"
-              data-tube-react="dislike"
-              data-tube-id="${h(video.tube_id)}"
-              ${saving ? 'disabled' : ''}
-            >👎 비추천 <b>${formatNumber(video.dislikes)}</b></button>
-          </div>
-
-          ${isMember
-            ? `<div class="ops-tube-reaction-help">${saving ? '반응을 저장하는 중입니다…' : reaction ? '같은 버튼을 다시 누르면 반응이 취소됩니다.' : '멤버 계정 기준으로 한 영상에 추천 또는 비추천 하나만 기록됩니다.'}</div>`
-            : '<button type="button" class="ops-tube-login-cta" data-tube-login>추천·비추천은 멤버 로그인 후 사용할 수 있습니다 →</button>'}
-
-          <p>${h(video.content || '등록된 설명이 없습니다.')}</p>
-          ${youtubeUrl ? `<a class="ops-tube-youtube" href="${h(youtubeUrl)}" target="_blank" rel="noopener noreferrer">YouTube에서 보기 ↗</a>` : ''}
-          ${renderComments(video, options)}
-        </div>
+        ${renderDetailBody(video, options)}
       </section>
     </div>
   `;
+}
+
+function renderDetailBody(video, options = {}) {
+  const videoId = safeYoutubeId(video.youtube_video_id || extractYoutubeId(video.url));
+  const youtubeUrl = normalizeYoutubeUrl(video.url, videoId);
+  const reaction = options.reaction || null;
+  const isMember = Boolean(options.isMember);
+  const saving = Boolean(options.saving);
+
+  return `
+    <div class="ops-tube-detail__body">
+      <div class="ops-tube-detail__meta">
+        <div>
+          <strong>${h(video.writer || 'AXE')}</strong>
+          ${badge(video.writer_badge)}
+          ${options.isAdmin ? `${syncBadge(video.sync_owner)}${discordSyncBadge(video.discord_sync_status)}${legacyBackupBadge(video.legacy_backup_status)}` : ''}
+          <span>${h(video.category || '일반')}</span>
+        </div>
+        <time>${formatDateTime(video.published_at)}</time>
+      </div>
+
+      <div class="ops-tube-detail__engagement">
+        <span class="ops-tube-view-count"><b>${formatNumber(video.views)}</b> 조회</span>
+        <span class="ops-tube-view-count"><b>${formatNumber(video.comment_count)}</b> 댓글</span>
+        <button
+          type="button"
+          class="ops-tube-reaction ${reaction === 'like' ? 'is-active' : ''}"
+          data-tube-react="like"
+          data-tube-id="${h(video.tube_id)}"
+          ${saving ? 'disabled' : ''}
+        >👍 추천 <b>${formatNumber(video.likes)}</b></button>
+        <button
+          type="button"
+          class="ops-tube-reaction ops-tube-reaction--dislike ${reaction === 'dislike' ? 'is-active' : ''}"
+          data-tube-react="dislike"
+          data-tube-id="${h(video.tube_id)}"
+          ${saving ? 'disabled' : ''}
+        >👎 비추천 <b>${formatNumber(video.dislikes)}</b></button>
+      </div>
+
+      ${isMember
+        ? `<div class="ops-tube-reaction-help">${saving ? '반응을 저장하는 중입니다…' : reaction ? '같은 버튼을 다시 누르면 반응이 취소됩니다.' : '멤버 계정 기준으로 한 영상에 추천 또는 비추천 하나만 기록됩니다.'}</div>`
+        : '<button type="button" class="ops-tube-login-cta" data-tube-login>추천·비추천은 멤버 로그인 후 사용할 수 있습니다 →</button>'}
+
+      <p>${h(video.content || '등록된 설명이 없습니다.')}</p>
+      ${youtubeUrl ? `<a class="ops-tube-youtube" href="${h(youtubeUrl)}" target="_blank" rel="noopener noreferrer">YouTube에서 보기 ↗</a>` : ''}
+      ${renderComments(video, options)}
+    </div>
+  `;
+}
+
+function patchTubeDetail(root, video, options, tube, actions) {
+  if (!video || tube.editor?.open || root.querySelector('[data-tube-editor-backdrop]')) return false;
+
+  const modal = root.querySelector('[data-tube-modal-id]');
+  if (!modal || String(modal.dataset.tubeModalId || '') !== String(video.tube_id || '')) return false;
+
+  const nextVideoId = safeYoutubeId(video.youtube_video_id || extractYoutubeId(video.url));
+  if (String(modal.dataset.tubePlayerVideoId || '') !== String(nextVideoId || '')) return false;
+
+  const body = modal.querySelector('.ops-tube-detail__body');
+  if (!body) return false;
+
+  const draft = body.querySelector('textarea[name="comment_body"]');
+  const draftValue = draft?.value ?? '';
+  const draftFocused = draft === document.activeElement;
+  const draftWasEditing = Boolean(draft?.closest('.ops-tube-comment-form')?.classList.contains('is-editing'));
+  const draftStart = draftFocused && typeof draft.selectionStart === 'number' ? draft.selectionStart : null;
+  const draftEnd = draftFocused && typeof draft.selectionEnd === 'number' ? draft.selectionEnd : null;
+
+  body.outerHTML = renderDetailBody(video, options);
+  const nextBody = modal.querySelector('.ops-tube-detail__body');
+  if (!nextBody) return false;
+
+  const nextDraft = nextBody.querySelector('textarea[name="comment_body"]');
+  if (nextDraft && draftValue && (options.commentEditingId == null || draftWasEditing)) {
+    nextDraft.value = draftValue;
+    if (draftFocused) {
+      nextDraft.focus({ preventScroll: true });
+      try {
+        const max = nextDraft.value.length;
+        nextDraft.setSelectionRange(Math.min(draftStart ?? max, max), Math.min(draftEnd ?? draftStart ?? max, max));
+      } catch { /* ignore */ }
+    }
+  }
+
+  const title = modal.querySelector('.ops-tube-detail > header h2');
+  if (title) title.textContent = video.title || '제목 없음';
+
+  const statusSlot = root.querySelector('[data-tube-status-slot]');
+  if (statusSlot) statusSlot.innerHTML = renderTubeStatus(tube);
+
+  bindEvents(nextBody, actions);
+  return true;
+}
+
+function renderTubeStatus(tube) {
+  return [
+    tube.error ? `<div class="ops-tube-alert ops-tube-alert--error">${h(tube.error)}</div>` : '',
+    tube.message ? `<div class="ops-tube-alert ${tube.messageType === 'success' ? 'ops-tube-alert--success' : tube.messageType === 'error' ? 'ops-tube-alert--error' : ''}">${h(tube.message)}</div>` : '',
+    tube.loading && !tube.initialized ? '<div class="ops-tube-loading">AXE TUBE 데이터를 불러오는 중입니다.</div>' : '',
+  ].filter(Boolean).join('');
 }
 
 function renderComments(video, options = {}) {
@@ -337,8 +411,11 @@ function bindEvents(root, actions) {
   root.querySelector('[data-tube-new]')?.addEventListener('click', () => actions.onOpenEditor?.());
 
   root.querySelectorAll('[data-tube-filter]').forEach((element) => {
-    const eventName = element.tagName === 'INPUT' ? 'input' : 'change';
-    element.addEventListener(eventName, () => actions.onFilterChange?.(element.dataset.tubeFilter, element.value));
+    if (element.tagName === 'INPUT') {
+      bindImeSafeInput(element, (value) => actions.onFilterChange?.(element.dataset.tubeFilter, value), { delay: 220 });
+      return;
+    }
+    element.addEventListener('change', () => actions.onFilterChange?.(element.dataset.tubeFilter, element.value));
   });
 
   root.querySelectorAll('[data-tube-open]').forEach((button) => {

@@ -1,10 +1,9 @@
+import { bindImeSafeInput, captureImeSearchFocus, restoreImeSearchFocus } from '../../utils/dom.js';
+
 export function renderInfoView(root, state, actions = {}) {
   const info = state.info;
   const auth = state.auth || {};
-  const previousFocus = document.activeElement?.dataset?.infoSearch || '';
-  const previousSelection = previousFocus && document.activeElement?.selectionStart != null
-    ? document.activeElement.selectionStart
-    : null;
+  const searchFocus = captureImeSearchFocus(root);
 
   root.innerHTML = `
     <section class="ops-info">
@@ -38,15 +37,7 @@ export function renderInfoView(root, state, actions = {}) {
   `;
 
   bindEvents(root, state, actions);
-
-  if (previousFocus) {
-    const next = root.querySelector(`[data-info-search="${cssEscape(previousFocus)}"]`);
-    if (next) {
-      next.focus({ preventScroll: true });
-      const position = Math.min(previousSelection ?? next.value.length, next.value.length);
-      try { next.setSelectionRange(position, position); } catch { /* ignore */ }
-    }
-  }
+  restoreImeSearchFocus(root, searchFocus);
 }
 
 function tabButton(key, label, active) {
@@ -93,7 +84,7 @@ function renderCraft(info) {
         </label>
         <label class="ops-info-field ops-info-field--search">
           <span>검색</span>
-          <input type="search" value="${a(info.filters.craftSearch)}" placeholder="아이템명 또는 재료명" data-info-search="craftSearch" />
+          <input type="search" value="${a(info.filters.craftSearch)}" placeholder="아이템명 또는 재료명" data-info-search="craftSearch" data-ime-search="info:craftSearch" />
         </label>
         <span class="ops-info-result">${list.length}건</span>
       </div>
@@ -278,7 +269,7 @@ function renderModbooks(info, auth) {
           ${selectField('modbookPart', f.modbookPart, '부위', parts)}
           <label class="ops-info-field ops-info-field--search ops-info-field--search-wide">
             <span>검색</span>
-            <input type="search" value="${a(f.modbookSearch)}" placeholder="개조서명 또는 옵션" data-info-search="modbookSearch" />
+            <input type="search" value="${a(f.modbookSearch)}" placeholder="개조서명 또는 옵션" data-info-search="modbookSearch" data-ime-search="info:modbookSearch" />
           </label>
           <span class="ops-info-result">${list.length}건</span>
         </div>
@@ -375,7 +366,7 @@ function filterBar(selectKey, selected, label, values, searchKey, searchValue, p
       ${selectField(selectKey, selected, label, values)}
       <label class="ops-info-field ops-info-field--search">
         <span>검색</span>
-        <input type="search" value="${a(searchValue)}" placeholder="${a(placeholder)}" data-info-search="${a(searchKey)}" />
+        <input type="search" value="${a(searchValue)}" placeholder="${a(placeholder)}" data-info-search="${a(searchKey)}" data-ime-search="info:${a(searchKey)}" />
       </label>
       <span class="ops-info-result">${count}건</span>
     </div>
@@ -544,11 +535,11 @@ function bindEvents(root, state, actions) {
   });
 
   root.querySelectorAll('[data-info-search]').forEach((input) => {
-    let timer = null;
-    input.addEventListener('input', () => {
-      clearTimeout(timer);
-      timer = setTimeout(() => actions.onFilterChange?.(input.dataset.infoSearch, input.value), 90);
-    });
+    bindImeSafeInput(
+      input,
+      (value) => actions.onFilterChange?.(input.dataset.infoSearch, value),
+      { delay: 220 },
+    );
   });
 
   root.querySelectorAll('[data-info-craft-id]').forEach((button) => {

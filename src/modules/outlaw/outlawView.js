@@ -1,4 +1,7 @@
+import { bindImeSafeInput, captureImeSearchFocus, restoreImeSearchFocus } from '../../utils/dom.js';
+
 export function renderOutlawView(root, state, actions) {
+  const searchFocus = captureImeSearchFocus(root);
   const outlaw = state.outlaw;
   const auth = state.auth;
   const canRead = Boolean(auth.member || auth.admin);
@@ -86,7 +89,7 @@ function renderStats(outlaw, members) {
       <div class="ops-outlaw-toolbar">
         <label class="ops-outlaw-search">
           <span>검색</span>
-          <input type="search" value="${h(outlaw.filters.statSearch)}" placeholder="닉네임 검색" data-outlaw-filter="statSearch" />
+          <input type="search" value="${h(outlaw.filters.statSearch)}" placeholder="닉네임 검색" data-outlaw-filter="statSearch" data-ime-search="outlaw:statSearch" />
         </label>
         <label class="ops-outlaw-field">
           <span>멤버 상태</span>
@@ -230,7 +233,7 @@ function renderGuides(outlaw, isAdmin) {
       <div class="ops-outlaw-toolbar ops-outlaw-toolbar--guide">
         <label class="ops-outlaw-search">
           <span>공략 검색</span>
-          <input type="search" value="${h(outlaw.filters.guideSearch)}" placeholder="지역명 또는 좌표" data-outlaw-filter="guideSearch" />
+          <input type="search" value="${h(outlaw.filters.guideSearch)}" placeholder="지역명 또는 좌표" data-outlaw-filter="guideSearch" data-ime-search="outlaw:guideSearch" />
         </label>
         <div class="ops-outlaw-toolbar__meta">${locations.length} LOCATIONS · ${outlaw.guideSteps.length} STEPS</div>
         ${isAdmin ? `<div class="ops-outlaw-admin-actions">
@@ -302,7 +305,7 @@ function renderMaps(outlaw, isAdmin) {
       <div class="ops-outlaw-toolbar ops-outlaw-toolbar--map">
         <label class="ops-outlaw-search">
           <span>브리핑맵 검색</span>
-          <input type="search" value="${h(outlaw.filters.mapSearch)}" placeholder="지역명 또는 좌표" data-outlaw-filter="mapSearch" />
+          <input type="search" value="${h(outlaw.filters.mapSearch)}" placeholder="지역명 또는 좌표" data-outlaw-filter="mapSearch" data-ime-search="outlaw:mapSearch" />
         </label>
         <div class="ops-outlaw-toolbar__meta">${maps.length} MAPS</div>
         ${isAdmin ? `<div class="ops-outlaw-admin-actions">
@@ -444,9 +447,13 @@ function bindEvents(root, actions) {
   root.querySelector('[data-outlaw-login]')?.addEventListener('click', actions.onOpenLogin);
 
   root.querySelectorAll('[data-outlaw-filter]').forEach((input) => {
-    const event = input.tagName === 'SELECT' ? 'change' : 'input';
-    input.addEventListener(event, () => actions.onFilterChange(input.dataset.outlawFilter, input.value));
+    if (input.tagName === 'SELECT') {
+      input.addEventListener('change', () => actions.onFilterChange(input.dataset.outlawFilter, input.value));
+      return;
+    }
+    bindImeSafeInput(input, (value) => actions.onFilterChange(input.dataset.outlawFilter, value), { delay: 220 });
   });
+  restoreImeSearchFocus(root, searchFocus);
 
   root.querySelectorAll('[data-outlaw-stat]').forEach((element) => {
     element.addEventListener('click', (event) => {

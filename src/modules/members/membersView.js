@@ -1,4 +1,7 @@
+import { bindImeSafeInput, captureImeSearchFocus, restoreImeSearchFocus } from '../../utils/dom.js';
+
 export function renderMembersView(root, state, actions = {}) {
+  const searchFocus = captureImeSearchFocus(root);
   const { members, system } = state;
 
   if (!system.connected) {
@@ -82,10 +85,9 @@ export function renderMembersView(root, state, actions = {}) {
 
   const searchInput = root.querySelector('[data-member-search]');
   if (searchInput) {
-    searchInput.addEventListener('input', (event) => {
-      actions.onSearchChange?.(event.target.value);
-    });
+    bindImeSafeInput(searchInput, (value) => actions.onSearchChange?.(value), { delay: 220 });
   }
+  restoreImeSearchFocus(root, searchFocus);
 
   root.querySelectorAll('[data-member-filter]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -241,6 +243,7 @@ function renderMembersState(members, counts, visibleItems) {
             placeholder="닉네임 · Discord · 권한 · 배지 검색"
             value="${escapeAttribute(members.search)}"
             data-member-search
+            data-ime-search="members:search"
           />
         </label>
       </div>

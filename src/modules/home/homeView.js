@@ -4,6 +4,7 @@ import {
   ledgerAmountType,
   ledgerSign,
 } from '../fund/fundUtils.js';
+import { getShortcutTarget } from '../shortcuts/shortcutTargets.js';
 
 export function renderHomeView(root, state, actions = {}) {
   const fund = state.fund ?? {};
@@ -24,10 +25,18 @@ export function renderHomeView(root, state, actions = {}) {
     <section class="ops-home" aria-label="NEW AXE NET 홈">
       ${dataLoading ? '<div class="ops-home__loading">최신 데이터를 불러오는 중입니다.</div>' : ''}
       ${shortcuts.length ? `
-        <div class="ops-home-shortcuts" aria-label="내 바로가기">
-          <span class="ops-home-shortcuts__label">⚡ 바로가기</span>
-          ${shortcuts.map((item) => `<button class="ops-home-shortcuts__item" type="button" data-home-shortcut="${escapeHtml(item.target_key)}">${escapeHtml(item.label)}</button>`).join('')}
-        </div>
+        <section class="ops-home-quickpanel" aria-label="내 바로가기">
+          <header class="ops-home-quickpanel__head">
+            <div>
+              <span>QUICK ACCESS</span>
+              <h2>바로가기</h2>
+            </div>
+            <small>자주 쓰는 AXE 기능을 바로 실행합니다.</small>
+          </header>
+          <div class="ops-home-quickpanel__grid">
+            ${shortcuts.map(renderHomeShortcut).join('')}
+          </div>
+        </section>
       ` : ''}
 
       <div class="ops-home-overview">
@@ -80,6 +89,32 @@ export function renderHomeView(root, state, actions = {}) {
   `;
 
   bindHomeEvents(root, actions);
+}
+
+function renderHomeShortcut(item) {
+  const target = getShortcutTarget(item.target_key);
+  return `
+    <button class="ops-home-quickpanel__item" type="button" data-home-shortcut="${escapeHtml(item.target_key)}">
+      <i aria-hidden="true">${escapeHtml(shortcutMark(item.target_key))}</i>
+      <span>
+        <strong>${escapeHtml(item.label)}</strong>
+        <small>${escapeHtml(target?.label || item.target_key)}</small>
+      </span>
+      <b aria-hidden="true">→</b>
+    </button>
+  `;
+}
+
+function shortcutMark(key) {
+  const value = String(key || '');
+  if (value.startsWith('fund.')) return '₩';
+  if (value.startsWith('assets.')) return '◇';
+  if (value.startsWith('info.')) return '⌕';
+  if (value.startsWith('notice.')) return '!';
+  if (value.startsWith('outlaw.')) return '◎';
+  if (value === 'tube') return '▶';
+  if (value === 'members') return 'M';
+  return 'A';
 }
 
 function renderRecentLedgerRow(item) {

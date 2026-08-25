@@ -1,4 +1,7 @@
+import { bindImeSafeInput, captureImeSearchFocus, restoreImeSearchFocus } from '../../utils/dom.js';
+
 export function renderAssetsView(root, state, actions) {
+  const searchFocus = captureImeSearchFocus(root);
   const asset = state.assets;
   const auth = state.auth;
   const members = state.members.items || [];
@@ -60,7 +63,7 @@ function renderAccounts(asset, auth, members, canReadAccounts, isAdmin) {
       <div class="ops-assets-toolbar">
         <label class="ops-assets-search">
           <span>계좌 검색</span>
-          <input type="search" value="${a(asset.filters.accountSearch)}" placeholder="멤버명 또는 계좌번호" data-assets-search="accountSearch" />
+          <input type="search" value="${a(asset.filters.accountSearch)}" placeholder="멤버명 또는 계좌번호" data-assets-search="accountSearch" data-ime-search="assets:accountSearch" />
         </label>
         <div class="ops-assets-toolbar__meta"><strong>${accounts.length}</strong><span>등록 계좌</span></div>
         <div class="ops-assets-toolbar__actions">
@@ -162,7 +165,7 @@ function renderCompanyAssets(asset) {
       <div class="ops-assets-toolbar ops-assets-toolbar--filters">
         ${selectFilter('assetCategory', asset.filters.assetCategory, '자산 분류', categories)}
         ${selectFilter('assetStatus', asset.filters.assetStatus, '현재 상태', statuses)}
-        <label class="ops-assets-search"><span>검색</span><input type="search" value="${a(asset.filters.assetSearch)}" placeholder="이름, 자산명, 획득 방식" data-assets-search="assetSearch" /></label>
+        <label class="ops-assets-search"><span>검색</span><input type="search" value="${a(asset.filters.assetSearch)}" placeholder="이름, 자산명, 획득 방식" data-assets-search="assetSearch" data-ime-search="assets:assetSearch" /></label>
         <div class="ops-assets-toolbar__actions"><button class="ops-assets-btn ops-assets-btn--gold" type="button" data-assets-open="asset">자산 추가</button></div>
       </div>
 
@@ -212,7 +215,7 @@ function renderReturns(asset) {
       </div>
       <div class="ops-assets-toolbar ops-assets-toolbar--filters">
         <label class="ops-assets-field"><span>상태</span><select data-assets-filter="returnStatus"><option value="all" ${status === 'all' ? 'selected' : ''}>전체</option><option value="done" ${status === 'done' ? 'selected' : ''}>반납완료</option><option value="wait" ${status === 'wait' ? 'selected' : ''}>확인대기</option></select></label>
-        <label class="ops-assets-search"><span>검색</span><input type="search" value="${a(asset.filters.returnSearch)}" placeholder="이름, 자산명, 확인자" data-assets-search="returnSearch" /></label>
+        <label class="ops-assets-search"><span>검색</span><input type="search" value="${a(asset.filters.returnSearch)}" placeholder="이름, 자산명, 확인자" data-assets-search="returnSearch" data-ime-search="assets:returnSearch" /></label>
         <div class="ops-assets-toolbar__actions"><button class="ops-assets-btn ops-assets-btn--gold" type="button" data-assets-open="return">반납 기록 추가</button></div>
       </div>
 
@@ -332,7 +335,8 @@ function bindEvents(root, actions) {
   root.querySelector('[data-assets-refresh]')?.addEventListener('click', () => actions.onRefresh?.());
   root.querySelector('[data-assets-login]')?.addEventListener('click', () => actions.onOpenLogin?.());
 
-  root.querySelectorAll('[data-assets-search]').forEach((input) => input.addEventListener('input', () => actions.onFilterChange?.(input.dataset.assetsSearch, input.value)));
+  root.querySelectorAll('[data-assets-search]').forEach((input) => bindImeSafeInput(input, (value) => actions.onFilterChange?.(input.dataset.assetsSearch, value), { delay: 220 }));
+  restoreImeSearchFocus(root, searchFocus);
   root.querySelectorAll('[data-assets-filter]').forEach((select) => select.addEventListener('change', () => actions.onFilterChange?.(select.dataset.assetsFilter, select.value)));
 
   root.querySelectorAll('[data-assets-copy]').forEach((button) => button.addEventListener('click', () => actions.onCopy?.(button.dataset.assetsCopy)));

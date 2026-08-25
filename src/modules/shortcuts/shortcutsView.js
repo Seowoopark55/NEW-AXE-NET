@@ -50,10 +50,26 @@ function renderShortcutItem(item) {
   const target = getShortcutTarget(item.target_key);
   return `
     <button class="ops-quick__link" type="button" data-quick-open="${escapeAttr(item.target_key)}" role="menuitem">
-      <span>${escapeHtml(item.label)}</span>
-      <small>${escapeHtml(target?.label || item.target_key)}</small>
+      <i aria-hidden="true">${escapeHtml(shortcutMark(item.target_key))}</i>
+      <span>
+        <strong>${escapeHtml(item.label)}</strong>
+        <small>${escapeHtml(target?.label || item.target_key)}</small>
+      </span>
+      <b aria-hidden="true">→</b>
     </button>
   `;
+}
+
+function shortcutMark(key) {
+  const value = String(key || '');
+  if (value.startsWith('fund.')) return '₩';
+  if (value.startsWith('assets.')) return '◇';
+  if (value.startsWith('info.')) return '⌕';
+  if (value.startsWith('notice.')) return '!';
+  if (value.startsWith('outlaw.')) return '◎';
+  if (value === 'tube') return '▶';
+  if (value === 'members') return 'M';
+  return 'A';
 }
 
 function renderManager(shortcuts, items, editing, state) {
