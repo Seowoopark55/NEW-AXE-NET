@@ -724,3 +724,61 @@
 }
 .ops-info-preset-summary__stats > div.is-primary span { color: #b79558; font-weight: 900; }
 .ops-info-preset-summary__stats > div.is-primary strong { color: #e6b24e; font-size: 13px; }
+
+
+/* v1.46.3 · AXE team-kit assets + readable option typography */
+.ops-info-preset-layout { grid-template-columns: 510px 330px; }
+.ops-info-preset-summary { padding: 15px; }
+.ops-info-preset-summary__title h3 { font-size: 17px; }
+.ops-info-preset-summary > p { font-size: 11.4px; line-height: 1.62; }
+.ops-info-preset-summary__stats { gap: 7px; padding: 10px 0; }
+.ops-info-preset-summary__stats > div { min-height: 34px; gap: 12px; padding-inline: 2px; }
+.ops-info-preset-summary__stats span { color: #92979d; font-size: 12.2px; font-weight: 760; line-height: 1.35; }
+.ops-info-preset-summary__stats strong { color: #ddd9d1; font-size: 13.8px; font-weight: 950; font-variant-numeric: tabular-nums; }
+.ops-info-preset-summary__stats > div.is-primary { padding: 9px 10px; }
+.ops-info-preset-summary__stats > div.is-primary span { color: #c5a15f; font-size: 12.6px; }
+.ops-info-preset-summary__stats > div.is-primary strong { color: #efbb56; font-size: 15.5px; }
+.ops-info-preset-warning { padding: 10px 11px; }
+.ops-info-preset-warning strong { font-size: 11px; }
+.ops-info-preset-warning span { font-size: 10.4px; line-height: 1.5; }
+.ops-info-preset-notes p { font-size: 10.4px; line-height: 1.58; }
+.ops-info-preset-summary__criteria { font-size: 9.5px; }
+
+.ops-info-preset-tooltip { width: 340px; }
+.ops-info-preset-tooltip__head span { font-size: 11px; }
+.ops-info-preset-tooltip__head strong { font-size: 18px; }
+.ops-info-preset-mod { padding: 12px 15px 13px; }
+.ops-info-preset-mod header { margin-bottom: 8px; }
+.ops-info-preset-mod header strong { font-size: 14px; }
+.ops-info-preset-mod header span { font-size: 9.5px; }
+.ops-info-preset-mod__options { gap: 6px; }
+.ops-info-preset-mod__options > div { grid-template-columns: 58px minmax(0, 1fr) auto; min-height: 25px; gap: 9px; }
+.ops-info-preset-mod__options b { font-size: 13px; }
+.ops-info-preset-mod__options span { font-size: 12px; line-height: 1.35; }
+.ops-info-preset-mod__options small { font-size: 10.2px; }
+.ops-info-preset-tooltip > small { font-size: 9.7px; }
+
+.ops-info-preset-slot img {
+  width: calc(100% - 8px);
+  height: calc(100% - 8px);
+  object-fit: contain;
+  filter: none;
+  opacity: 1;
+}
+.ops-info-preset-slot-wrap--outer .ops-info-preset-slot img,
+.ops-info-preset-slot-wrap--top .ops-info-preset-slot img { transform: scale(1.035); }
+.ops-info-preset-slot-wrap--bottom .ops-info-preset-slot img { transform: scale(1.03); }
+.ops-info-preset-slot-wrap--shoes .ops-info-preset-slot img { transform: scale(1.05); }
+.ops-info-preset-slot:hover img,
+.ops-info-preset-slot:focus-visible img,
+.ops-info-preset-slot.is-selected img { transform: scale(1.055); }
+
+@media (max-width: 900px) {
+  .ops-info-preset-layout { grid-template-columns: minmax(0, 1.45fr) minmax(285px, 1fr); }
+}
+@media (max-width: 680px) {
+  .ops-info-preset-layout { display: block; }
+  .ops-info-preset-summary__stats span { font-size: 12px; }
+  .ops-info-preset-summary__stats strong { font-size: 13.6px; }
+  .ops-info-preset-tooltip.is-mobile { width: 100%; }
+}
