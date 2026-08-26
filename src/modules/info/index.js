@@ -18,12 +18,32 @@ import {
   updateModbookPrice,
 } from './infoService.js';
 import { renderInfoView } from './infoView.js';
+import { closeRouteModal } from '../../utils/historyRouter.js';
 
 const TABS = new Set(['craft', 'quest', 'process', 'modbook', 'preset', 'skill']);
 
 export async function initInfoModule() {
   const root = document.querySelector('#module-root');
   if (!root) throw new Error('#module-root element not found.');
+
+  const requestCloseModal = (kind) => {
+    if (closeRouteModal(kind)) return;
+    closeModal(kind);
+  };
+
+  if (!window.__axeInfoEscapeCloseInstalled) {
+    window.__axeInfoEscapeCloseInstalled = true;
+    window.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape' || event.defaultPrevented) return;
+      const state = store.getState();
+      if (state.ui.activeModule !== 'info') return;
+      const kind = getOpenInfoModalKind(state.info);
+      if (!kind) return;
+      event.preventDefault();
+      if (closeRouteModal(kind)) return;
+      closeModal(kind);
+    });
+  }
 
   const rerender = () => {
     if (store.getState().ui.activeModule !== 'info') return;
@@ -312,7 +332,7 @@ export async function initInfoModule() {
       },
 
       onCloseModal(kind) {
-        closeModal(kind);
+        requestCloseModal(kind);
       },
     });
   };
@@ -621,6 +641,15 @@ async function loadAdminRequests(options = {}) {
   } catch (error) {
     if (!options.silent) setAdminError(formatInfoError(error));
   }
+}
+
+function getOpenInfoModalKind(info = {}) {
+  if (info.presetEditor?.open) return 'presetEditor';
+  if (info.modbookRequest?.open) return 'request';
+  if (info.admin?.requestsOpen) return 'adminRequests';
+  if (info.admin?.editorOpen) return 'editor';
+  if (info.admin?.priceOpen) return 'price';
+  return null;
 }
 
 function closeModal(kind) {

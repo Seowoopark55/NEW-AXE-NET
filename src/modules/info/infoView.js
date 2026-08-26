@@ -1228,7 +1228,10 @@ function bindEvents(root, state, actions) {
 
   root.querySelectorAll('[data-info-modal-close]').forEach((element) => {
     element.addEventListener('click', (event) => {
-      if (element.classList.contains('ops-info-modal-backdrop') && event.target !== element) return;
+      // 모달 바깥 영역은 의도치 않은 작성 내용 유실을 막기 위해 닫기 동작을 하지 않습니다.
+      // 닫기 버튼 / 취소 버튼 / ESC / 브라우저 뒤로가기만 모달을 닫습니다.
+      if (element.classList.contains('ops-info-modal-backdrop')) return;
+      event.stopPropagation();
       actions.onCloseModal?.(element.dataset.infoModalClose);
     });
   });

@@ -25,6 +25,7 @@ import { initTubeModule } from './modules/tube/index.js';
 import { initFundModule } from './modules/fund/index.js';
 import { initAiModule } from './modules/ai/index.js';
 import { runSupabaseHealthCheck } from './modules/system/systemService.js';
+import { installHistoryRouter } from './utils/historyRouter.js';
 
 const app = document.querySelector('#app');
 
@@ -32,6 +33,7 @@ if (!app) {
   throw new Error('#app element not found.');
 }
 
+installHistoryRouter(store);
 renderAppShell(app);
 
 async function bootstrap() {
