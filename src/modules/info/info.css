@@ -713,3 +713,14 @@
   .ops-info-preset-slot-wrap--bottom { left: 166px; top: 252px; }
   .ops-info-preset-slot-wrap--shoes { left: 58px; top: 324px; }
 }
+
+/* v1.46.2 · preset aggregate normalization */
+.ops-info-preset-summary__stats > div.is-primary {
+  margin: 1px 0 3px;
+  padding: 7px 8px;
+  border: 1px solid rgba(255,181,46,.14);
+  border-radius: 6px;
+  background: rgba(255,181,46,.025);
+}
+.ops-info-preset-summary__stats > div.is-primary span { color: #b79558; font-weight: 900; }
+.ops-info-preset-summary__stats > div.is-primary strong { color: #e6b24e; font-size: 13px; }

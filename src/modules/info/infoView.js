@@ -411,18 +411,16 @@ function renderModbookPresets(info) {
               <span>${h(preset.badge || 'AXE 추천')}</span>
               <h3>${h(preset.title)}</h3>
             </div>
-            ${summary.movement != null ? `<b>+${formatCompactNumber(summary.movement)}%</b>` : ''}
           </div>
           <p>${h(preset.description || '')}</p>
 
           <div class="ops-info-preset-summary__stats">
             ${summary.positive
-              .filter((item) => item.label !== '이동 속도 증가')
-              .slice(0, 4)
+              .slice(0, 5)
               .map((item) => `
-                <div>
+                <div class="${item.label === '이동 속도 증가' ? 'is-primary' : ''}">
                   <span>${h(item.label)}</span>
-                  <strong>${item.unit === '%' ? `${formatCompactNumber(item.value)}%` : formatCompactNumber(item.value)}</strong>
+                  <strong>+${item.unit === '%' ? `${formatCompactNumber(item.value)}%` : formatCompactNumber(item.value)}</strong>
                 </div>
               `).join('')}
           </div>
@@ -563,6 +561,18 @@ function normalizePresetName(value) {
   return String(value || '').replace(/\s+/g, ' ').trim().toLowerCase();
 }
 
+function canonicalPresetOptionLabel(value) {
+  const display = String(value || '').replace(/\s+/g, ' ').trim();
+  const key = display.replace(/\s+/g, '').toLowerCase();
+  const aliases = {
+    '이동속도증가': '이동 속도 증가',
+    '최대스태미나증가': '최대 스태미나 증가',
+    '최대체력증가': '최대 체력 증가',
+    '전력질주스태미나감소': '전력질주 스태미나 감소',
+  };
+  return aliases[key] || display;
+}
+
 function parsePresetOption(value) {
   const raw = String(value || '').trim();
   const negative = raw.startsWith('*');
@@ -570,10 +580,10 @@ function parsePresetOption(value) {
   const match = clean.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
 
   if (!match) {
-    return { raw, negative, label: clean, range: '', value: null, unit: '', bestDisplay: '' };
+    return { raw, negative, label: canonicalPresetOptionLabel(clean), range: '', value: null, unit: '', bestDisplay: '' };
   }
 
-  const label = match[1].trim();
+  const label = canonicalPresetOptionLabel(match[1]);
   const range = match[2].replace(/\s*~\s*/g, ' ~ ').trim();
   const tokens = [...range.matchAll(/-?\d+(?:\.\d+)?\s*%?/g)].map((entry) => entry[0].replace(/\s+/g, ''));
   const bestToken = tokens.length ? tokens[tokens.length - 1] : '';
