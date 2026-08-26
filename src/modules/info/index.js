@@ -14,7 +14,7 @@ import {
 } from './infoService.js';
 import { renderInfoView } from './infoView.js';
 
-const TABS = new Set(['craft', 'quest', 'process', 'modbook', 'skill']);
+const TABS = new Set(['craft', 'quest', 'process', 'modbook', 'preset', 'skill']);
 
 export async function initInfoModule() {
   const root = document.querySelector('#module-root');
@@ -54,6 +54,27 @@ export async function initInfoModule() {
 
       onSelectModbook(id) {
         store.updateState((state) => ({ ...state, info: { ...state.info, selectedModbookId: Number(id) } }));
+      },
+
+      onSelectModbookPreset(id) {
+        store.updateState((state) => ({
+          ...state,
+          info: {
+            ...state.info,
+            selectedModbookPresetId: String(id || 'movement-tier1'),
+            selectedModbookPresetSlot: 'bottom',
+          },
+        }));
+      },
+
+      onSelectModbookPresetSlot(slot) {
+        store.updateState((state) => ({
+          ...state,
+          info: {
+            ...state.info,
+            selectedModbookPresetSlot: String(slot || 'bottom'),
+          },
+        }));
       },
 
       async onRefresh() {

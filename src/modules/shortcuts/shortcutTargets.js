@@ -11,6 +11,7 @@ export const SHORTCUT_TARGETS = [
   { key: 'info.quest', group: '정보', label: '퀘스트', module: 'info', tab: 'quest' },
   { key: 'info.process', group: '정보', label: '가공·재련', module: 'info', tab: 'process' },
   { key: 'info.modbook', group: '정보', label: '개조서', module: 'info', tab: 'modbook' },
+  { key: 'info.preset', group: '정보', label: '추천세팅', module: 'info', tab: 'preset' },
   { key: 'info.skill', group: '정보', label: '스킬랭크', module: 'info', tab: 'skill' },
 
   { key: 'outlaw.stats', group: '콘텐츠', label: '무법지대 · 통계', module: 'outlaw', tab: 'stats' },

@@ -1,4 +1,5 @@
 import { bindImeSafeInput, captureImeSearchFocus, restoreImeSearchFocus } from '../../utils/dom.js';
+import { MODBOOK_PRESETS, MODBOOK_PRESET_SLOT_ORDER } from './modbookPresets.js';
 
 export function renderInfoView(root, state, actions = {}) {
   const info = state.info;
@@ -10,7 +11,7 @@ export function renderInfoView(root, state, actions = {}) {
       <header class="ops-info__header">
         <div>
           <h1>정보</h1>
-          <p>제작, 생활직, 개조서와 스킬랭크 정보를 빠르게 조회합니다.</p>
+          <p>제작, 생활직, 개조서, 추천 세팅과 스킬랭크 정보를 빠르게 조회합니다.</p>
         </div>
         <div class="ops-info__header-actions">
           <button class="ops-info-btn" type="button" data-info-refresh ${info.loading ? 'disabled' : ''}>새로고침</button>
@@ -22,6 +23,7 @@ export function renderInfoView(root, state, actions = {}) {
         ${tabButton('quest', '퀘스트', info.tab)}
         ${tabButton('process', '가공·재련', info.tab)}
         ${tabButton('modbook', '개조서', info.tab)}
+        ${tabButton('preset', '추천세팅', info.tab)}
         ${tabButton('skill', '스킬랭크', info.tab)}
       </nav>
 
@@ -49,6 +51,7 @@ function renderTab(info, auth) {
   if (info.tab === 'quest') return renderQuest(info);
   if (info.tab === 'process') return renderProcess(info);
   if (info.tab === 'modbook') return renderModbooks(info, auth);
+  if (info.tab === 'preset') return renderModbookPresets(info);
   if (info.tab === 'skill') return renderSkillRanks(info);
   return renderCraft(info);
 }
@@ -335,6 +338,315 @@ function renderModbookDetail(item, auth) {
   `;
 }
 
+function renderModbookPresets(info) {
+  const preset = MODBOOK_PRESETS.find((item) => item.id === info.selectedModbookPresetId)
+    || MODBOOK_PRESETS[0]
+    || null;
+
+  if (!preset) return empty('등록된 추천 세팅이 없습니다.');
+
+  const selectedSlotKey = MODBOOK_PRESET_SLOT_ORDER.includes(info.selectedModbookPresetSlot)
+    ? info.selectedModbookPresetSlot
+    : 'bottom';
+  const selectedSlot = preset.slots[selectedSlotKey] || preset.slots.bottom || null;
+  const summary = summarizePreset(preset, info.modbooks);
+
+  return `
+    <section class="ops-info-workspace ops-info-workspace--preset">
+      <div class="ops-info-preset-head">
+        <div>
+          <span class="ops-info-kicker">CURATED MODBOOK SETUP</span>
+          <h2>AXE 추천 세팅</h2>
+          <p>실사용 조합을 장비창처럼 확인합니다. 수치는 각 개조서의 <strong>최대 옵션</strong>으로 표시합니다.</p>
+        </div>
+        <span class="ops-info-preset-head__badge">최대옵 기준</span>
+      </div>
+
+      <div class="ops-info-preset-picker" role="tablist" aria-label="추천 세팅">
+        ${MODBOOK_PRESETS.map((item) => {
+          const itemSummary = summarizePreset(item, info.modbooks);
+          return `
+            <button
+              class="ops-info-preset-choice ${item.id === preset.id ? 'is-active' : ''}"
+              type="button"
+              data-info-preset-id="${a(item.id)}"
+              role="tab"
+              aria-selected="${item.id === preset.id ? 'true' : 'false'}"
+            >
+              <span>${h(item.badge || 'AXE 추천')}</span>
+              <strong>${h(item.title)}</strong>
+              <small>${itemSummary.movement != null ? `이동속도 최대 +${formatCompactNumber(itemSummary.movement)}%` : h(item.criteria || '')}</small>
+            </button>
+          `;
+        }).join('')}
+      </div>
+
+      <div class="ops-info-preset-layout">
+        <div class="ops-info-preset-inventory">
+          <div class="ops-info-preset-inventory__bar">
+            <strong>인벤토리</strong>
+            <span>장비 <b>1</b></span>
+            <em>외형</em>
+          </div>
+
+          <div class="ops-info-preset-board">
+            ${renderPresetGhostSlots()}
+            ${MODBOOK_PRESET_SLOT_ORDER.map((slotKey) => renderPresetSlot(
+              preset,
+              slotKey,
+              preset.slots[slotKey],
+              info.modbooks,
+              selectedSlotKey,
+            )).join('')}
+          </div>
+
+          <div class="ops-info-preset-mobile-detail">
+            ${selectedSlot ? renderPresetTooltip(preset, selectedSlotKey, selectedSlot, info.modbooks, { mobile: true }) : ''}
+          </div>
+        </div>
+
+        <aside class="ops-info-preset-summary">
+          <div class="ops-info-preset-summary__title">
+            <div>
+              <span>${h(preset.badge || 'AXE 추천')}</span>
+              <h3>${h(preset.title)}</h3>
+            </div>
+            ${summary.movement != null ? `<b>+${formatCompactNumber(summary.movement)}%</b>` : ''}
+          </div>
+          <p>${h(preset.description || '')}</p>
+
+          <div class="ops-info-preset-summary__stats">
+            ${summary.positive
+              .filter((item) => item.label !== '이동 속도 증가')
+              .slice(0, 4)
+              .map((item) => `
+                <div>
+                  <span>${h(item.label)}</span>
+                  <strong>${item.unit === '%' ? `${formatCompactNumber(item.value)}%` : formatCompactNumber(item.value)}</strong>
+                </div>
+              `).join('')}
+          </div>
+
+          ${summary.negative.length ? `
+            <div class="ops-info-preset-warning">
+              <strong>주의 옵션</strong>
+              ${summary.negative.map((item) => `<span>${h(item.label)} ${h(item.range)}</span>`).join('')}
+            </div>
+          ` : ''}
+
+          <div class="ops-info-preset-notes">
+            ${(preset.notes || []).map((note) => `<p>${h(note)}</p>`).join('')}
+          </div>
+
+          <small class="ops-info-preset-summary__criteria">${h(preset.criteria || '')}</small>
+        </aside>
+      </div>
+    </section>
+  `;
+}
+
+function renderPresetGhostSlots() {
+  const ghosts = [
+    ['ghost-a', '좌측 슬롯'],
+    ['ghost-b', '안경 슬롯'],
+    ['ghost-c', '모자 슬롯'],
+    ['ghost-d', '마스크 슬롯'],
+    ['ghost-e', '목 슬롯'],
+    ['ghost-f', '기타 슬롯'],
+    ['ghost-g', '기타 슬롯'],
+  ];
+  return ghosts.map(([key, label]) => `
+    <span class="ops-info-preset-ghost ops-info-preset-ghost--${key}" aria-hidden="true" title="${a(label)}"></span>
+  `).join('');
+}
+
+function renderPresetSlot(preset, slotKey, slot, modbooks, selectedSlotKey) {
+  if (!slot) return '';
+  const resolved = resolvePresetSlot(slot, modbooks);
+  const movement = sumMovement(resolved.mods);
+  const selected = selectedSlotKey === slotKey;
+
+  return `
+    <div class="ops-info-preset-slot-wrap ops-info-preset-slot-wrap--${a(slotKey)} ${selected ? 'is-selected' : ''}">
+      <button
+        class="ops-info-preset-slot ${selected ? 'is-selected' : ''}"
+        type="button"
+        data-info-preset-slot="${a(slotKey)}"
+        aria-label="${a(slot.label)} 추천 개조서"
+      >
+        <span class="ops-info-preset-slot__frame">
+          <img src="${a(slot.image)}" alt="" loading="lazy" draggable="false" />
+        </span>
+        <span class="ops-info-preset-slot__label">${h(slot.label)}</span>
+        ${movement > 0 ? `<em>+${formatCompactNumber(movement)}%</em>` : ''}
+      </button>
+      ${renderPresetTooltip(preset, slotKey, slot, modbooks)}
+    </div>
+  `;
+}
+
+function renderPresetTooltip(preset, slotKey, slot, modbooks, options = {}) {
+  const resolved = resolvePresetSlot(slot, modbooks);
+  const movement = sumMovement(resolved.mods);
+  const missing = resolved.missing;
+  const classes = [
+    'ops-info-preset-tooltip',
+    `ops-info-preset-tooltip--${slotKey}`,
+    options.mobile ? 'is-mobile' : '',
+  ].filter(Boolean).join(' ');
+
+  return `
+    <div class="${classes}" role="${options.mobile ? 'region' : 'tooltip'}">
+      <div class="ops-info-preset-tooltip__head">
+        <div>
+          <span>${h(preset.title)}</span>
+          <strong>${h(slot.label)}</strong>
+        </div>
+        ${movement > 0 ? `<b>+${formatCompactNumber(movement)}%</b>` : ''}
+      </div>
+
+      ${resolved.mods.length ? resolved.mods.map((item) => renderPresetMod(item)).join('') : ''}
+      ${slot.emptyHint ? `<div class="ops-info-preset-emptyhint">${h(slot.emptyHint)}</div>` : ''}
+      ${missing.length ? `<div class="ops-info-preset-missing">현재 데이터에서 찾지 못함: ${missing.map((item) => h(`${item.type} ${item.name}`)).join(', ')}</div>` : ''}
+      <small>표시 수치 = 해당 옵션의 최대값 · 괄호 = 실제 등장 범위</small>
+    </div>
+  `;
+}
+
+function renderPresetMod(item) {
+  const typeClass = item.type === '접두' ? 'is-prefix' : 'is-suffix';
+  const options = [item.option1, item.option2, item.option3]
+    .filter((value) => String(value || '').trim())
+    .map(parsePresetOption);
+
+  return `
+    <section class="ops-info-preset-mod ${typeClass}">
+      <header>
+        <strong>${h(cleanModbookName(item.name))}</strong>
+        <span>${h(item.type)}</span>
+      </header>
+      <div class="ops-info-preset-mod__options">
+        ${options.map((option) => `
+          <div class="${option.negative ? 'is-negative' : ''}">
+            <b>${h(option.bestDisplay || '—')}</b>
+            <span>${h(option.label)}</span>
+            ${option.range ? `<small>(${h(option.range)})</small>` : ''}
+          </div>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function resolvePresetSlot(slot, modbooks) {
+  const mods = [];
+  const missing = [];
+
+  (slot.mods || []).forEach((ref) => {
+    const match = findPresetModbook(modbooks, ref);
+    if (match) mods.push(match);
+    else missing.push(ref);
+  });
+
+  return { mods, missing };
+}
+
+function findPresetModbook(modbooks, ref) {
+  const targetName = normalizePresetName(ref.name);
+  return (modbooks || []).find((item) => (
+    String(item.type || '').trim() === String(ref.type || '').trim()
+    && normalizePresetName(cleanModbookName(item.name)) === targetName
+  )) || null;
+}
+
+function normalizePresetName(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim().toLowerCase();
+}
+
+function parsePresetOption(value) {
+  const raw = String(value || '').trim();
+  const negative = raw.startsWith('*');
+  const clean = raw.replace(/^\*\s*/, '').trim();
+  const match = clean.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+
+  if (!match) {
+    return { raw, negative, label: clean, range: '', value: null, unit: '', bestDisplay: '' };
+  }
+
+  const label = match[1].trim();
+  const range = match[2].replace(/\s*~\s*/g, ' ~ ').trim();
+  const tokens = [...range.matchAll(/-?\d+(?:\.\d+)?\s*%?/g)].map((entry) => entry[0].replace(/\s+/g, ''));
+  const bestToken = tokens.length ? tokens[tokens.length - 1] : '';
+  const unit = bestToken.endsWith('%') ? '%' : '';
+  const numeric = Number(bestToken.replace('%', ''));
+
+  return {
+    raw,
+    negative,
+    label,
+    range,
+    value: Number.isFinite(numeric) ? numeric : null,
+    unit,
+    bestDisplay: bestToken,
+  };
+}
+
+function sumMovement(mods) {
+  return (mods || []).reduce((total, item) => {
+    const options = [item.option1, item.option2, item.option3]
+      .filter(Boolean)
+      .map(parsePresetOption);
+    const movement = options.find((option) => !option.negative && option.label === '이동 속도 증가' && option.value != null);
+    return total + (movement?.value || 0);
+  }, 0);
+}
+
+function summarizePreset(preset, modbooks) {
+  const totals = new Map();
+  const negative = [];
+  let movement = 0;
+
+  MODBOOK_PRESET_SLOT_ORDER.forEach((slotKey) => {
+    const slot = preset.slots?.[slotKey];
+    if (!slot) return;
+
+    resolvePresetSlot(slot, modbooks).mods.forEach((item) => {
+      [item.option1, item.option2, item.option3].filter(Boolean).forEach((value) => {
+        const option = parsePresetOption(value);
+        if (option.value == null) return;
+        if (option.negative) {
+          negative.push(option);
+          return;
+        }
+
+        const key = `${option.label}|${option.unit}`;
+        const current = totals.get(key) || { label: option.label, unit: option.unit, value: 0 };
+        current.value += option.value;
+        totals.set(key, current);
+
+        if (option.label === '이동 속도 증가') movement += option.value;
+      });
+    });
+  });
+
+  return {
+    movement,
+    positive: [...totals.values()].sort((a, b) => {
+      if (a.label === '이동 속도 증가') return -1;
+      if (b.label === '이동 속도 증가') return 1;
+      return b.value - a.value;
+    }),
+    negative,
+  };
+}
+
+function formatCompactNumber(value) {
+  const number = Number(value || 0);
+  if (!Number.isFinite(number)) return '0';
+  return Number.isInteger(number) ? String(number) : number.toFixed(1).replace(/\.0$/, '');
+}
+
+
 function renderSkillRanks(info) {
   const skills = unique(info.skillRanks.map((item) => item.skill));
   const skill = info.filters.skill;
@@ -545,6 +857,14 @@ function bindEvents(root, state, actions) {
   root.querySelectorAll('[data-info-craft-id]').forEach((button) => {
     button.addEventListener('click', () => actions.onSelectCraft?.(button.dataset.infoCraftId));
   });
+  root.querySelectorAll('[data-info-preset-id]').forEach((button) => {
+    button.addEventListener('click', () => actions.onSelectModbookPreset?.(button.dataset.infoPresetId));
+  });
+
+  root.querySelectorAll('[data-info-preset-slot]').forEach((button) => {
+    button.addEventListener('click', () => actions.onSelectModbookPresetSlot?.(button.dataset.infoPresetSlot));
+  });
+
   root.querySelectorAll('[data-info-modbook-id]').forEach((button) => {
     button.addEventListener('click', () => actions.onSelectModbook?.(Number(button.dataset.infoModbookId)));
   });

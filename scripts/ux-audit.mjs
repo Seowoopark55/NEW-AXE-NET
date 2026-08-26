@@ -85,6 +85,15 @@ const tubePerformance = read('src/modules/tube/index.js');
 expect(tubePerformance.includes('const reactionsTask') && tubePerformance.includes('const videos = await fetchTubeVideos();'),
   'AXE TUBE videos are still blocked by member reaction preload.');
 
+const infoPresetView = read('src/modules/info/infoView.js');
+const infoPresetData = read('src/modules/info/modbookPresets.js');
+expect(infoPresetView.includes("tabButton('preset', '추천세팅'") && infoPresetView.includes('renderModbookPresets'),
+  'Curated modbook preset tab/view is missing.');
+expect(infoPresetView.includes('parsePresetOption') && infoPresetView.includes('sumMovement'),
+  'Modbook preset max-option/range presentation logic is missing.');
+expect(infoPresetData.includes("id: 'movement-tier1'") && infoPresetData.includes("name: '잡기 힘든'"),
+  'Movement tier-1 curated preset seed is missing.');
+
 const shellCss = read('src/styles/operations-shell.css');
 expect(shellCss.includes('axe-site-banner-20260824.webp'),
   'Shell banner is not using the optimized WebP asset.');
@@ -104,3 +113,4 @@ console.log('- Missing outlaw step images use a no-request fallback instead of b
 console.log('- Duplicate fund fee-rule submissions are handled client-side without noisy 409s');
 console.log('- Home renders before authentication and independent startup modules initialize in parallel');
 console.log('- Auth restore, fund home data, and AXE TUBE preload paths are optimized for first paint');
+console.log('- Curated modbook presets use live modbook data with in-game-style max-option tooltips');

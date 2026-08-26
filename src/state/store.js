@@ -92,6 +92,8 @@ const initialState = {
     skillRanks: [],
     selectedCraftId: null,
     selectedModbookId: null,
+    selectedModbookPresetId: 'movement-tier1',
+    selectedModbookPresetSlot: 'bottom',
     filters: {
       craftCategory: 'all',
       craftSearch: '',
