@@ -13,7 +13,7 @@ export const MODBOOK_PRESETS = [
     slots: {
       outer: {
         label: '겉옷',
-        image: '/assets/modbook-presets/outer.webp',
+        image: '/assets/modbook-presets/outer.svg',
         mods: [
           { type: '접두', name: '기운찬' },
           { type: '접미', name: '바람의' },
@@ -21,7 +21,7 @@ export const MODBOOK_PRESETS = [
       },
       top: {
         label: '상의',
-        image: '/assets/modbook-presets/top.webp',
+        image: '/assets/modbook-presets/top.svg',
         mods: [
           { type: '접미', name: '전력질주의' },
         ],
@@ -29,7 +29,7 @@ export const MODBOOK_PRESETS = [
       },
       bottom: {
         label: '하의',
-        image: '/assets/modbook-presets/bottom.webp',
+        image: '/assets/modbook-presets/bottom.svg',
         mods: [
           { type: '접두', name: '잡기 힘든' },
           { type: '접미', name: '쾌속의' },
@@ -37,7 +37,7 @@ export const MODBOOK_PRESETS = [
       },
       shoes: {
         label: '신발',
-        image: '/assets/modbook-presets/shoes.webp',
+        image: '/assets/modbook-presets/shoes.svg',
         mods: [
           { type: '접두', name: '기운찬' },
           { type: '접미', name: '레이서의' },

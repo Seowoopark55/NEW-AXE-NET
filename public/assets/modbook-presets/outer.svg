@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 320" fill="none">
+  <defs>
+    <linearGradient id="gBody" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="#8a8f95"/>
+      <stop offset="1" stop-color="#52575d"/>
+    </linearGradient>
+    <linearGradient id="gSleeve" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#757b81"/>
+      <stop offset="1" stop-color="#4a4f56"/>
+    </linearGradient>
+  </defs>
+  <path d="M97 38c12-12 50-12 62 0l18 20 37 20c7 4 10 13 7 20l-14 34c-3 7-11 10-18 7l-28-12v120c0 12-10 22-22 22H117c-12 0-22-10-22-22V147l-28 12c-7 3-15 0-18-7L35 118c-3-7 0-16 7-20l37-20 18-20Z" fill="url(#gBody)" stroke="#c7ccd1" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M97 38c12-12 50-12 62 0l11 13-16 21c-6 8-16 13-26 13s-20-5-26-13L86 51l11-13Z" fill="#b8bec4" fill-opacity="0.9" stroke="#dbe0e4" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M54 94l32-16 9 41-30 12-11-27Z" fill="url(#gSleeve)" opacity="0.95"/>
+  <path d="M202 94l-32-16-9 41 30 12 11-27Z" fill="url(#gSleeve)" opacity="0.95"/>
+  <path d="M92 160h72" stroke="#3e4349" stroke-width="8" stroke-linecap="round" opacity="0.6"/>
+  <path d="M92 188h72" stroke="#3e4349" stroke-width="8" stroke-linecap="round" opacity="0.42"/>
+  <path d="M109 224h38" stroke="#383d43" stroke-width="10" stroke-linecap="round" opacity="0.48"/>
+</svg>
