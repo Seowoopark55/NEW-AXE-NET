@@ -3,10 +3,15 @@ import {
   fetchMemberModbookRequests,
   submitMemberModbookRequest,
   updateMemberModbookPrice,
+  fetchMemberPresetFavorites,
+  toggleMemberPresetFavorite,
+  saveMemberPresetPost,
+  deleteMemberPresetPost,
 } from '../auth/memberAuthService.js';
 import {
   deactivateModbook,
   fetchInfoData,
+  fetchPresetCommunity,
   fetchModbookRequests,
   reviewModbookRequest,
   saveModbook,
@@ -25,13 +30,15 @@ export async function initInfoModule() {
 
     renderInfoView(root, store.getState(), {
       onTabChange(tab) {
+        const nextTab = TABS.has(tab) ? tab : 'craft';
         store.updateState((state) => ({
           ...state,
           info: {
             ...state.info,
-            tab: TABS.has(tab) ? tab : 'craft',
+            tab: nextTab,
           },
         }));
+        if (nextTab === 'preset' && store.getState().auth.member) void loadPresetFavorites();
       },
 
       onFilterChange(key, value) {
@@ -57,14 +64,66 @@ export async function initInfoModule() {
       },
 
       onSelectModbookPreset(id) {
+        const nextId = Number(id);
+        if (!Number.isInteger(nextId) || nextId <= 0) return;
         store.updateState((state) => ({
           ...state,
           info: {
             ...state.info,
-            selectedModbookPresetId: String(id || 'movement-tier1'),
+            selectedModbookPresetId: nextId,
             selectedModbookPresetSlot: 'bottom',
           },
         }));
+      },
+
+      onPresetFilterChange(filter) {
+        const next = filter === 'favorites' ? 'favorites' : 'all';
+        store.updateState((state) => ({
+          ...state,
+          info: { ...state.info, presetFilter: next },
+        }));
+        if (next === 'favorites' && store.getState().auth.member) void loadPresetFavorites();
+      },
+
+      onPresetSearchChange(value) {
+        store.updateState((state) => ({
+          ...state,
+          info: { ...state.info, presetSearch: String(value || '') },
+        }));
+      },
+
+      onOpenPresetEditor(postId = null, clone = false) {
+        const auth = store.getState().auth;
+        if (!auth.member) {
+          window.alert('추천세팅 작성은 멤버 로그인 후 이용할 수 있습니다.');
+          return;
+        }
+        const id = postId == null ? null : Number(postId);
+        store.updateState((state) => ({
+          ...state,
+          info: {
+            ...state.info,
+            presetEditor: {
+              open: true,
+              postId: clone ? null : (Number.isInteger(id) ? id : null),
+              cloneFromId: clone && Number.isInteger(id) ? id : null,
+              saving: false,
+              error: null,
+            },
+          },
+        }));
+      },
+
+      async onSavePresetPost(values) {
+        await savePresetPost(values);
+      },
+
+      async onDeletePresetPost(postId) {
+        await deletePresetPost(postId);
+      },
+
+      async onTogglePresetFavorite(postId) {
+        await togglePresetFavorite(postId);
       },
 
       onSelectModbookPresetSlot(slot) {
@@ -79,6 +138,7 @@ export async function initInfoModule() {
 
       async onRefresh() {
         await reloadInfoData({ preserveSelection: true });
+        if (store.getState().auth.member) await loadPresetFavorites({ silent: true });
         if (store.getState().auth.admin) await loadAdminRequests({ silent: true });
       },
 
@@ -246,6 +306,7 @@ export async function initInfoModule() {
   rerender();
   store.subscribe(rerender);
   await reloadInfoData({ preserveSelection: true });
+  if (store.getState().auth.member) await loadPresetFavorites({ silent: true });
   if (store.getState().auth.admin) await loadAdminRequests({ silent: true });
 }
 
@@ -267,6 +328,10 @@ async function reloadInfoData(options = {}) {
         error: null,
         selectedCraftId: options.preserveSelection ? state.info.selectedCraftId : null,
         selectedModbookId: options.preserveSelection ? state.info.selectedModbookId : null,
+        selectedModbookPresetId: resolvePresetSelection(
+          data.presetPosts,
+          options.preserveSelection ? state.info.selectedModbookPresetId : null,
+        ),
       },
     }));
   } catch (error) {
@@ -276,6 +341,182 @@ async function reloadInfoData(options = {}) {
       info: { ...state.info, initialized: true, loading: false, error: formatInfoError(error) },
     }));
   }
+}
+
+
+function resolvePresetSelection(posts, currentId) {
+  const list = Array.isArray(posts) ? posts : [];
+  const current = Number(currentId);
+  if (Number.isInteger(current) && list.some((post) => Number(post.id) === current)) return current;
+  return list.length ? Number(list[0].id) : null;
+}
+
+async function refreshPresetCommunity(options = {}) {
+  try {
+    const data = await fetchPresetCommunity();
+    store.updateState((state) => ({
+      ...state,
+      info: {
+        ...state.info,
+        presetCommunityReady: data.ready,
+        presetPosts: data.posts,
+        selectedModbookPresetId: resolvePresetSelection(
+          data.posts,
+          options.selectId ?? state.info.selectedModbookPresetId,
+        ),
+      },
+    }));
+  } catch (error) {
+    console.error('[AXE NET] preset community refresh failed:', error);
+    throw error;
+  }
+}
+
+async function loadPresetFavorites(options = {}) {
+  const member = store.getState().auth.member;
+  if (!member) {
+    store.updateState((state) => ({
+      ...state,
+      info: { ...state.info, presetFavorites: [], presetFavoritesMemberKey: null },
+    }));
+    return;
+  }
+  try {
+    const ids = await fetchMemberPresetFavorites();
+    store.updateState((state) => ({
+      ...state,
+      info: {
+        ...state.info,
+        presetFavorites: ids,
+        presetFavoritesMemberKey: member.member_key,
+      },
+    }));
+  } catch (error) {
+    if (!options.silent) window.alert(formatInfoError(error));
+  }
+}
+
+async function togglePresetFavorite(postId) {
+  if (!store.getState().auth.member) {
+    window.alert('내 프리셋 저장은 멤버 로그인 후 이용할 수 있습니다.');
+    return;
+  }
+  const id = Number(postId);
+  if (!Number.isInteger(id) || id <= 0) return;
+  try {
+    const result = await toggleMemberPresetFavorite(id);
+    store.updateState((state) => {
+      const favorites = new Set((state.info.presetFavorites || []).map(Number));
+      if (result.favorite) favorites.add(id);
+      else favorites.delete(id);
+      return {
+        ...state,
+        info: {
+          ...state.info,
+          presetFavorites: [...favorites],
+          presetPosts: state.info.presetPosts.map((post) => (
+            Number(post.id) === id ? { ...post, favorite_count: result.favorite_count } : post
+          )),
+        },
+      };
+    });
+  } catch (error) {
+    window.alert(formatInfoError(error));
+  }
+}
+
+function parsePresetTags(value) {
+  return [...new Set(String(value || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean))]
+    .slice(0, 8);
+}
+
+function buildPresetSlots(values) {
+  return ['outer', 'top', 'bottom', 'shoes'].map((slotKey) => ({
+    slot_key: slotKey,
+    prefix_modbook_id: values[`${slotKey}_prefix_id`] || null,
+    suffix_modbook_id: values[`${slotKey}_suffix_id`] || null,
+    note: values[`${slotKey}_note`] || '',
+  }));
+}
+
+async function savePresetPost(values) {
+  const member = store.getState().auth.member;
+  if (!member) return;
+  const title = String(values.title || '').trim();
+  const description = String(values.description || '').trim();
+  if (!title) {
+    setPresetEditorError('제목을 입력하세요.');
+    return;
+  }
+  const slots = buildPresetSlots(values);
+  if (!slots.some((slot) => slot.prefix_modbook_id || slot.suffix_modbook_id)) {
+    setPresetEditorError('개조서를 하나 이상 선택하세요.');
+    return;
+  }
+
+  const editor = store.getState().info.presetEditor;
+  setPresetEditorSaving(true);
+  try {
+    const postId = await saveMemberPresetPost({
+      id: editor.postId,
+      title,
+      description,
+      tags: parsePresetTags(values.tags),
+      slots,
+    });
+    await refreshPresetCommunity({ selectId: postId });
+    await loadPresetFavorites({ silent: true });
+    store.updateState((state) => ({
+      ...state,
+      info: {
+        ...state.info,
+        selectedModbookPresetId: postId,
+        presetFilter: 'all',
+        presetEditor: { open: false, postId: null, cloneFromId: null, saving: false, error: null },
+      },
+    }));
+  } catch (error) {
+    setPresetEditorError(formatInfoError(error));
+  } finally {
+    setPresetEditorSaving(false);
+  }
+}
+
+async function deletePresetPost(postId) {
+  if (!store.getState().auth.member) return;
+  const id = Number(postId);
+  if (!Number.isInteger(id) || id <= 0) return;
+  if (!window.confirm('이 추천세팅 게시글을 삭제할까요?')) return;
+  try {
+    await deleteMemberPresetPost(id);
+    await refreshPresetCommunity();
+    await loadPresetFavorites({ silent: true });
+  } catch (error) {
+    window.alert(formatInfoError(error));
+  }
+}
+
+function setPresetEditorSaving(saving) {
+  store.updateState((state) => ({
+    ...state,
+    info: {
+      ...state.info,
+      presetEditor: { ...state.info.presetEditor, saving },
+    },
+  }));
+}
+
+function setPresetEditorError(error) {
+  store.updateState((state) => ({
+    ...state,
+    info: {
+      ...state.info,
+      presetEditor: { ...state.info.presetEditor, saving: false, error },
+    },
+  }));
 }
 
 async function loadMyRequests() {
@@ -382,6 +623,15 @@ function closeModal(kind) {
     if (kind === 'price') {
       return { ...state, info: { ...info, admin: { ...info.admin, priceOpen: false, priceId: null, error: null } } };
     }
+    if (kind === 'presetEditor') {
+      return {
+        ...state,
+        info: {
+          ...info,
+          presetEditor: { open: false, postId: null, cloneFromId: null, saving: false, error: null },
+        },
+      };
+    }
     return state;
   });
 }
@@ -413,7 +663,8 @@ function validateModbook(values, options = {}) {
 
 function formatInfoError(error) {
   const message = error?.message ?? String(error);
-  if (message.includes('relation') && message.includes('does not exist')) return '정보 데이터베이스가 아직 준비되지 않았습니다. 023_info_module.sql을 먼저 적용하세요.';
+  if (message.includes('info_preset_posts') || message.includes('save_info_preset_post')) return '추천세팅 게시판 DB가 아직 준비되지 않았습니다. 047_modbook_preset_community.sql을 적용하세요.';
+  if (message.includes('relation') && message.includes('does not exist')) return '정보 데이터베이스가 아직 준비되지 않았습니다. 관련 Supabase SQL을 먼저 적용하세요.';
   if (message.includes('JWT') || message.includes('관리자 권한')) return '관리자 권한이 필요합니다.';
   return message;
 }

@@ -1,7 +1,7 @@
 import { api } from '../../api/api.js';
 
 export async function fetchInfoData() {
-  const [crafts, materials, materialRecipes, quests, processes, modbooks, skillRanks] = await Promise.all([
+  const [crafts, materials, materialRecipes, quests, processes, modbooks, skillRanks, presetCommunity] = await Promise.all([
     api.select('info_crafts_app', { orderBy: 'sort_order', ascending: true, limit: 500 }),
     api.select('info_craft_materials_app', { orderBy: 'id', ascending: true, limit: 1000 }),
     api.select('info_material_recipes_app', { orderBy: 'sort_order', ascending: true, limit: 500 }),
@@ -9,9 +9,60 @@ export async function fetchInfoData() {
     api.select('info_processes_app', { orderBy: 'sort_order', ascending: true, limit: 500 }),
     api.select('info_modbooks_app', { orderBy: 'id', ascending: true, limit: 1000 }),
     api.select('info_skill_ranks_app', { orderBy: 'sort_order', ascending: true, limit: 1000 }),
+    fetchPresetCommunity(),
   ]);
 
-  return { crafts, materials, materialRecipes, quests, processes, modbooks, skillRanks };
+  return {
+    crafts,
+    materials,
+    materialRecipes,
+    quests,
+    processes,
+    modbooks,
+    skillRanks,
+    presetCommunityReady: presetCommunity.ready,
+    presetPosts: presetCommunity.posts,
+  };
+}
+
+export async function fetchPresetCommunity() {
+  try {
+    const [posts, slots] = await Promise.all([
+      api.select('info_preset_posts', {
+        columns: 'id,system_key,author_member_key,author_nickname,title,description,tags,favorite_count,created_at,updated_at',
+        orderBy: 'updated_at',
+        ascending: false,
+        limit: 300,
+      }),
+      api.select('info_preset_post_slots', {
+        columns: 'id,post_id,slot_key,prefix_modbook_id,suffix_modbook_id,note,created_at,updated_at',
+        orderBy: 'id',
+        ascending: true,
+        limit: 1200,
+      }),
+    ]);
+
+    const slotsByPost = new Map();
+    (slots || []).forEach((slot) => {
+      const key = Number(slot.post_id);
+      if (!slotsByPost.has(key)) slotsByPost.set(key, []);
+      slotsByPost.get(key).push(slot);
+    });
+
+    return {
+      ready: true,
+      posts: (posts || []).map((post) => ({
+        ...post,
+        slots: slotsByPost.get(Number(post.id)) || [],
+      })),
+    };
+  } catch (error) {
+    const message = String(error?.message || error || '');
+    if (error?.code === '42P01' || message.includes('info_preset_posts') || message.includes('info_preset_post_slots')) {
+      return { ready: false, posts: [] };
+    }
+    throw error;
+  }
 }
 
 export async function fetchModbookRequests() {

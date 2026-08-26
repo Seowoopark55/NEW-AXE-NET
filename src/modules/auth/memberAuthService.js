@@ -184,3 +184,35 @@ export async function deleteMemberTubeComment(commentId) {
   });
   return data.comment_id || null;
 }
+
+export async function fetchMemberPresetFavorites() {
+  const data = await postJson('/api/member-session', { action: 'info_preset_favorites' });
+  return Array.isArray(data.post_ids) ? data.post_ids.map((value) => Number(value)).filter(Number.isFinite) : [];
+}
+
+export async function toggleMemberPresetFavorite(postId) {
+  const data = await postJson('/api/member-session', {
+    action: 'info_preset_favorite_toggle',
+    post_id: Number(postId),
+  });
+  return {
+    favorite: Boolean(data.favorite),
+    favorite_count: Number(data.favorite_count || 0),
+  };
+}
+
+export async function saveMemberPresetPost(values) {
+  const data = await postJson('/api/member-session', {
+    action: 'info_preset_post_save',
+    ...values,
+  });
+  return Number(data.post_id);
+}
+
+export async function deleteMemberPresetPost(postId) {
+  const data = await postJson('/api/member-session', {
+    action: 'info_preset_post_delete',
+    post_id: Number(postId),
+  });
+  return Boolean(data.deleted);
+}

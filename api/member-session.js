@@ -19,7 +19,7 @@ const ALLOWED_PAYMENT_MODES = new Set(['공용계좌', '회사잔고', '분할�
 const SHORTCUT_TARGET_KEYS = new Set([
   'home',
   'notice.general', 'notice.patch', 'notice.operations',
-  'info.craft', 'info.quest', 'info.process', 'info.modbook', 'info.skill',
+  'info.craft', 'info.quest', 'info.process', 'info.modbook', 'info.preset', 'info.skill',
   'outlaw.stats', 'outlaw.guide', 'outlaw.map', 'tube',
   'fund.overview', 'fund.payment', 'fund.submissions',
   'fund.review', 'fund.history', 'fund.balance', 'fund.feeRules', 'fund.exemptions', 'fund.integrity', 'fund.fundMembers',
@@ -746,6 +746,152 @@ export default async function handler(req, res) {
       }
 
       return sendJson(res, 200, { ok: true, request_id: data.id });
+    }
+
+
+    if (action === 'info_preset_favorites') {
+      const { data, error } = await context.client
+        .from('member_preset_favorites')
+        .select('post_id')
+        .eq('member_key', context.member.member_key)
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      return sendJson(res, 200, {
+        ok: true,
+        post_ids: (data || []).map((row) => Number(row.post_id)).filter(Number.isFinite),
+      });
+    }
+
+    if (action === 'info_preset_favorite_toggle') {
+      const postId = Number(body.post_id);
+      if (!Number.isInteger(postId) || postId <= 0) {
+        return sendJson(res, 400, { ok: false, message: '추천세팅 게시글 정보가 올바르지 않습니다.' });
+      }
+
+      const { data: post, error: postError } = await context.client
+        .from('info_preset_posts')
+        .select('id,active,favorite_count')
+        .eq('id', postId)
+        .maybeSingle();
+      if (postError) throw postError;
+      if (!post || !post.active) {
+        return sendJson(res, 404, { ok: false, message: '추천세팅 게시글을 찾을 수 없습니다.' });
+      }
+
+      const { data: existing, error: existingError } = await context.client
+        .from('member_preset_favorites')
+        .select('post_id')
+        .eq('member_key', context.member.member_key)
+        .eq('post_id', postId)
+        .maybeSingle();
+      if (existingError) throw existingError;
+
+      let favorite = false;
+      if (existing) {
+        const { error } = await context.client
+          .from('member_preset_favorites')
+          .delete()
+          .eq('member_key', context.member.member_key)
+          .eq('post_id', postId);
+        if (error) throw error;
+      } else {
+        const { error } = await context.client
+          .from('member_preset_favorites')
+          .insert({ member_key: context.member.member_key, post_id: postId });
+        if (error) throw error;
+        favorite = true;
+      }
+
+      const { data: refreshed, error: refreshedError } = await context.client
+        .from('info_preset_posts')
+        .select('favorite_count')
+        .eq('id', postId)
+        .maybeSingle();
+      if (refreshedError) throw refreshedError;
+
+      return sendJson(res, 200, {
+        ok: true,
+        favorite,
+        favorite_count: Number(refreshed?.favorite_count || 0),
+      });
+    }
+
+    if (action === 'info_preset_post_save') {
+      const postId = body.id == null || body.id === '' ? null : Number(body.id);
+      const title = String(body.title || '').trim();
+      const description = String(body.description || '').replace(/\r\n/g, '\n').trim();
+      const rawTags = Array.isArray(body.tags)
+        ? body.tags
+        : String(body.tags || '').split(',');
+      const tags = [...new Set(rawTags
+        .map((value) => String(value || '').trim())
+        .filter(Boolean)
+        .map((value) => value.slice(0, 24)))]
+        .slice(0, 8);
+      const slots = Array.isArray(body.slots) ? body.slots : [];
+
+      if (postId !== null && (!Number.isInteger(postId) || postId <= 0)) {
+        return sendJson(res, 400, { ok: false, message: '수정할 게시글 정보가 올바르지 않습니다.' });
+      }
+      if (!title || title.length > 100) {
+        return sendJson(res, 400, { ok: false, message: '제목은 1~100자로 입력하세요.' });
+      }
+      if (description.length > 4000) {
+        return sendJson(res, 400, { ok: false, message: '설명은 4000자 이하로 입력하세요.' });
+      }
+      if (!slots.length || slots.length > 4) {
+        return sendJson(res, 400, { ok: false, message: '장비 부위 설정을 확인하세요.' });
+      }
+
+      const normalizedSlots = slots.map((slot) => ({
+        slot_key: String(slot?.slot_key || '').trim(),
+        prefix_modbook_id: slot?.prefix_modbook_id == null || slot?.prefix_modbook_id === ''
+          ? null
+          : Number(slot.prefix_modbook_id),
+        suffix_modbook_id: slot?.suffix_modbook_id == null || slot?.suffix_modbook_id === ''
+          ? null
+          : Number(slot.suffix_modbook_id),
+        note: String(slot?.note || '').trim().slice(0, 500),
+      }));
+
+      const hasInvalidId = normalizedSlots.some((slot) => (
+        (slot.prefix_modbook_id !== null && (!Number.isInteger(slot.prefix_modbook_id) || slot.prefix_modbook_id <= 0))
+        || (slot.suffix_modbook_id !== null && (!Number.isInteger(slot.suffix_modbook_id) || slot.suffix_modbook_id <= 0))
+      ));
+      if (hasInvalidId) {
+        return sendJson(res, 400, { ok: false, message: '선택한 개조서 정보가 올바르지 않습니다.' });
+      }
+
+      const allowOverride = String(context.member.role || '').toLowerCase() === 'admin';
+      const { data, error } = await context.client.rpc('save_info_preset_post', {
+        p_id: postId,
+        p_member_key: context.member.member_key,
+        p_nickname: context.member.nickname,
+        p_title: title,
+        p_description: description,
+        p_tags: tags,
+        p_slots: normalizedSlots,
+        p_allow_override: allowOverride,
+      });
+      if (error) throw error;
+
+      return sendJson(res, 200, { ok: true, post_id: Number(data) });
+    }
+
+    if (action === 'info_preset_post_delete') {
+      const postId = Number(body.post_id);
+      if (!Number.isInteger(postId) || postId <= 0) {
+        return sendJson(res, 400, { ok: false, message: '삭제할 게시글 정보가 올바르지 않습니다.' });
+      }
+      const allowOverride = String(context.member.role || '').toLowerCase() === 'admin';
+      const { data, error } = await context.client.rpc('delete_info_preset_post', {
+        p_id: postId,
+        p_member_key: context.member.member_key,
+        p_allow_override: allowOverride,
+      });
+      if (error) throw error;
+      return sendJson(res, 200, { ok: true, deleted: Boolean(data) });
     }
 
     if (action === 'fund_submit') {
