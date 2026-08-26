@@ -412,7 +412,16 @@ function renderModbookPresets(info, auth) {
       </div>
 
       <div class="ops-info-preset-board-list" role="list">
-        ${posts.length ? posts.map((post) => renderPresetPostRow(post, null, favorites)).join('') : renderPresetPostEmpty(info, auth)}
+        ${posts.length ? `
+          <div class="ops-info-preset-board-list__head" aria-hidden="true">
+            <span>세팅</span>
+            <span>태그</span>
+            <span>작성자</span>
+            <span>저장</span>
+            <span>수정일</span>
+          </div>
+          ${posts.map((post) => renderPresetPostRow(post, null, favorites)).join('')}
+        ` : renderPresetPostEmpty(info, auth)}
       </div>
     </section>
   `;
@@ -448,17 +457,17 @@ function renderPresetPostRow(post, selected, favorites) {
   const tags = Array.isArray(post.tags) ? post.tags.slice(0, 3) : [];
   return `
     <button class="ops-info-preset-post-row ${active ? 'is-active' : ''}" type="button" data-info-preset-id="${Number(post.id)}">
-      <div class="ops-info-preset-post-row__top">
-        <strong>${h(post.title)}</strong>
-        ${favorite ? '<span class="is-favorite">★</span>' : ''}
+      <div class="ops-info-preset-post-row__main">
+        <div class="ops-info-preset-post-row__top">
+          <strong>${h(post.title)}</strong>
+          ${favorite ? '<span class="is-favorite" title="내 프리셋에 저장됨">★</span>' : ''}
+        </div>
+        <p>${h(post.description || '설명 없음')}</p>
       </div>
-      <p>${h(post.description || '설명 없음')}</p>
-      <div class="ops-info-preset-post-row__tags">${tags.map((tag) => `<span>#${h(tag)}</span>`).join('')}</div>
-      <footer>
-        <span>${h(post.author_nickname || 'AXE')}</span>
-        <span>★ ${Number(post.favorite_count || 0)}</span>
-        <time>${h(formatPresetDate(post.updated_at || post.created_at))}</time>
-      </footer>
+      <div class="ops-info-preset-post-row__tags">${tags.length ? tags.map((tag) => `<span>#${h(tag)}</span>`).join('') : '<span class="is-empty">—</span>'}</div>
+      <span class="ops-info-preset-post-row__author">${h(post.author_nickname || 'AXE')}</span>
+      <span class="ops-info-preset-post-row__favorite">★ ${Number(post.favorite_count || 0)}</span>
+      <time>${h(formatPresetDate(post.updated_at || post.created_at))}</time>
     </button>
   `;
 }
