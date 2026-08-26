@@ -353,8 +353,23 @@ function renderModbookPresets(info, auth) {
   }
 
   const favorites = new Set((info.presetFavorites || []).map(Number));
+  const allPosts = (info.presetPosts || []).map(presetPostViewModel);
+  const selected = allPosts.find((post) => Number(post.id) === Number(info.selectedModbookPresetId)) || null;
+
+  if (selected) {
+    return `
+      <section class="ops-info-workspace ops-info-workspace--preset ops-info-workspace--preset-detail">
+        <div class="ops-info-preset-detail-nav">
+          <button class="ops-info-btn" type="button" data-info-preset-back>← 추천세팅 목록</button>
+          <button class="ops-info-btn ops-info-btn--gold" type="button" data-info-preset-new ${auth.member ? '' : 'title="멤버 로그인 필요"'}>+ 세팅 작성</button>
+        </div>
+        ${renderPresetPostDetail(selected, info, auth, favorites)}
+      </section>
+    `;
+  }
+
   const keyword = normalized(info.presetSearch);
-  let posts = (info.presetPosts || []).map(presetPostViewModel);
+  let posts = allPosts;
 
   if (info.presetFilter === 'favorites') {
     posts = posts.filter((post) => favorites.has(Number(post.id)));
@@ -373,17 +388,13 @@ function renderModbookPresets(info, auth) {
     ], keyword));
   }
 
-  const selected = posts.find((post) => Number(post.id) === Number(info.selectedModbookPresetId))
-    || posts[0]
-    || null;
-
   return `
     <section class="ops-info-workspace ops-info-workspace--preset">
       <div class="ops-info-preset-head ops-info-preset-head--community">
         <div>
           <span class="ops-info-kicker">AXE MODBOOK BUILDS</span>
           <h2>추천세팅</h2>
-          <p>팀원들이 직접 써본 개조서 조합을 게시글로 공유합니다. 장비에 마우스를 올리면 <strong>최대 옵션 기준</strong>으로 확인할 수 있습니다.</p>
+          <p>팀원들이 직접 써본 개조서 조합을 게시글로 공유합니다. 원하는 글을 선택하면 해당 세팅만 집중해서 볼 수 있습니다.</p>
         </div>
         <button class="ops-info-btn ops-info-btn--gold" type="button" data-info-preset-new ${auth.member ? '' : 'title="멤버 로그인 필요"'}>+ 세팅 작성</button>
       </div>
@@ -400,13 +411,8 @@ function renderModbookPresets(info, auth) {
         <span class="ops-info-result">${posts.length}건</span>
       </div>
 
-      <div class="ops-info-preset-community-layout">
-        <div class="ops-info-preset-post-list" role="list">
-          ${posts.length ? posts.map((post) => renderPresetPostRow(post, selected, favorites)).join('') : renderPresetPostEmpty(info, auth)}
-        </div>
-        <div class="ops-info-preset-post-detail">
-          ${selected ? renderPresetPostDetail(selected, info, auth, favorites) : empty('추천세팅 게시글을 선택하세요.')}
-        </div>
+      <div class="ops-info-preset-board-list" role="list">
+        ${posts.length ? posts.map((post) => renderPresetPostRow(post, null, favorites)).join('') : renderPresetPostEmpty(info, auth)}
       </div>
     </section>
   `;
@@ -495,49 +501,52 @@ function renderPresetPostDetail(post, info, auth, favorites) {
       ${tags.length ? `<div class="ops-info-preset-article__tags">${tags.map((tag) => `<span>#${h(tag)}</span>`).join('')}</div>` : ''}
       <div class="ops-info-preset-article__description">${formatPresetDescription(post.description)}</div>
 
-      <div class="ops-info-preset-inventory ops-info-preset-inventory--article">
-        <div class="ops-info-preset-inventory__bar">
-          <strong>인벤토리</strong>
-          <span>장비 <b>1</b></span>
-          <em>AXE BUILD</em>
-        </div>
-        <div class="ops-info-preset-board">
-          ${renderPresetGhostSlots()}
-          ${MODBOOK_PRESET_SLOT_ORDER.map((slotKey) => renderPresetSlot(
-            post,
-            slotKey,
-            post.slots[slotKey],
-            info.modbooks,
-            info.selectedModbookPresetSlot,
-          )).join('')}
-        </div>
-        <div class="ops-info-preset-mobile-detail">
-          ${post.slots[info.selectedModbookPresetSlot]
-            ? renderPresetTooltip(post, info.selectedModbookPresetSlot, post.slots[info.selectedModbookPresetSlot], info.modbooks, { mobile: true })
-            : ''}
-        </div>
-      </div>
-
-      <section class="ops-info-preset-aggregate">
-        <div class="ops-info-preset-aggregate__head">
-          <div><span class="ops-info-kicker">MAX ROLL SUMMARY</span><h3>전체 옵션 요약</h3></div>
-          <small>각 개조서의 최대 수치를 합산</small>
-        </div>
-        <div class="ops-info-preset-summary__stats">
-          ${summary.positive.length ? summary.positive.slice(0, 10).map((item) => `
-            <div class="${item.label === '이동 속도 증가' ? 'is-primary' : ''}">
-              <span>${h(item.label)}</span>
-              <strong>+${item.unit === '%' ? `${formatCompactNumber(item.value)}%` : formatCompactNumber(item.value)}</strong>
-            </div>
-          `).join('') : '<div class="ops-info-preset-aggregate__empty">합산 가능한 옵션이 없습니다.</div>'}
-        </div>
-        ${summary.negative.length ? `
-          <div class="ops-info-preset-warning">
-            <strong>주의 옵션</strong>
-            ${summary.negative.map((item) => `<span>${h(item.label)} ${h(item.range)}</span>`).join('')}
+      <div class="ops-info-preset-article__build-layout">
+        <div class="ops-info-preset-inventory ops-info-preset-inventory--article">
+          <div class="ops-info-preset-inventory__bar">
+            <strong>인벤토리</strong>
+            <span>장비 <b>1</b></span>
+            <em>AXE BUILD</em>
           </div>
-        ` : ''}
-      </section>
+          <div class="ops-info-preset-board">
+            ${renderPresetGhostSlots()}
+            ${MODBOOK_PRESET_SLOT_ORDER.map((slotKey) => renderPresetSlot(
+              post,
+              slotKey,
+              post.slots[slotKey],
+              info.modbooks,
+              info.selectedModbookPresetSlot,
+            )).join('')}
+          </div>
+          <div class="ops-info-preset-mobile-detail">
+            ${post.slots[info.selectedModbookPresetSlot]
+              ? renderPresetTooltip(post, info.selectedModbookPresetSlot, post.slots[info.selectedModbookPresetSlot], info.modbooks, { mobile: true })
+              : ''}
+          </div>
+        </div>
+
+        <section class="ops-info-preset-aggregate ops-info-preset-aggregate--side">
+          <div class="ops-info-preset-aggregate__head">
+            <div><span class="ops-info-kicker">MAX ROLL SUMMARY</span><h3>전체 옵션 요약</h3></div>
+            <small>최대값 합산</small>
+          </div>
+          <div class="ops-info-preset-summary__stats">
+            ${summary.positive.length ? summary.positive.slice(0, 10).map((item) => `
+              <div class="${item.label === '이동 속도 증가' ? 'is-primary' : ''}">
+                <span>${h(item.label)}</span>
+                <strong>+${item.unit === '%' ? `${formatCompactNumber(item.value)}%` : formatCompactNumber(item.value)}</strong>
+              </div>
+            `).join('') : '<div class="ops-info-preset-aggregate__empty">합산 가능한 옵션이 없습니다.</div>'}
+          </div>
+          ${summary.negative.length ? `
+            <div class="ops-info-preset-warning">
+              <strong>주의 옵션</strong>
+              ${summary.negative.map((item) => `<span>${h(item.label)} ${h(item.range)}</span>`).join('')}
+            </div>
+          ` : ''}
+          <p class="ops-info-preset-aggregate__hint">장비 부위에 마우스를 올리면 해당 부위의 접두·접미 옵션을 자세히 볼 수 있습니다.</p>
+        </section>
+      </div>
 
       ${renderPresetSlotNotes(post)}
     </article>
@@ -1047,36 +1056,84 @@ function renderPresetEditorSlot(slotKey, slot, modbooks) {
   const label = presetSlotLabel(slotKey);
   const prefix = compatiblePresetModbooks(modbooks, label, '접두');
   const suffix = compatiblePresetModbooks(modbooks, label, '접미');
+  const categories = unique([...prefix, ...suffix].map((item) => item.category));
   return `
-    <section class="ops-info-preset-editor-slot">
+    <section class="ops-info-preset-editor-slot" data-info-preset-editor-slot="${a(slotKey)}">
       <header>
         <div class="ops-info-preset-editor-slot__image"><img src="${a(slot?.image || '')}" alt="" /></div>
-        <div><span>장비 부위</span><strong>${h(label)}</strong></div>
+        <div><span>장비 부위</span><strong>${h(label)}</strong><small>사용 가능 ${prefix.length + suffix.length}개</small></div>
       </header>
-      ${presetEditorSelect(`${slotKey}_prefix_id`, '접두', prefix, slot?.prefixModbookId)}
-      ${presetEditorSelect(`${slotKey}_suffix_id`, '접미', suffix, slot?.suffixModbookId)}
+
+      <div class="ops-info-preset-editor-filter" data-info-preset-mod-filter="${a(slotKey)}">
+        <label>
+          <span>분류</span>
+          <select data-info-preset-mod-category>
+            <option value="all">전체 분류</option>
+            ${categories.map((category) => `<option value="${a(category)}">${h(category)}</option>`).join('')}
+          </select>
+        </label>
+        <label>
+          <span>검색</span>
+          <input type="search" placeholder="개조서명 / 옵션 검색" data-info-preset-mod-search />
+        </label>
+      </div>
+
+      ${presetEditorSelect(`${slotKey}_prefix_id`, '접두', prefix, slot?.prefixModbookId, slotKey)}
+      ${presetEditorSelect(`${slotKey}_suffix_id`, '접미', suffix, slot?.suffixModbookId, slotKey)}
       <label class="ops-info-preset-editor-note"><span>부위 설명</span><textarea name="${a(slotKey)}_note" rows="2" maxlength="500" placeholder="이 부위 조합을 선택한 이유">${h(slot?.note || '')}</textarea></label>
     </section>
   `;
 }
 
-function compatiblePresetModbooks(modbooks, part, type) {
-  return (modbooks || [])
-    .filter((item) => String(item.type || '').trim() === type && splitParts(item.parts).includes(part))
-    .sort((a, b) => cleanModbookName(a.name).localeCompare(cleanModbookName(b.name), 'ko'));
+function presetPartCompatible(partsValue, part) {
+  const groups = String(partsValue || '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  if (part === '겉옷') {
+    return groups.some((group) => group === '겉옷' || group.split('/').map((value) => value.trim()).includes('겉옷'));
+  }
+  return groups.includes(part);
 }
 
-function presetEditorSelect(name, type, items, selectedId) {
+function compatiblePresetModbooks(modbooks, part, type) {
+  return (modbooks || [])
+    .filter((item) => String(item.type || '').trim() === type && presetPartCompatible(item.parts, part))
+    .sort((a, b) => {
+      const categoryCompare = String(a.category || '').localeCompare(String(b.category || ''), 'ko');
+      if (categoryCompare) return categoryCompare;
+      return cleanModbookName(a.name).localeCompare(cleanModbookName(b.name), 'ko');
+    });
+}
+
+function presetEditorSelect(name, type, items, selectedId, slotKey) {
   return `
     <label class="ops-info-preset-editor-select">
-      <span>${h(type)}</span>
-      <select name="${a(name)}">
+      <span>${h(type)} <small data-info-preset-mod-count="${a(type)}">${items.length}개</small></span>
+      <select name="${a(name)}" data-info-preset-mod-select data-info-preset-mod-type="${a(type)}" data-info-preset-mod-slot="${a(slotKey)}">
         <option value="">선택 안 함</option>
-        ${items.map((item) => `
-          <option value="${Number(item.id)}" ${Number(item.id) === Number(selectedId) ? 'selected' : ''} title="${a(presetModbookOptionSummary(item))}">
-            ${h(cleanModbookName(item.name))}${presetModbookOptionSummary(item) ? ` · ${h(presetModbookOptionSummary(item))}` : ''}
-          </option>
-        `).join('')}
+        ${items.map((item) => {
+          const summary = presetModbookOptionSummary(item);
+          const searchText = [cleanModbookName(item.name), item.category, item.option1, item.option2, item.option3]
+            .filter(Boolean)
+            .join(' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .toLowerCase();
+          return `
+            <option
+              value="${Number(item.id)}"
+              data-mod-id="${Number(item.id)}"
+              data-mod-category="${a(item.category || '')}"
+              data-mod-search="${a(searchText)}"
+              ${Number(item.id) === Number(selectedId) ? 'selected' : ''}
+              title="${a(summary)}"
+            >
+              [${h(item.category || '기타')}] ${h(cleanModbookName(item.name))}${summary ? ` · ${h(summary)}` : ''}
+            </option>
+          `;
+        }).join('')}
       </select>
     </label>
   `;
@@ -1115,6 +1172,7 @@ function bindEvents(root, state, actions) {
   root.querySelectorAll('[data-info-preset-id]').forEach((button) => {
     button.addEventListener('click', () => actions.onSelectModbookPreset?.(button.dataset.infoPresetId));
   });
+  root.querySelector('[data-info-preset-back]')?.addEventListener('click', () => actions.onBackPresetList?.());
 
   root.querySelectorAll('[data-info-preset-filter]').forEach((button) => {
     button.addEventListener('click', () => actions.onPresetFilterChange?.(button.dataset.infoPresetFilter));
@@ -1178,6 +1236,38 @@ function bindEvents(root, state, actions) {
     event.preventDefault();
     actions.onSavePrice?.(formObject(event.currentTarget));
   });
+  root.querySelectorAll('[data-info-preset-mod-filter]').forEach((filterRoot) => {
+    const slotRoot = filterRoot.closest('[data-info-preset-editor-slot]');
+    const category = filterRoot.querySelector('[data-info-preset-mod-category]');
+    const search = filterRoot.querySelector('[data-info-preset-mod-search]');
+    if (!slotRoot || !category || !search) return;
+
+    const applyPresetModFilter = () => {
+      const categoryValue = String(category.value || 'all');
+      const query = String(search.value || '').trim().toLowerCase().replace(/\s+/g, ' ');
+
+      slotRoot.querySelectorAll('[data-info-preset-mod-select]').forEach((select) => {
+        let visible = 0;
+        select.querySelectorAll('option[data-mod-id]').forEach((option) => {
+          const categoryMatch = categoryValue === 'all' || option.dataset.modCategory === categoryValue;
+          const searchMatch = !query || String(option.dataset.modSearch || '').includes(query);
+          const keepSelected = option.selected;
+          const show = (categoryMatch && searchMatch) || keepSelected;
+          option.hidden = !show;
+          option.disabled = !show;
+          if (show) visible += 1;
+        });
+        const type = select.dataset.infoPresetModType;
+        const count = slotRoot.querySelector(`[data-info-preset-mod-count="${type}"]`);
+        if (count) count.textContent = `${visible}개`;
+      });
+    };
+
+    category.addEventListener('change', applyPresetModFilter);
+    search.addEventListener('input', applyPresetModFilter);
+    applyPresetModFilter();
+  });
+
   root.querySelector('[data-info-preset-editor-form]')?.addEventListener('submit', (event) => {
     event.preventDefault();
     actions.onSavePresetPost?.(formObject(event.currentTarget));

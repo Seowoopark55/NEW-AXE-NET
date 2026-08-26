@@ -1,4 +1,23 @@
-# AXE NET PRO v1.47.0
+# AXE NET PRO v1.47.1
+
+## v1.47.1 · 추천세팅 게시글 상세 / 개조서 선택 필터
+- 추천세팅 목록과 게시글 상세를 분리했습니다. 목록에서 글을 누르면 해당 게시글만 열리고 `← 추천세팅 목록`으로 돌아갑니다.
+- 게시글 상세에서는 인벤토리 장비창 왼쪽, 전체 옵션 요약을 오른쪽에 다시 배치해 한눈에 볼 수 있게 했습니다.
+- 추천세팅 작성기의 각 부위에 `분류` + `개조서명/옵션 검색` 필터를 추가했습니다. 접두/접미 선택 목록은 필터 결과만 표시됩니다.
+- 기존 데이터의 `겉옷/단독상의`를 겉옷 슬롯으로 정상 인식하도록 웹/저장 검증을 함께 보정했습니다.
+- Supabase에서 `supabase/048_modbook_preset_outer_compat.sql`을 1회 실행해야 겉옷 저장 검증까지 정상화됩니다.
+
+## 적용 순서
+1. **047을 아직 실행하지 않았다면** 먼저 `supabase/047_modbook_preset_community.sql` 전체 실행
+2. Supabase SQL Editor에서 `supabase/048_modbook_preset_outer_compat.sql` 전체 실행
+3. 이 ZIP 전체를 현재 GitHub AXE NET 프로젝트에 덮어쓰기
+4. PowerShell에서 아래 검사
+   - `npm.cmd run audit:styles`
+   - `npm.cmd run audit:ux`
+   - `npm.cmd run build`
+5. GitHub push 후 Vercel 배포
+
+## 이전 버전 기록
 
 ## v1.47.0 · 추천세팅 게시판 / 내 프리셋
 - 기존 고정 추천세팅 화면을 게시글 기반 추천세팅 커뮤니티 구조로 확장했습니다.
@@ -11,17 +30,6 @@
 - 작성자는 자신의 게시글을 수정/삭제할 수 있고, admin 멤버는 전체 게시글 관리가 가능합니다.
 - 첫 게시글로 기존 `이동속도 1티어` AXE 추천안을 SQL에서 자동 이관합니다.
 - Supabase 마이그레이션 `047_modbook_preset_community.sql`이 필요합니다.
-
-## 적용 순서
-1. Supabase SQL Editor에서 `supabase/047_modbook_preset_community.sql` 전체 실행
-2. 이 ZIP 전체를 현재 GitHub AXE NET 프로젝트에 덮어쓰기
-3. PowerShell에서 아래 검사
-   - `npm.cmd run audit:styles`
-   - `npm.cmd run audit:ux`
-   - `npm.cmd run build`
-4. GitHub push 후 Vercel 배포
-
-## 이전 버전 기록
 
 ## v1.46.4 · 팀복 실전 적용 / 추천세팅 Hover 안정화
 - 사용자가 제공한 `팀복.zip` 원본 PNG 4종을 추천세팅 슬롯에 직접 적용했습니다.

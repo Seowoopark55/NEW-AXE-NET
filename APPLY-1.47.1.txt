@@ -1,0 +1,22 @@
+AXE NET PRO v1.47.1 적용 순서
+
+[Supabase]
+1) v1.47.0의 047 SQL을 아직 실행하지 않았다면 먼저 실행
+   supabase/047_modbook_preset_community.sql
+2) 이번 패치 SQL 실행
+   supabase/048_modbook_preset_outer_compat.sql
+
+[AXE NET]
+3) AXE-NET-PRO-V1.47.1.zip 압축 해제
+4) 현재 GitHub AXE NET 프로젝트 폴더에 전체 덮어쓰기
+5) PowerShell 검사
+   npm.cmd run audit:styles
+   npm.cmd run audit:ux
+   npm.cmd run build
+6) GitHub push -> Vercel 배포
+
+이번 패치
+- 겉옷 개조서 선택/저장 호환 수정
+- 작성기 부위별 분류 + 검색 필터
+- 추천세팅 목록과 게시글 상세 분리
+- 상세 화면 옵션 요약을 장비창 오른쪽에 복원

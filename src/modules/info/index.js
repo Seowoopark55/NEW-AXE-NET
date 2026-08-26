@@ -36,6 +36,9 @@ export async function initInfoModule() {
           info: {
             ...state.info,
             tab: nextTab,
+            selectedModbookPresetId: nextTab === 'preset' && state.info.tab !== 'preset'
+              ? null
+              : state.info.selectedModbookPresetId,
           },
         }));
         if (nextTab === 'preset' && store.getState().auth.member) void loadPresetFavorites();
@@ -71,6 +74,17 @@ export async function initInfoModule() {
           info: {
             ...state.info,
             selectedModbookPresetId: nextId,
+            selectedModbookPresetSlot: 'bottom',
+          },
+        }));
+      },
+
+      onBackPresetList() {
+        store.updateState((state) => ({
+          ...state,
+          info: {
+            ...state.info,
+            selectedModbookPresetId: null,
             selectedModbookPresetSlot: 'bottom',
           },
         }));
@@ -346,9 +360,10 @@ async function reloadInfoData(options = {}) {
 
 function resolvePresetSelection(posts, currentId) {
   const list = Array.isArray(posts) ? posts : [];
+  if (currentId == null || currentId === '') return null;
   const current = Number(currentId);
   if (Number.isInteger(current) && list.some((post) => Number(post.id) === current)) return current;
-  return list.length ? Number(list[0].id) : null;
+  return null;
 }
 
 async function refreshPresetCommunity(options = {}) {
