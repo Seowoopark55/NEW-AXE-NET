@@ -19,6 +19,7 @@ import {
 } from './infoService.js';
 import { renderInfoView } from './infoView.js';
 import { closeRouteModal } from '../../utils/historyRouter.js';
+import { clearPresetDraft, presetDraftKey } from './presetDraft.js';
 
 const TABS = new Set(['craft', 'quest', 'process', 'modbook', 'preset', 'skill']);
 
@@ -504,6 +505,7 @@ async function savePresetPost(values) {
     });
     await refreshPresetCommunity({ selectId: postId });
     await loadPresetFavorites({ silent: true });
+    clearPresetDraft(presetDraftKey(editor, member.member_key));
     store.updateState((state) => ({
       ...state,
       info: {

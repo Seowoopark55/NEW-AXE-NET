@@ -1,5 +1,6 @@
 import { bindImeSafeInput, captureImeSearchFocus, restoreImeSearchFocus } from '../../utils/dom.js';
 import { MODBOOK_PRESETS, MODBOOK_PRESET_SLOT_ORDER } from './modbookPresets.js';
+import { presetDraftKey, readPresetDraft, writePresetDraft } from './presetDraft.js';
 
 export function renderInfoView(root, state, actions = {}) {
   const info = state.info;
@@ -553,22 +554,21 @@ function renderPresetPostDetail(post, info, auth, favorites) {
               ${summary.negative.map((item) => `<span>${h(item.label)} ${h(item.range)}</span>`).join('')}
             </div>
           ` : ''}
+          ${renderPresetSlotNotes(post, { compact: true })}
           <p class="ops-info-preset-aggregate__hint">장비 부위에 마우스를 올리면 해당 부위의 접두·접미 옵션을 자세히 볼 수 있습니다.</p>
         </section>
       </div>
-
-      ${renderPresetSlotNotes(post)}
     </article>
   `;
 }
 
-function renderPresetSlotNotes(post) {
+function renderPresetSlotNotes(post, options = {}) {
   const notes = MODBOOK_PRESET_SLOT_ORDER
     .map((slotKey) => [presetSlotLabel(slotKey), String(post.slots?.[slotKey]?.note || '').trim()])
     .filter(([, note]) => note);
   if (!notes.length) return '';
   return `
-    <section class="ops-info-preset-slot-notes">
+    <section class="ops-info-preset-slot-notes ${options.compact ? 'is-compact' : ''}">
       <h3>부위별 코멘트</h3>
       ${notes.map(([label, note]) => `<div><strong>${h(label)}</strong><p>${h(note)}</p></div>`).join('')}
     </section>
@@ -1032,6 +1032,10 @@ function renderPresetEditorModal(info, auth) {
         ${editor.error ? `<div class="ops-info__error">${h(editor.error)}</div>` : ''}
 
         <form class="ops-info-form ops-info-preset-editor-form" data-info-preset-editor-form>
+          <div class="ops-info-preset-editor-draftbar">
+            <span>작성 내용 자동 임시저장</span>
+            <small data-info-preset-draft-status>브라우저를 옮기거나 새로고침해도 복원됩니다.</small>
+          </div>
           <div class="ops-info-preset-editor-main">
             <label class="is-wide"><span>제목</span><input name="title" maxlength="100" value="${a(title)}" placeholder="예: 이동속도 1티어 / 무법 생존 세팅" required /></label>
             <label class="is-wide"><span>태그</span><input name="tags" value="${a(tags)}" placeholder="이동속도, 무법, 밸런스 (쉼표 구분)" /></label>
@@ -1065,15 +1069,29 @@ function renderPresetEditorSlot(slotKey, slot, modbooks) {
   const label = presetSlotLabel(slotKey);
   const prefix = compatiblePresetModbooks(modbooks, label, '접두');
   const suffix = compatiblePresetModbooks(modbooks, label, '접미');
-  const categories = unique([...prefix, ...suffix].map((item) => item.category));
   return `
     <section class="ops-info-preset-editor-slot" data-info-preset-editor-slot="${a(slotKey)}">
       <header>
         <div class="ops-info-preset-editor-slot__image"><img src="${a(slot?.image || '')}" alt="" /></div>
-        <div><span>장비 부위</span><strong>${h(label)}</strong><small>사용 가능 ${prefix.length + suffix.length}개</small></div>
+        <div><span>장비 부위</span><strong>${h(label)}</strong><small>접두 ${prefix.length}개 · 접미 ${suffix.length}개</small></div>
       </header>
 
-      <div class="ops-info-preset-editor-filter" data-info-preset-mod-filter="${a(slotKey)}">
+      ${presetEditorChoice(`${slotKey}_prefix_id`, '접두', prefix, slot?.prefixModbookId, slotKey)}
+      ${presetEditorChoice(`${slotKey}_suffix_id`, '접미', suffix, slot?.suffixModbookId, slotKey)}
+      <label class="ops-info-preset-editor-note"><span>부위 설명</span><textarea name="${a(slotKey)}_note" rows="2" maxlength="500" placeholder="이 부위 조합을 선택한 이유">${h(slot?.note || '')}</textarea></label>
+    </section>
+  `;
+}
+
+function presetEditorChoice(name, type, items, selectedId, slotKey) {
+  const categories = unique(items.map((item) => item.category));
+  return `
+    <div class="ops-info-preset-editor-choice" data-info-preset-mod-filter data-filter-slot="${a(slotKey)}" data-filter-type="${a(type)}">
+      <div class="ops-info-preset-editor-choice__head">
+        <strong>${h(type)}</strong>
+        <small data-info-preset-mod-count>${items.length}개</small>
+      </div>
+      <div class="ops-info-preset-editor-filter">
         <label>
           <span>분류</span>
           <select data-info-preset-mod-category>
@@ -1086,11 +1104,8 @@ function renderPresetEditorSlot(slotKey, slot, modbooks) {
           <input type="search" placeholder="개조서명 / 옵션 검색" data-info-preset-mod-search />
         </label>
       </div>
-
-      ${presetEditorSelect(`${slotKey}_prefix_id`, '접두', prefix, slot?.prefixModbookId, slotKey)}
-      ${presetEditorSelect(`${slotKey}_suffix_id`, '접미', suffix, slot?.suffixModbookId, slotKey)}
-      <label class="ops-info-preset-editor-note"><span>부위 설명</span><textarea name="${a(slotKey)}_note" rows="2" maxlength="500" placeholder="이 부위 조합을 선택한 이유">${h(slot?.note || '')}</textarea></label>
-    </section>
+      ${presetEditorSelect(name, type, items, selectedId, slotKey)}
+    </div>
   `;
 }
 
@@ -1119,7 +1134,7 @@ function compatiblePresetModbooks(modbooks, part, type) {
 function presetEditorSelect(name, type, items, selectedId, slotKey) {
   return `
     <label class="ops-info-preset-editor-select">
-      <span>${h(type)} <small data-info-preset-mod-count="${a(type)}">${items.length}개</small></span>
+      <span>선택</span>
       <select name="${a(name)}" data-info-preset-mod-select data-info-preset-mod-type="${a(type)}" data-info-preset-mod-slot="${a(slotKey)}">
         <option value="">선택 안 함</option>
         ${items.map((item) => {
@@ -1248,37 +1263,68 @@ function bindEvents(root, state, actions) {
     event.preventDefault();
     actions.onSavePrice?.(formObject(event.currentTarget));
   });
+  const presetEditorForm = root.querySelector('[data-info-preset-editor-form]');
+  const editor = state.info?.presetEditor || {};
+  const memberKey = state.auth?.member?.member_key || '';
+  const draftKey = presetDraftKey(editor, memberKey);
+  const draft = presetEditorForm ? readPresetDraft(draftKey) : null;
+
+  if (presetEditorForm && draft?.fields && typeof draft.fields === 'object') {
+    Object.entries(draft.fields).forEach(([name, value]) => {
+      const field = presetEditorForm.elements.namedItem(name);
+      if (!field || typeof value !== 'string') return;
+      field.value = value;
+    });
+    const status = root.querySelector('[data-info-preset-draft-status]');
+    if (status) status.textContent = '임시저장된 작성 내용을 복원했습니다.';
+  }
+
   root.querySelectorAll('[data-info-preset-mod-filter]').forEach((filterRoot) => {
-    const slotRoot = filterRoot.closest('[data-info-preset-editor-slot]');
     const category = filterRoot.querySelector('[data-info-preset-mod-category]');
     const search = filterRoot.querySelector('[data-info-preset-mod-search]');
-    if (!slotRoot || !category || !search) return;
+    const select = filterRoot.querySelector('[data-info-preset-mod-select]');
+    const count = filterRoot.querySelector('[data-info-preset-mod-count]');
+    if (!category || !search || !select) return;
+
+    const filterKey = `${filterRoot.dataset.filterSlot || ''}:${filterRoot.dataset.filterType || ''}`;
+    const filterDraft = draft?.filters?.[filterKey];
+    if (filterDraft && typeof filterDraft === 'object') {
+      if (typeof filterDraft.category === 'string') category.value = filterDraft.category;
+      if (typeof filterDraft.search === 'string') search.value = filterDraft.search;
+    }
 
     const applyPresetModFilter = () => {
       const categoryValue = String(category.value || 'all');
       const query = String(search.value || '').trim().toLowerCase().replace(/\s+/g, ' ');
-
-      slotRoot.querySelectorAll('[data-info-preset-mod-select]').forEach((select) => {
-        let visible = 0;
-        select.querySelectorAll('option[data-mod-id]').forEach((option) => {
-          const categoryMatch = categoryValue === 'all' || option.dataset.modCategory === categoryValue;
-          const searchMatch = !query || String(option.dataset.modSearch || '').includes(query);
-          const keepSelected = option.selected;
-          const show = (categoryMatch && searchMatch) || keepSelected;
-          option.hidden = !show;
-          option.disabled = !show;
-          if (show) visible += 1;
-        });
-        const type = select.dataset.infoPresetModType;
-        const count = slotRoot.querySelector(`[data-info-preset-mod-count="${type}"]`);
-        if (count) count.textContent = `${visible}개`;
+      let visible = 0;
+      select.querySelectorAll('option[data-mod-id]').forEach((option) => {
+        const categoryMatch = categoryValue === 'all' || option.dataset.modCategory === categoryValue;
+        const searchMatch = !query || String(option.dataset.modSearch || '').includes(query);
+        const keepSelected = option.selected;
+        const show = (categoryMatch && searchMatch) || keepSelected;
+        option.hidden = !show;
+        option.disabled = !show;
+        if (show) visible += 1;
       });
+      if (count) count.textContent = `${visible}개`;
     };
 
-    category.addEventListener('change', applyPresetModFilter);
-    search.addEventListener('input', applyPresetModFilter);
+    category.addEventListener('change', () => {
+      applyPresetModFilter();
+      persistPresetEditorDraft(presetEditorForm, root, draftKey);
+    });
+    search.addEventListener('input', () => {
+      applyPresetModFilter();
+      persistPresetEditorDraft(presetEditorForm, root, draftKey);
+    });
     applyPresetModFilter();
   });
+
+  if (presetEditorForm) {
+    const saveDraft = () => persistPresetEditorDraft(presetEditorForm, root, draftKey);
+    presetEditorForm.addEventListener('input', saveDraft);
+    presetEditorForm.addEventListener('change', saveDraft);
+  }
 
   root.querySelector('[data-info-preset-editor-form]')?.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -1292,6 +1338,29 @@ function bindEvents(root, state, actions) {
       actions.onReviewRequest?.(id, button.dataset.infoReviewAction, note);
     });
   });
+}
+
+function persistPresetEditorDraft(form, root, key) {
+  if (!form || !key) return;
+  const fields = {};
+  for (const element of Array.from(form.elements || [])) {
+    if (!element?.name || element.disabled) continue;
+    if (!['INPUT', 'SELECT', 'TEXTAREA'].includes(element.tagName)) continue;
+    fields[element.name] = String(element.value ?? '');
+  }
+
+  const filters = {};
+  root.querySelectorAll('[data-info-preset-mod-filter]').forEach((filterRoot) => {
+    const filterKey = `${filterRoot.dataset.filterSlot || ''}:${filterRoot.dataset.filterType || ''}`;
+    filters[filterKey] = {
+      category: String(filterRoot.querySelector('[data-info-preset-mod-category]')?.value || 'all'),
+      search: String(filterRoot.querySelector('[data-info-preset-mod-search]')?.value || ''),
+    };
+  });
+
+  writePresetDraft(key, { fields, filters });
+  const status = root.querySelector('[data-info-preset-draft-status]');
+  if (status) status.textContent = '임시저장됨';
 }
 
 function formObject(form) {
