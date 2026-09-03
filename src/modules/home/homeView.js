@@ -13,13 +13,8 @@ export function renderHomeView(root, state, actions = {}) {
     .slice()
     .sort((a, b) => Number(Boolean(b.important)) - Number(Boolean(a.important)) || dateValue(b.published_at) - dateValue(a.published_at))
     .slice(0, 2);
-  const recentVideos = (state.tube?.videos ?? [])
-    .slice()
-    .sort((a, b) => dateValue(b.published_at) - dateValue(a.published_at))
-    .slice(0, 4);
   const fundLoading = Boolean(fund.loading || !fund.initialized);
   const noticeLoading = Boolean(state.notice?.loading || !state.notice?.initialized);
-  const tubeLoading = Boolean(state.tube?.loading || !state.tube?.initialized);
 
   const shortcuts = Array.isArray(state.shortcuts?.items) ? state.shortcuts.items : [];
 
@@ -78,20 +73,6 @@ export function renderHomeView(root, state, actions = {}) {
         </section>
       </div>
 
-      <section class="ops-home-card ops-home-card--tube">
-        <header class="ops-home-card__head">
-          <div>
-            <span>MEDIA</span>
-            <h2>AXE TUBE</h2>
-          </div>
-          <button type="button" data-home-module="tube">전체보기 →</button>
-        </header>
-        ${recentVideos.length
-          ? `<div class="ops-home-videos">${recentVideos.map(renderVideoPreview).join('')}</div>`
-          : tubeLoading
-            ? '<div class="ops-home-empty">AXE TUBE를 불러오는 중입니다.</div>'
-            : '<div class="ops-home-empty">등록된 AXE TUBE 영상이 없습니다.</div>'}
-      </section>
     </section>
   `;
 
@@ -119,7 +100,6 @@ function shortcutMark(key) {
   if (value.startsWith('info.')) return '⌕';
   if (value.startsWith('notice.')) return '!';
   if (value.startsWith('outlaw.')) return '◎';
-  if (value === 'tube') return '▶';
   if (value === 'members') return 'M';
   return 'A';
 }
@@ -157,21 +137,6 @@ function renderRecentNoticeRow(item) {
   `;
 }
 
-function renderVideoPreview(video) {
-  return `
-    <button class="ops-home-video" type="button" data-home-module="tube" aria-label="${escapeHtml(video.title || 'AXE TUBE')} 보기">
-      <span class="ops-home-video__thumb">
-        <img src="${escapeHtml(getThumbnail(video))}" alt="" loading="lazy" />
-        <i aria-hidden="true">▶</i>
-      </span>
-      <span class="ops-home-video__copy">
-        <strong>${escapeHtml(video.title || '제목 없음')}</strong>
-        <small>${escapeHtml(video.writer || 'AXE')} · ${escapeHtml(formatVideoDate(video.published_at))}</small>
-      </span>
-    </button>
-  `;
-}
-
 function bindHomeEvents(root, actions) {
   root.querySelectorAll('[data-home-module]').forEach((button) => {
     button.addEventListener('click', () => actions.onOpenModule?.(button.dataset.homeModule));
@@ -190,36 +155,6 @@ function bindHomeEvents(root, actions) {
   });
 }
 
-function getThumbnail(video) {
-  const direct = String(video?.thumbnail_url || '').trim();
-  if (direct) return direct;
-  const id = safeYoutubeId(video?.youtube_video_id || extractYoutubeId(video?.url));
-  return id ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg` : '/assets/axe-hero-premium.webp';
-}
-
-function extractYoutubeId(url) {
-  const raw = String(url || '').trim();
-  if (!raw) return '';
-  try {
-    const parsed = new URL(raw);
-    const host = parsed.hostname.toLowerCase().replace(/^www\./, '');
-    if (host === 'youtu.be') return parsed.pathname.split('/').filter(Boolean)[0] || '';
-    if (host === 'youtube.com' || host.endsWith('.youtube.com')) {
-      if (parsed.pathname === '/watch') return parsed.searchParams.get('v') || '';
-      const parts = parsed.pathname.split('/').filter(Boolean);
-      if (['shorts', 'embed', 'live'].includes(parts[0])) return parts[1] || '';
-    }
-  } catch {
-    return '';
-  }
-  return '';
-}
-
-function safeYoutubeId(value) {
-  const id = String(value || '').trim();
-  return /^[A-Za-z0-9_-]{6,20}$/.test(id) ? id : '';
-}
-
 function dateValue(value) {
   const time = new Date(value || 0).getTime();
   return Number.isNaN(time) ? 0 : time;
@@ -234,9 +169,3 @@ function shortDate(value) {
   return `${month}.${day}`;
 }
 
-function formatVideoDate(value) {
-  if (!value) return '—';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return String(value).slice(0, 10);
-  return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
-}

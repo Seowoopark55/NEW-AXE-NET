@@ -67,7 +67,6 @@ function shortcutMark(key) {
   if (value.startsWith('info.')) return '⌕';
   if (value.startsWith('notice.')) return '!';
   if (value.startsWith('outlaw.')) return '◎';
-  if (value === 'tube') return '▶';
   if (value === 'members') return 'M';
   return 'A';
 }

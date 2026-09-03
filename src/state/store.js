@@ -199,37 +199,6 @@ const initialState = {
     },
   },
 
-  tube: {
-    initialized: false,
-    loading: false,
-    error: null,
-    message: null,
-    messageType: 'info',
-    videos: [],
-    selectedTubeId: null,
-    myReactions: {},
-    reactionSavingTubeId: null,
-    commentsByTubeId: {},
-    commentsLoadingTubeId: null,
-    commentSaving: false,
-    commentError: null,
-    commentEditingId: null,
-    commentDeleteId: null,
-    editor: {
-      open: false,
-      tubeId: null,
-      saving: false,
-      error: null,
-      confirmDelete: false,
-      draft: null,
-    },
-    filters: {
-      search: '',
-      category: 'all',
-      sort: 'recent',
-    },
-  },
-
   fund: {
     initialized: false,
     loading: false,

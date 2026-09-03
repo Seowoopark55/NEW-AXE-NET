@@ -1,0 +1,17 @@
+AXE NET 1차 안전 정리 (2026-09-04)
+
+운영 종료 처리:
+- AXE TUBE 메인 메뉴 제거
+- 홈 AXE TUBE 영역 제거
+- AXE TUBE 모듈 초기화 중단
+- AXE TUBE 라우팅/신규 바로가기 제거
+- 멤버용 AXE TUBE API 신규 호출 410 차단
+
+보존:
+- Supabase tube_* 테이블/데이터/migration은 변경하지 않음
+- src/modules/tube 소스는 롤백 참고용으로 보존하되 런타임 import/init 없음
+- 기존 DB 바로가기 데이터는 삭제하지 않음
+
+검증:
+- src/api/server JS 문법 검사 통과
+- 삭제/비활성화된 Tube 모듈로의 런타임 import 없음

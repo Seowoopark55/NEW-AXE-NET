@@ -7,7 +7,7 @@ const ROUTE_TABS = {
   ai: new Set(['dashboard', 'knowledge', 'unknown', 'logs']),
 };
 
-const MODULES = new Set(['home', 'notice', 'info', 'outlaw', 'tube', 'fund', 'assets', 'members', 'ai']);
+const MODULES = new Set(['home', 'notice', 'info', 'outlaw', 'fund', 'assets', 'members', 'ai']);
 const DEFAULT_TABS = {
   notice: 'general',
   info: 'craft',
