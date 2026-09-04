@@ -75,7 +75,7 @@ function makeTubeId() {
   return `tube_new_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
 }
 
-const TUBE_PUBLIC_COLUMNS = 'tube_id,title,url,youtube_video_id,thumbnail_url,published_at,writer_member_key,writer,writer_badge,content,category,sort_order,views,likes,dislikes,comment_count,source,source_updated_at,sync_owner,discord_thread_id,discord_sync_status,discord_synced_at,discord_sync_error,discord_archived_by_sync,legacy_backup_id,legacy_backup_status,legacy_backup_synced_at,legacy_backup_error,active,created_at,updated_at';
+const TUBE_PUBLIC_COLUMNS = 'tube_id,title,url,youtube_video_id,thumbnail_url,published_at,writer_member_key,writer,writer_badge,content,category,sort_order,views,likes,dislikes,comment_count,source,source_updated_at,active,created_at,updated_at';
 
 export default async function handler(req, res) {
   if (!onlyPost(req, res)) return;
@@ -469,9 +469,6 @@ export default async function handler(req, res) {
             writer_badge: context.member.badge || null,
             content: content || null,
             category,
-            sync_owner: 'supabase',
-            discord_sync_status: 'pending',
-            discord_sync_error: null,
             active: true,
             updated_at: new Date().toISOString(),
           })
@@ -501,9 +498,6 @@ export default async function handler(req, res) {
             likes: 0,
             dislikes: 0,
             source: 'new_axe_net',
-            sync_owner: 'supabase',
-            discord_sync_status: 'pending',
-            discord_sync_error: null,
             active: true,
           })
           .select(TUBE_PUBLIC_COLUMNS)
@@ -534,9 +528,6 @@ export default async function handler(req, res) {
         .from('tube_videos')
         .update({
           active: false,
-          sync_owner: 'supabase',
-          discord_sync_status: 'pending',
-          discord_sync_error: null,
           updated_at: new Date().toISOString(),
         })
         .eq('tube_id', tubeId);

@@ -45,8 +45,8 @@ export function renderMembersView(root, state, actions = {}) {
     <section class="ops-members">
       <header class="ops-members__header">
         <div>
-          <h1>멤버</h1>
-          <p>조직 구성과 권한, 활동 상태를 한 곳에서 관리합니다.</p>
+          <h1>멤버 · 권한</h1>
+          <p>조직 구성, 활동 상태, 권한과 로그인 계정을 관리합니다.</p>
         </div>
         <div class="ops-members__actions">
           ${
@@ -119,6 +119,7 @@ export function renderMembersView(root, state, actions = {}) {
 
     actions.onCreateMember?.({
       nickname: String(formData.get('nickname') ?? '').trim(),
+      password: String(formData.get('password') ?? ''),
       discord_user_id: String(formData.get('discord_user_id') ?? '').trim(),
       discord_name: String(formData.get('discord_name') ?? '').trim(),
       role: String(formData.get('role') ?? ''),
@@ -141,6 +142,19 @@ export function renderMembersView(root, state, actions = {}) {
 
   root.querySelector('[data-member-edit-cancel]')?.addEventListener('click', () => {
     actions.onCancelEdit?.();
+  });
+
+  const passwordResetForm = root.querySelector('[data-member-password-reset-form]');
+  passwordResetForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+
+    if (!selectedMember) return;
+
+    const formData = new FormData(passwordResetForm);
+    actions.onResetPassword?.(selectedMember.member_key, {
+      password: String(formData.get('password') ?? ''),
+      confirmPassword: String(formData.get('confirm_password') ?? ''),
+    });
   });
 
   const statusSelect = root.querySelector('[data-edit-status]');
@@ -176,6 +190,7 @@ export function renderMembersView(root, state, actions = {}) {
 
     actions.onSaveMember?.(selectedMember.member_key, {
       nickname: String(formData.get('nickname') ?? '').trim(),
+      password: String(formData.get('password') ?? ''),
       role: String(formData.get('role') ?? ''),
       status: String(formData.get('status') ?? ''),
       badge: String(formData.get('badge') ?? '').trim(),
@@ -194,7 +209,7 @@ function renderWaiting(system) {
     <section class="ops-members">
       <header class="ops-members__header">
         <div>
-          <h1>멤버</h1>
+          <h1>멤버 · 권한</h1>
           <p>데이터 연결을 확인하고 있습니다.</p>
         </div>
       </header>
@@ -326,6 +341,19 @@ function renderMemberCreateModal(createState) {
             />
           </label>
 
+          <label class="member-edit-field member-create-grid__wide">
+            <span>초기 로그인 비밀번호 *</span>
+            <input
+              type="password"
+              name="password"
+              minlength="4"
+              maxlength="128"
+              autocomplete="new-password"
+              placeholder="4자 이상 · 신규 멤버에게 전달할 비밀번호"
+              required
+            />
+          </label>
+
           <label class="member-edit-field">
             <span>Discord 사용자 ID</span>
             <input
@@ -397,8 +425,8 @@ function renderMemberCreateModal(createState) {
         </div>
 
         <div class="member-create-help">
-          role=admin으로 지정한 멤버는 다음 로그인부터 닉네임/비밀번호만으로 관리자 권한이 자동 적용됩니다.
-          최고관리자 이메일 인증은 별도로 유지됩니다.
+          신규 멤버의 로그인 비밀번호는 AXE NET Supabase에 해시로 저장됩니다.
+          role=admin으로 지정하면 다음 로그인부터 관리자 권한이 자동 적용되며, 최고관리자 이메일 인증은 별도로 유지됩니다.
         </div>
 
         ${
@@ -472,6 +500,11 @@ function renderMemberReadOnly(item, auth, membersState) {
         ? `<div class="member-save-message member-save-message--success">${escapeHtml(membersState.saveSuccess)}</div>`
         : ''
     }
+    ${
+      membersState.saveError
+        ? `<div class="member-save-message member-save-message--error">${escapeHtml(membersState.saveError)}</div>`
+        : ''
+    }
 
     ${renderDetailItem('상태', renderStatus(item.status), true)}
     ${renderDetailItem('권한', renderRole(item.role), true)}
@@ -488,9 +521,33 @@ function renderMemberReadOnly(item, auth, membersState) {
           <button class="member-edit-button" type="button" data-member-edit>
             멤버 정보 수정
           </button>
+
+          <section class="member-password-reset" aria-label="로그인 비밀번호 재설정">
+            <div class="member-password-reset__head">
+              <div>
+                <strong>로그인 비밀번호 재설정</strong>
+                <span>기존 비밀번호를 확인하지 않고 새 비밀번호로 즉시 변경합니다.</span>
+              </div>
+              <b>SUPERADMIN</b>
+            </div>
+            <form class="member-password-reset__form" data-member-password-reset-form>
+              <label>
+                <span>새 비밀번호</span>
+                <input type="password" name="password" minlength="4" maxlength="128" autocomplete="new-password" placeholder="4자 이상" required />
+              </label>
+              <label>
+                <span>비밀번호 확인</span>
+                <input type="password" name="confirm_password" minlength="4" maxlength="128" autocomplete="new-password" placeholder="한 번 더 입력" required />
+              </label>
+              <button type="submit" ${membersState.saving ? 'disabled' : ''}>
+                ${membersState.saving ? '변경 중...' : '비밀번호 재설정'}
+              </button>
+            </form>
+          </section>
+
           <div class="member-detail__note">
             최고관리자 <strong>${escapeHtml(auth.admin.nickname)}</strong>으로 인증되었습니다.
-            수정 내용은 Supabase에 즉시 반영됩니다.
+            멤버 정보와 로그인 계정 변경은 Supabase에 즉시 반영됩니다.
           </div>
 
           ${renderMemberAudit(membersState.audit, item.member_key)}
@@ -580,6 +637,7 @@ function renderAuditChange(field, oldData, newData) {
     badge: '배지',
     points: '포인트',
     resigned_at: '퇴사일',
+    login_password: '로그인 비밀번호',
   };
 
   return `
@@ -609,6 +667,10 @@ function formatAuditValue(field, value) {
 
   if (field === 'points') {
     return formatNumber(value);
+  }
+
+  if (field === 'login_password') {
+    return value === 'reset' ? '재설정 완료' : '기존 비밀번호';
   }
 
   return String(value);

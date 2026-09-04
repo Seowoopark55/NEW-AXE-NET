@@ -30,7 +30,7 @@ const NAV_GROUPS = {
     modules: [
       { module: 'fund', label: '공금' },
       { module: 'assets', label: '자산·계좌' },
-      { module: 'members', label: '멤버' },
+      { module: 'members', label: '멤버 · 권한' },
       { module: 'ai', label: 'AXE AI', adminOnly: true },
     ],
   },

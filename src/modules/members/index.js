@@ -3,6 +3,7 @@ import {
   createMember,
   fetchMemberAudit,
   fetchMembers,
+  resetMemberPassword,
   updateMember,
 } from './membersService.js';
 import { renderMembersView } from './membersView.js';
@@ -106,6 +107,49 @@ export async function initMembersModule() {
             saveSuccess: null,
           },
         }));
+      },
+
+      async onResetPassword(memberKey, values) {
+        if (!isSuperAdmin()) return;
+
+        const password = String(values?.password || '');
+        const confirmPassword = String(values?.confirmPassword || '');
+
+        if (password.length < 4 || password.length > 128) {
+          store.updateState((state) => ({
+            ...state,
+            members: { ...state.members, saveError: '새 비밀번호는 4~128자로 입력하세요.', saveSuccess: null },
+          }));
+          return;
+        }
+
+        if (password !== confirmPassword) {
+          store.updateState((state) => ({
+            ...state,
+            members: { ...state.members, saveError: '비밀번호 확인 값이 일치하지 않습니다.', saveSuccess: null },
+          }));
+          return;
+        }
+
+        store.updateState((state) => ({
+          ...state,
+          members: { ...state.members, saving: true, saveError: null, saveSuccess: null },
+        }));
+
+        try {
+          await resetMemberPassword(memberKey, password);
+          store.updateState((state) => ({
+            ...state,
+            members: { ...state.members, saving: false, saveError: null, saveSuccess: '로그인 비밀번호를 재설정했습니다.' },
+          }));
+          await loadMemberAudit(memberKey);
+        } catch (error) {
+          console.error('[AXE NET] member password reset failed:', error);
+          store.updateState((state) => ({
+            ...state,
+            members: { ...state.members, saving: false, saveError: formatMemberError(error), saveSuccess: null },
+          }));
+        }
       },
 
       async onSaveMember(memberKey, values) {
@@ -367,6 +411,11 @@ function validateMemberValues(values) {
   if (!Number.isInteger(points) || points < 0) {
     throw new Error('포인트는 0 이상의 정수로 입력하세요.');
   }
+
+  const password = String(values.password ?? '');
+  if (password && (password.length < 4 || password.length > 128)) {
+    throw new Error('새 비밀번호는 4~128자로 입력하세요.');
+  }
 }
 
 function validateCreateValues(values) {
@@ -387,6 +436,11 @@ function validateCreateValues(values) {
 
   if (!values.joined_date) {
     throw new Error('가입일을 입력하세요.');
+  }
+
+  const password = String(values.password ?? '');
+  if (password.length < 4 || password.length > 128) {
+    throw new Error('초기 로그인 비밀번호는 4~128자로 입력하세요.');
   }
 }
 

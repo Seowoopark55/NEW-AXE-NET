@@ -13,7 +13,7 @@ const ADMIN_ITEMS = [
   ['feeRules', '요율관리'],
   ['exemptions', '면제관리'],
   ['integrity', '정합성점검'],
-  ['fundMembers', '멤버관리'],
+  ['fundMembers', '납부대상'],
 ];
 
 export function renderFundNav(section, isAdmin, pendingCount = 0) {

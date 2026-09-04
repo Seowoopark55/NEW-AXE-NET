@@ -1,8 +1,6 @@
 import crypto from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 
-const DEFAULT_LEGACY_API_URL =
-  'https://script.google.com/macros/s/AKfycbzDem9Wtg-Jxyj115xMu8_7Hrk_StOFEG7n1PNOH68_iGfcaSKNXEH6cWlE4iW5bw-j9A/exec';
 const SESSION_TTL_DAYS = 30;
 
 let serviceClient = null;
@@ -155,97 +153,11 @@ export async function verifyMemberCredentials(nickname, password) {
   return data || null;
 }
 
-export async function setMemberPassword(memberKey, password, migratedFrom = 'server') {
-  const client = getServiceClient();
-  const { data, error } = await client.rpc('set_member_password', {
-    p_member_key: memberKey,
-    p_password: String(password || ''),
-    p_migrated_from: migratedFrom,
-  });
-  if (error) throw error;
-  return Boolean(data);
-}
-
 export function invalidMemberLoginError(message = '닉네임 또는 비밀번호가 올바르지 않습니다.') {
   const error = new Error(message);
   error.code = 'MEMBER_LOGIN_FAILED';
   error.statusCode = 401;
   return error;
-}
-
-export async function legacyLogin(nickname, password) {
-  const apiUrl = process.env.AXE_LEGACY_API_URL || DEFAULT_LEGACY_API_URL;
-  const response = await fetch(apiUrl, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify({
-      type: 'login',
-      nickname,
-      password,
-    }),
-    redirect: 'follow',
-  });
-
-  if (!response.ok) {
-    throw new Error(`기존 로그인 이관 서버 응답 오류 (${response.status})`);
-  }
-
-  let data;
-  try {
-    data = await response.json();
-  } catch {
-    throw new Error('기존 로그인 이관 응답을 해석할 수 없습니다.');
-  }
-
-  if (!data || data.result !== 'success' || !data.user) {
-    const message = String(data?.message || '닉네임 또는 비밀번호가 올바르지 않습니다.');
-    const error = new Error(message);
-    error.code = 'LEGACY_LOGIN_FAILED';
-    throw error;
-  }
-
-  return data.user;
-}
-
-export async function findNewMemberForLegacyUser(legacyUser) {
-  const client = getServiceClient();
-  const legacyId = String(legacyUser?.id || '').trim();
-  const nickname = String(legacyUser?.nickname || '').trim();
-
-  let member = null;
-
-  if (legacyId) {
-    const { data, error } = await client
-      .from('members')
-      .select('member_key,nickname,role,status,discord_user_id,discord_name,badge,points')
-      .eq('member_key', legacyId)
-      .maybeSingle();
-
-    if (error) throw error;
-    member = data || null;
-  }
-
-  if (!member && nickname) {
-    const { data, error } = await client
-      .from('members')
-      .select('member_key,nickname,role,status,discord_user_id,discord_name,badge,points')
-      .eq('nickname', nickname)
-      .limit(1)
-      .maybeSingle();
-
-    if (error) throw error;
-    member = data || null;
-  }
-
-  if (!member) {
-    throw new Error('AXE NET 멤버 목록에서 로그인 계정을 찾을 수 없습니다. 관리자에게 문의하세요.');
-  }
-
-  if (String(member.status || '').toLowerCase() !== 'active') {
-    throw new Error('현재 활동 상태의 계정만 로그인할 수 있습니다.');
-  }
-
-  return member;
 }
 
 export async function touchMemberLogin(memberKey) {
@@ -516,7 +428,7 @@ export function normalizeApiError(error) {
   const message = String(error?.message || error || '알 수 없는 오류가 발생했습니다.');
   const lower = message.toLowerCase();
 
-  if (error?.code === 'LEGACY_LOGIN_FAILED' || error?.code === 'MEMBER_LOGIN_FAILED') {
+  if (error?.code === 'MEMBER_LOGIN_FAILED') {
     return { status: 401, message };
   }
 
@@ -528,20 +440,6 @@ export function normalizeApiError(error) {
     return {
       status: 500,
       message: 'AXE NET 멤버 로그인 DB가 준비되지 않았습니다. 025_member_credentials.sql 실행 여부를 확인하세요.',
-    };
-  }
-
-  if (lower.includes('discord_sync_status') || lower.includes('discord_thread_id')) {
-    return {
-      statusCode: 503,
-      message: 'AXE TUBE Discord 포럼 연동 데이터베이스가 아직 준비되지 않았습니다. 037_tube_discord_forum_primary.sql 실행 여부를 확인하세요.',
-    };
-  }
-
-  if (lower.includes('sync_owner') || lower.includes('save_tube_video_admin') || lower.includes('deactivate_tube_video_admin')) {
-    return {
-      status: 500,
-      message: 'AXE TUBE Supabase-first 데이터베이스가 아직 준비되지 않았습니다. 036_tube_supabase_primary.sql 실행 여부를 확인하세요.',
     };
   }
 
@@ -562,7 +460,7 @@ export function normalizeApiError(error) {
   if (lower.includes('tube_videos')) {
     return {
       status: 500,
-      message: 'AXE TUBE 데이터베이스가 아직 준비되지 않았습니다. 033~036 SQL 적용 상태를 확인하세요.',
+      message: 'AXE TUBE 데이터베이스를 확인할 수 없습니다. tube_videos 구성 상태를 확인하세요.',
     };
   }
 

@@ -592,9 +592,6 @@ function parseYoutubeUrl(value) {
 function formatTubeError(error) {
   const message = String(error?.message || error || '오류가 발생했습니다.');
   const lower = message.toLowerCase();
-  if (lower.includes('sync_owner') || lower.includes('save_tube_video_admin') || lower.includes('deactivate_tube_video_admin')) {
-    return 'AXE TUBE Supabase-first DB가 아직 준비되지 않았습니다. 036_tube_supabase_primary.sql을 먼저 적용하세요.';
-  }
   if (lower.includes('tube_comments') || lower.includes('deactivate_tube_comment_admin')) {
     return 'AXE TUBE 댓글 DB가 아직 준비되지 않았습니다. 039_tube_comments.sql을 먼저 적용하세요.';
   }
@@ -602,7 +599,7 @@ function formatTubeError(error) {
     return 'AXE TUBE 추천/비추천 DB가 아직 준비되지 않았습니다. 035_tube_reactions_bridge.sql을 먼저 적용하세요.';
   }
   if (lower.includes('tube_videos') || lower.includes('increment_tube_view')) {
-    return 'AXE TUBE 데이터베이스가 아직 준비되지 않았습니다. 033_tube_module.sql과 034_tube_legacy_import.sql을 먼저 적용하세요.';
+    return 'AXE TUBE 데이터베이스를 확인할 수 없습니다. tube_videos 구성 상태를 확인하세요.';
   }
   return message;
 }

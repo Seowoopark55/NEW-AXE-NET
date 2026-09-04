@@ -28,12 +28,12 @@ export const SHORTCUT_TARGETS = [
   { key: 'fund.feeRules', group: '운영 · 공금', label: '공금 · 요율관리', module: 'fund', section: 'feeRules', adminOnly: true },
   { key: 'fund.exemptions', group: '운영 · 공금', label: '공금 · 면제관리', module: 'fund', section: 'exemptions', adminOnly: true },
   { key: 'fund.integrity', group: '운영 · 공금', label: '공금 · 정합성점검', module: 'fund', section: 'integrity', adminOnly: true },
-  { key: 'fund.fundMembers', group: '운영 · 공금', label: '공금 · 멤버관리', module: 'fund', section: 'fundMembers', adminOnly: true },
+  { key: 'fund.fundMembers', group: '운영 · 공금', label: '공금 · 납부대상', module: 'fund', section: 'fundMembers', adminOnly: true },
 
   { key: 'assets.accounts', group: '운영 · 자산·계좌', label: '자산·계좌 · 플리카 계좌', module: 'assets', tab: 'accounts' },
   { key: 'assets.company', group: '운영 · 자산·계좌', label: '자산·계좌 · 회사 자산', module: 'assets', tab: 'company', adminOnly: true },
   { key: 'assets.returns', group: '운영 · 자산·계좌', label: '자산·계좌 · 반납 내역', module: 'assets', tab: 'returns', adminOnly: true },
-  { key: 'members', group: '운영', label: '멤버', module: 'members' },
+  { key: 'members', group: '운영', label: '멤버 · 권한', module: 'members' },
 ];
 
 const TARGET_MAP = new Map(SHORTCUT_TARGETS.map((target) => [target.key, target]));

@@ -27,7 +27,7 @@ export function renderFundMembersView(state) {
 
   return `
     <div class="fund-admin fund-admin--members">
-      ${renderPageHeader('멤버관리', '공금 납부 대상 여부와 기준일을 관리합니다. 주차별 면제는 면제관리에서 별도로 설정합니다.', renderPeriodSelect(fund.periods, period))}
+      ${renderPageHeader('공금 납부대상', '공금을 납부할 멤버와 적용 기준일을 관리합니다. 주차별 면제는 면제관리에서 별도로 설정합니다.', renderPeriodSelect(fund.periods, period))}
       ${admin.message ? `<div class="fund-inline-success">${escapeHtml(admin.message)}</div>` : ''}
       ${admin.error ? `<div class="fund-inline-error">${escapeHtml(admin.error)}</div>` : ''}
 

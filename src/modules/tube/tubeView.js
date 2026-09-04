@@ -171,7 +171,6 @@ function renderDetailBody(video, options = {}) {
         <div>
           <strong>${h(video.writer || 'AXE')}</strong>
           ${badge(video.writer_badge)}
-          ${options.isAdmin ? `${syncBadge(video.sync_owner)}${discordSyncBadge(video.discord_sync_status)}${legacyBackupBadge(video.legacy_backup_status)}` : ''}
           <span>${h(video.category || '일반')}</span>
         </div>
         <time>${formatDateTime(video.published_at)}</time>
@@ -349,7 +348,7 @@ function renderEditor(video, options = {}) {
           <div>
             <span>AXE TUBE · ${isEdit ? 'EDIT' : 'UPLOAD'}</span>
             <h2>${isEdit ? '영상 정보 수정' : '새 영상 등록'}</h2>
-            <p>${isEdit ? '저장하는 순간 이 영상은 AXE NET 기준으로 관리됩니다.' : 'YouTube 링크를 기준으로 썸네일과 재생 정보를 자동 연결합니다.'}</p>
+            <p>${isEdit ? '영상 정보는 AXE NET에서 바로 저장됩니다.' : 'YouTube 링크를 기준으로 썸네일과 재생 정보를 자동 연결합니다.'}</p>
           </div>
           <button type="button" data-tube-editor-close aria-label="편집창 닫기">×</button>
         </header>
@@ -359,7 +358,6 @@ function renderEditor(video, options = {}) {
           <div class="ops-tube-editor__meta">
             <span>등록자</span>
             <strong>${h(options.currentWriter || 'AXE')}</strong>
-            ${video ? `${syncBadge(video.sync_owner)}${discordSyncBadge(video.discord_sync_status)}${legacyBackupBadge(video.legacy_backup_status)}` : '<span class="ops-tube-sync ops-tube-sync--new">NEW</span><span class="ops-tube-sync ops-tube-sync--pending">Discord 대기</span>'}
           </div>
 
           <label class="ops-tube-editor__field ops-tube-editor__field--wide">
@@ -382,9 +380,6 @@ function renderEditor(video, options = {}) {
             <textarea name="content" maxlength="1500" rows="6" placeholder="영상 설명 또는 태그" ${options.saving ? 'disabled' : ''}>${h(value('content', video?.content || ''))}</textarea>
           </label>
 
-          ${isEdit && String(video.sync_owner || '') !== 'supabase'
-            ? '<div class="ops-tube-editor__takeover"><strong>기존 미러 영상</strong><span>이 영상을 저장하거나 내리면 이후 메타데이터는 AXE NET이 우선합니다. 기존 Shadow Mirror가 다시 덮어쓰지 않습니다.</span></div>'
-            : ''}
         </div>
 
         <footer>
@@ -511,31 +506,6 @@ function badge(value) {
   if (!raw) return '';
   const label = raw === 'admin' ? 'ADMIN' : raw.toUpperCase();
   return `<span class="ops-tube-badge ops-tube-badge--${h(raw)}">${h(label)}</span>`;
-}
-
-function syncBadge(value) {
-  const owner = String(value || '').toLowerCase();
-  if (owner === 'supabase') return '<span class="ops-tube-sync ops-tube-sync--new">NEW 관리</span>';
-  return '<span class="ops-tube-sync">기존 미러</span>';
-}
-
-
-function discordSyncBadge(value) {
-  const status = String(value || 'pending').toLowerCase();
-  if (status === 'synced') return '<span class="ops-tube-sync ops-tube-sync--discord">Discord 연동</span>';
-  if (status === 'archived') return '<span class="ops-tube-sync ops-tube-sync--archived">Discord 보관</span>';
-  if (status === 'error') return '<span class="ops-tube-sync ops-tube-sync--error">Discord 오류</span>';
-  return '<span class="ops-tube-sync ops-tube-sync--pending">Discord 대기</span>';
-}
-
-function legacyBackupBadge(value) {
-  const status = String(value || 'none').toLowerCase();
-  if (status === 'legacy_source') return '<span class="ops-tube-sync ops-tube-sync--legacy">기존 원본</span>';
-  if (status === 'synced') return '<span class="ops-tube-sync ops-tube-sync--backup">Sheet 백업</span>';
-  if (status === 'pending') return '<span class="ops-tube-sync ops-tube-sync--pending">Sheet 백업 대기</span>';
-  if (status === 'error') return '<span class="ops-tube-sync ops-tube-sync--error">Sheet 백업 오류</span>';
-  if (status === 'deleted') return '<span class="ops-tube-sync ops-tube-sync--archived">Sheet 삭제 반영</span>';
-  return '';
 }
 
 function getThumbnail(video) {

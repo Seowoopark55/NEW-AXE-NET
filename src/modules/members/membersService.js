@@ -38,8 +38,9 @@ export async function updateMember(memberKey, values) {
 }
 
 export async function createMember(values) {
-  return api.rpc('create_member', {
+  return api.rpc('create_member_with_password', {
     p_nickname: values.nickname,
+    p_password: values.password,
     p_discord_user_id: values.discord_user_id || null,
     p_discord_name: values.discord_name || null,
     p_role: values.role,
@@ -47,6 +48,13 @@ export async function createMember(values) {
     p_joined_date: values.joined_date || null,
     p_badge: values.badge || null,
     p_points: Number(values.points),
+  });
+}
+
+export async function resetMemberPassword(memberKey, password) {
+  return api.rpc('admin_set_member_password', {
+    p_member_key: memberKey,
+    p_password: password,
   });
 }
 
