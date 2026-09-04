@@ -8,6 +8,7 @@ import './modules/notice/notice.css';
 import './modules/info/info.css';
 import './modules/assets/assets.css';
 import './modules/outlaw/outlaw.css';
+import './modules/tube/tube.css';
 import './modules/ai/ai.css';
 import './styles/professional-polish.css';
 import { store } from './state/store.js';
@@ -20,6 +21,7 @@ import { initNoticeModule } from './modules/notice/index.js';
 import { initInfoModule } from './modules/info/index.js';
 import { initAssetsModule } from './modules/assets/index.js';
 import { initOutlawModule } from './modules/outlaw/index.js';
+import { initTubeModule } from './modules/tube/index.js';
 import { initFundModule } from './modules/fund/index.js';
 import { initAiModule } from './modules/ai/index.js';
 import { runSupabaseHealthCheck } from './modules/system/systemService.js';
@@ -59,6 +61,7 @@ async function bootstrap() {
     ['members', initMembersModule],
     ['assets', initAssetsModule],
     ['outlaw', initOutlawModule],
+    ['tube', initTubeModule],
     ['fund', initFundModule],
     ['ai', initAiModule],
   ];

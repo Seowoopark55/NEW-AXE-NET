@@ -21,6 +21,7 @@ const NAV_GROUPS = {
     landing: 'outlaw',
     modules: [
       { module: 'outlaw', label: '무법지대' },
+      { module: 'tube', label: 'AXE TUBE' },
     ],
   },
   operations: {

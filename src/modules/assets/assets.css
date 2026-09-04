@@ -98,3 +98,23 @@
 .ops-assets-pending-box small{color:#777d86;font-size:10px}
 @media(max-width:900px){.ops-assets-toolbar,.ops-assets-toolbar--filters{grid-template-columns:1fr 1fr}.ops-assets-search{grid-column:1/-1}.ops-assets-toolbar__actions{grid-column:1/-1;justify-content:flex-start}.ops-assets-summary{grid-template-columns:repeat(2,1fr)}.ops-assets-account-row{grid-template-columns:130px minmax(180px,1fr) 50px 54px}.ops-assets-account-note{display:none}.ops-assets-request-row--admin{grid-template-columns:120px 1fr auto}.ops-assets-request-row--admin p{grid-column:1/-1}.ops-assets-request-actions{grid-column:3;grid-row:1/3}}
 @media(max-width:640px){.ops-assets__head{align-items:flex-start;padding:18px;flex-direction:column}.ops-assets__head h1{font-size:24px}.ops-assets-tabs{overflow:auto}.ops-assets-tabs button{min-width:104px}.ops-assets-panel{padding:14px}.ops-assets-toolbar,.ops-assets-toolbar--filters{grid-template-columns:1fr}.ops-assets-field,.ops-assets-search,.ops-assets-toolbar__actions{grid-column:1}.ops-assets-toolbar__meta{display:none}.ops-assets-summary{grid-template-columns:1fr 1fr}.ops-assets-account-row{grid-template-columns:1fr 48px 50px;gap:8px}.ops-assets-account-row__member{grid-column:1}.ops-assets-account-number{grid-column:1;font-size:13px}.ops-assets-copy{grid-column:2;grid-row:2}.ops-assets-row-action{grid-column:3;grid-row:2}.ops-assets-request-row,.ops-assets-request-row--admin{grid-template-columns:1fr auto}.ops-assets-request-row p,.ops-assets-request-row--admin p{grid-column:1/-1}.ops-assets-request-actions{grid-column:1/-1;grid-row:auto}.ops-assets-form{grid-template-columns:1fr;padding:16px}.ops-assets-form label.is-wide,.ops-assets-form__actions{grid-column:1}.ops-assets-form__actions{align-items:stretch;flex-direction:column}.ops-assets-form__actions>div{width:100%;margin:0}.ops-assets-form__actions .ops-assets-btn{flex:1}.ops-assets-modal{width:min(100%,calc(100vw - 20px));max-height:calc(100dvh - 20px)}}
+
+/* v1.47.6 · 플리카 계좌 별칭 관리자 */
+.ops-assets-account-aliases{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+.ops-assets-account-aliases i{display:inline-flex;align-items:center;min-height:19px;padding:0 6px;border:1px solid rgba(255,181,46,.14);border-radius:999px;background:rgba(255,181,46,.055);color:#bfa56f;font-size:9px;font-style:normal;font-weight:800;line-height:1}
+.ops-assets-alias-manager{display:grid;gap:12px;margin:0 20px 20px;padding:15px;border:1px solid rgba(255,181,46,.14);border-radius:12px;background:#0d0f12}
+.ops-assets-alias-manager__head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.ops-assets-alias-manager__head>div{display:grid;gap:4px}
+.ops-assets-alias-manager__head strong{color:#eceef1;font-size:13px}
+.ops-assets-alias-manager__head small,.ops-assets-alias-hint,.ops-assets-alias-empty{color:#737a84;font-size:10px;line-height:1.5}
+.ops-assets-alias-manager__head>span{padding:4px 7px;border:1px solid rgba(255,181,46,.18);border-radius:999px;background:rgba(255,181,46,.06);color:#ffc55d;font-size:9px;font-weight:900;white-space:nowrap}
+.ops-assets-alias-add{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.ops-assets-alias-add input{width:100%;height:40px;padding:0 12px;border:1px solid rgba(255,255,255,.09);border-radius:9px;background:#0a0c0f;color:#edf0f3;font:inherit;outline:none}
+.ops-assets-alias-add input:focus{border-color:rgba(255,181,46,.65);box-shadow:0 0 0 3px rgba(255,181,46,.08)}
+.ops-assets-alias-list{display:flex;flex-wrap:wrap;gap:7px;min-height:25px}
+.ops-assets-alias-chip{display:inline-flex;align-items:center;gap:5px;min-height:28px;padding:0 5px 0 9px;border:1px solid rgba(255,255,255,.08);border-radius:999px;background:#15181d}
+.ops-assets-alias-chip b{color:#c9cdd3;font-size:10px;font-weight:850}
+.ops-assets-alias-chip button{display:grid;place-items:center;width:20px;height:20px;padding:0;border:0;border-radius:50%;background:rgba(255,86,86,.08);color:#bd7777;font-size:13px;cursor:pointer}
+.ops-assets-alias-chip button:hover{background:rgba(255,86,86,.15);color:#ff9696}
+.ops-assets-alias-hint{margin:0}
+@media(max-width:640px){.ops-assets-alias-manager{margin:0 16px 16px}.ops-assets-alias-add{grid-template-columns:1fr}.ops-assets-alias-add .ops-assets-btn{width:100%}}

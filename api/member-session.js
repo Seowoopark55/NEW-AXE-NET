@@ -20,7 +20,7 @@ const SHORTCUT_TARGET_KEYS = new Set([
   'home',
   'notice.general', 'notice.patch', 'notice.operations',
   'info.craft', 'info.quest', 'info.process', 'info.modbook', 'info.preset', 'info.skill',
-  'outlaw.stats', 'outlaw.guide', 'outlaw.map',
+  'outlaw.stats', 'outlaw.guide', 'outlaw.map', 'tube',
   'fund.overview', 'fund.payment', 'fund.submissions',
   'fund.review', 'fund.history', 'fund.balance', 'fund.feeRules', 'fund.exemptions', 'fund.integrity', 'fund.fundMembers',
   'assets.accounts', 'assets.company', 'assets.returns', 'members',
@@ -90,11 +90,6 @@ export default async function handler(req, res) {
       await revokeMemberSession(token);
       clearMemberSessionCookie(req, res);
       return sendJson(res, 200, { ok: true });
-    }
-
-    // AXE TUBE는 운영 종료 상태입니다. 과거 DB 데이터는 보존하되 신규 호출은 차단합니다.
-    if (action.startsWith('tube_')) {
-      return sendJson(res, 410, { ok: false, message: 'AXE TUBE 기능은 운영 종료되었습니다.' });
     }
 
     const context = await requireMemberSession(token);

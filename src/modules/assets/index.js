@@ -8,11 +8,13 @@ import {
   deactivateCompanyAsset,
   deactivateCompanyAssetReturn,
   deactivateMemberAccount,
+  deactivateMemberAccountAlias,
   fetchAdminAssetData,
   reviewMemberAccountRequest,
   saveCompanyAsset,
   saveCompanyAssetReturn,
   saveMemberAccount,
+  saveMemberAccountAlias,
 } from './assetsService.js';
 import { renderAssetsView } from './assetsView.js';
 
@@ -153,6 +155,38 @@ export async function initAssetsModule() {
       }
     },
 
+    async onAddAccountAlias(memberKey, alias) {
+      requireAdmin();
+      const text = String(alias || '').trim();
+      if (!memberKey) {
+        window.alert('계좌를 먼저 저장한 뒤 별칭을 관리하세요.');
+        return;
+      }
+      if (!text) {
+        window.alert('추가할 별칭을 입력하세요.');
+        return;
+      }
+      try {
+        await saveMemberAccountAlias(memberKey, text);
+        setMessage(`별칭 "${text}"을 추가했습니다.`);
+        await reloadAssetsData({ preserveMessage: true, preserveModal: true });
+      } catch (error) {
+        window.alert(formatAssetError(error));
+      }
+    },
+
+    async onDeleteAccountAlias(id, alias) {
+      requireAdmin();
+      if (!window.confirm(`별칭 "${alias || ''}"을 삭제할까요?`)) return;
+      try {
+        await deactivateMemberAccountAlias(id);
+        setMessage('계좌 별칭을 삭제했습니다.');
+        await reloadAssetsData({ preserveMessage: true, preserveModal: true });
+      } catch (error) {
+        window.alert(formatAssetError(error));
+      }
+    },
+
     async onDeactivateAsset(id) {
       requireAdmin();
       if (!window.confirm('이 회사 자산을 목록에서 내릴까요?')) return;
@@ -204,6 +238,7 @@ async function reloadAssetsData(options = {}) {
       let companyAssets = [];
       let returns = [];
       let accounts = [];
+      let accountAliases = [];
       let adminRequests = [];
       let ownRequests = [];
 
@@ -212,6 +247,7 @@ async function reloadAssetsData(options = {}) {
         companyAssets = adminData.assets;
         returns = adminData.returns;
         accounts = adminData.accounts;
+        accountAliases = adminData.aliases || [];
         adminRequests = adminData.requests;
       } else if (isMember) {
         accounts = await fetchMemberAccounts();
@@ -229,6 +265,7 @@ async function reloadAssetsData(options = {}) {
         companyAssets,
         returns,
         accounts,
+        accountAliases,
         adminRequests,
         ownRequests,
         tab: asset.tab !== 'accounts' && !isAdmin ? 'accounts' : asset.tab,
@@ -307,7 +344,10 @@ function formatAssetError(error) {
   const message = String(error?.message || error || '오류가 발생했습니다.');
   const lower = message.toLowerCase();
   if (message.includes('관리자 권한')) return '관리자 권한이 필요합니다.';
-  if (message.includes('026_assets_plika.sql')) return message;
+  if (message.includes('026_assets_plika.sql') || message.includes('050_member_account_alias_admin.sql')) return message;
+  if (lower.includes('member_account_aliases') || lower.includes('save_member_account_alias') || lower.includes('deactivate_member_account_alias')) {
+    return '계좌 별칭 관리 DB 기능이 아직 준비되지 않았습니다. 050_member_account_alias_admin.sql을 먼저 적용하세요.';
+  }
   if (lower.includes('relation') && (lower.includes('member_accounts') || lower.includes('company_assets'))) {
     return '자산·계좌 데이터베이스가 아직 준비되지 않았습니다. 026_assets_plika.sql을 먼저 적용하세요.';
   }

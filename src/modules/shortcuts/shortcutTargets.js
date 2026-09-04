@@ -17,6 +17,7 @@ export const SHORTCUT_TARGETS = [
   { key: 'outlaw.stats', group: '콘텐츠', label: '무법지대 · 통계', module: 'outlaw', tab: 'stats' },
   { key: 'outlaw.guide', group: '콘텐츠', label: '무법지대 · 공략', module: 'outlaw', tab: 'guide' },
   { key: 'outlaw.map', group: '콘텐츠', label: '무법지대 · 브리핑맵', module: 'outlaw', tab: 'map' },
+  { key: 'tube', group: '콘텐츠', label: 'AXE TUBE', module: 'tube' },
 
   { key: 'fund.overview', group: '운영 · 공금', label: '공금 · 월별현황', module: 'fund', section: 'overview' },
   { key: 'fund.payment', group: '운영 · 공금', label: '공금 · 납부', module: 'fund', section: 'payment' },
@@ -99,6 +100,15 @@ export function navigateToShortcut(targetKey) {
       };
     }
 
+    if (target.module === 'tube') {
+      next = {
+        ...next,
+        tube: {
+          ...state.tube,
+          selectedTubeId: null,
+        },
+      };
+    }
 
     if (target.module === 'fund') {
       next = {

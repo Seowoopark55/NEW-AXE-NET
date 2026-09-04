@@ -1,7 +1,7 @@
 import { api } from '../../api/api.js';
 
 export async function fetchAdminAssetData() {
-  const [assets, returns, accounts, requests] = await Promise.all([
+  const [assets, returns, accounts, aliases, requests] = await Promise.all([
     api.select('company_assets', {
       columns: 'id,legacy_no,member_key,owner_name,asset_category,asset_name,acquisition_method,acquired_at,personal_cost,status,note,active,sort_order,created_at,updated_at',
       orderBy: 'sort_order',
@@ -20,6 +20,12 @@ export async function fetchAdminAssetData() {
       ascending: true,
       limit: 1000,
     }),
+    api.select('member_account_aliases', {
+      columns: 'id,member_key,alias,alias_key,enabled,created_by,updated_by,created_at,updated_at',
+      orderBy: 'alias',
+      ascending: true,
+      limit: 1000,
+    }),
     api.select('member_account_requests', {
       columns: 'id,member_key,nickname,account,note,status,reviewer,review_note,reviewed_at,created_at,updated_at',
       orderBy: 'created_at',
@@ -32,6 +38,7 @@ export async function fetchAdminAssetData() {
     assets: assets.filter((item) => item.active !== false),
     returns: returns.filter((item) => item.active !== false),
     accounts,
+    aliases: aliases.filter((item) => item.enabled !== false),
     requests,
   };
 }
@@ -86,6 +93,17 @@ export async function saveMemberAccount(values) {
 
 export async function deactivateMemberAccount(memberKey) {
   return api.rpc('deactivate_member_account', { p_member_key: String(memberKey || '').trim() });
+}
+
+export async function saveMemberAccountAlias(memberKey, alias) {
+  return api.rpc('save_member_account_alias', {
+    p_member_key: String(memberKey || '').trim(),
+    p_alias: String(alias || '').trim(),
+  });
+}
+
+export async function deactivateMemberAccountAlias(id) {
+  return api.rpc('deactivate_member_account_alias', { p_id: Number(id) });
 }
 
 export async function reviewMemberAccountRequest(id, action, reviewNote = '') {

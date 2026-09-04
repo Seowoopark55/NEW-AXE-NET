@@ -53,9 +53,14 @@ function renderAccounts(asset, auth, members, canReadAccounts, isAdmin) {
 
   const memberMap = mapMembers(members);
   const keyword = normalize(asset.filters.accountSearch);
+  const aliasMap = groupAccountAliases(asset.accountAliases || []);
   const accounts = asset.accounts
-    .map((row) => ({ ...row, nickname: row.nickname || memberMap.get(row.member_key)?.nickname || row.member_key }))
-    .filter((row) => !keyword || normalize(`${row.nickname} ${row.account} ${row.note || ''}`).includes(keyword));
+    .map((row) => ({
+      ...row,
+      nickname: row.nickname || memberMap.get(row.member_key)?.nickname || row.member_key,
+      aliases: aliasMap.get(row.member_key) || [],
+    }))
+    .filter((row) => !keyword || normalize(`${row.nickname} ${row.account} ${row.note || ''} ${(row.aliases || []).map((item) => item.alias).join(' ')}`).includes(keyword));
   const pending = (asset.adminRequests || []).filter((row) => row.status === 'pending');
   const ownPending = (asset.ownRequests || []).find((row) => row.status === 'pending');
 
@@ -89,6 +94,7 @@ function accountRow(row, isAdmin) {
       <div class="ops-assets-account-row__member">
         <span>${h(row.nickname || row.member_key)}</span>
         ${row.enabled === false ? '<small>사용중지</small>' : ''}
+        ${row.aliases?.length ? `<div class="ops-assets-account-aliases">${row.aliases.slice(0, 3).map((item) => `<i>${h(item.alias)}</i>`).join('')}${row.aliases.length > 3 ? `<i>+${row.aliases.length - 3}</i>` : ''}</div>` : ''}
       </div>
       <button class="ops-assets-account-number" type="button" data-assets-copy="${a(row.account)}" title="계좌번호 복사">${h(row.account)}</button>
       <button class="ops-assets-copy" type="button" data-assets-copy="${a(row.account)}">복사</button>
@@ -245,7 +251,7 @@ function renderModal(asset, auth, members) {
   const item = modalItem(asset, modal);
   let content = '';
   if (modal.type === 'member-request') content = memberRequestForm(auth, asset, item);
-  if (modal.type === 'account') content = accountForm(members, item);
+  if (modal.type === 'account') content = accountForm(members, item, asset.accountAliases || []);
   if (modal.type === 'asset') content = assetForm(members, item);
   if (modal.type === 'return') content = returnForm(members, asset.companyAssets, item);
   if (!content) return '';
@@ -275,8 +281,9 @@ function memberRequestForm(auth, asset) {
   `;
 }
 
-function accountForm(members, item) {
+function accountForm(members, item, aliases = []) {
   const selectedKey = item?.member_key || '';
+  const currentAliases = aliases.filter((row) => row.member_key === selectedKey && row.enabled !== false);
   return `
     <form class="ops-assets-form" data-assets-form="account">
       <label class="is-wide"><span>멤버</span>${item ? `<input value="${a(memberName(members, selectedKey))}" disabled /><input type="hidden" name="member_key" value="${a(selectedKey)}" />` : memberSelect(members, selectedKey, 'member_key', true)}</label>
@@ -287,7 +294,22 @@ function accountForm(members, item) {
         ${item ? `<button class="ops-assets-btn ops-assets-btn--danger" type="button" data-assets-deactivate-account="${a(item.member_key)}">사용중지</button>` : '<span></span>'}
         <div><button class="ops-assets-btn" type="button" data-assets-modal-close>취소</button><button class="ops-assets-btn ops-assets-btn--gold" type="submit">저장</button></div>
       </div>
-    </form>`;
+    </form>
+    <section class="ops-assets-alias-manager">
+      <div class="ops-assets-alias-manager__head">
+        <div><strong>계좌 별칭</strong><small>Discord 계좌 조회에서 같은 멤버를 찾을 때 사용할 이름입니다.</small></div>
+        ${item ? `<span>${currentAliases.length}개</span>` : ''}
+      </div>
+      ${item ? `
+        <div class="ops-assets-alias-add">
+          <input type="text" maxlength="40" autocomplete="off" placeholder="예: 야미 / 얌이" data-assets-alias-input />
+          <button class="ops-assets-btn ops-assets-btn--gold" type="button" data-assets-alias-add="${a(selectedKey)}">별칭 추가</button>
+        </div>
+        <div class="ops-assets-alias-list">
+          ${currentAliases.length ? currentAliases.map((row) => `<span class="ops-assets-alias-chip"><b>${h(row.alias)}</b><button type="button" title="별칭 삭제" data-assets-alias-delete="${Number(row.id)}" data-assets-alias-name="${a(row.alias)}">×</button></span>`).join('') : '<small class="ops-assets-alias-empty">등록된 별칭이 없습니다.</small>'}
+        </div>
+      ` : '<p class="ops-assets-alias-hint">계좌를 먼저 저장한 뒤 관리 버튼을 다시 열면 별칭을 추가할 수 있습니다.</p>'}
+    </section>`;
 }
 
 function assetForm(members, item) {
@@ -361,6 +383,17 @@ function bindEvents(root, actions) {
 
   root.querySelectorAll('[data-assets-review]').forEach((button) => button.addEventListener('click', () => actions.onReviewRequest?.(Number(button.dataset.requestId), button.dataset.assetsReview)));
   root.querySelectorAll('[data-assets-deactivate-account]').forEach((button) => button.addEventListener('click', () => actions.onDeactivateAccount?.(button.dataset.assetsDeactivateAccount)));
+  root.querySelectorAll('[data-assets-alias-add]').forEach((button) => button.addEventListener('click', () => {
+    const input = root.querySelector('[data-assets-alias-input]');
+    actions.onAddAccountAlias?.(button.dataset.assetsAliasAdd, input?.value || '');
+  }));
+  root.querySelector('[data-assets-alias-input]')?.addEventListener('keydown', (event) => {
+    if (event.key !== 'Enter' || event.isComposing) return;
+    event.preventDefault();
+    const button = root.querySelector('[data-assets-alias-add]');
+    if (button) actions.onAddAccountAlias?.(button.dataset.assetsAliasAdd, event.currentTarget.value || '');
+  });
+  root.querySelectorAll('[data-assets-alias-delete]').forEach((button) => button.addEventListener('click', () => actions.onDeleteAccountAlias?.(Number(button.dataset.assetsAliasDelete), button.dataset.assetsAliasName || '')));
   root.querySelectorAll('[data-assets-deactivate-asset]').forEach((button) => button.addEventListener('click', () => actions.onDeactivateAsset?.(Number(button.dataset.assetsDeactivateAsset))));
   root.querySelectorAll('[data-assets-deactivate-return]').forEach((button) => button.addEventListener('click', () => actions.onDeactivateReturn?.(Number(button.dataset.assetsDeactivateReturn))));
 
@@ -404,6 +437,16 @@ function memberSelect(members, selected, name, required = false, syncOwner = fal
 function memberName(members, key) { return members.find((m) => m.member_key === key)?.nickname || key || ''; }
 function mapMembers(members) { return new Map(members.map((m) => [m.member_key, m])); }
 function unique(values) { return [...new Set(values.map((v) => String(v || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ko')); }
+function groupAccountAliases(rows = []) {
+  const map = new Map();
+  rows.filter((row) => row?.enabled !== false).forEach((row) => {
+    const key = String(row?.member_key || '');
+    if (!key) return;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(row);
+  });
+  return map;
+}
 function normalize(value) { return String(value || '').trim().toLowerCase().replace(/\s+/g, ' '); }
 function assetAcquiredDisplay(row) {
   const value = String(row?.acquired_at || '').trim();
