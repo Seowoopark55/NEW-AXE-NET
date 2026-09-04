@@ -27,26 +27,26 @@ export function renderFundMembersView(state) {
 
   return `
     <div class="fund-admin fund-admin--members">
-      ${renderPageHeader('멤버관리', '공금 대상 여부와 개별 기준만 관리합니다. 회원 원본 정보는 멤버 메뉴에서 관리합니다.', renderPeriodSelect(fund.periods, period))}
+      ${renderPageHeader('멤버관리', '공금 납부 대상 여부와 기준일을 관리합니다. 주차별 면제는 면제관리에서 별도로 설정합니다.', renderPeriodSelect(fund.periods, period))}
       ${admin.message ? `<div class="fund-inline-success">${escapeHtml(admin.message)}</div>` : ''}
       ${admin.error ? `<div class="fund-inline-error">${escapeHtml(admin.error)}</div>` : ''}
 
       <section class="fund-admin-panel fund-admin-panel--members">
         <div class="fund-admin-panel__head fund-member-panel-head">
           <div>
-            <h3>공금 대상 설정</h3>
-            <p>목록은 간단하게 확인하고, 필요한 멤버만 <b>관리</b>를 열어 기준일과 메모를 수정합니다.</p>
+            <h3>공금 납부 대상 설정</h3>
+            <p>목록에서는 현재 상태만 확인하고, 변경은 필요한 멤버의 <b>관리</b>에서 저장합니다.</p>
           </div>
           <div class="fund-member-summary" aria-label="멤버 상태 요약">
-            <span class="is-target"><small>공금 대상</small><b>${targetRows.length}</b></span>
-            <span class="is-excluded"><small>제외</small><b>${excludedRows.length}</b></span>
+            <span class="is-target"><small>납부 대상</small><b>${targetRows.length}</b></span>
+            <span class="is-excluded"><small>비대상</small><b>${excludedRows.length}</b></span>
             <span class="is-inactive"><small>비활성</small><b>${inactiveRows.length}</b></span>
           </div>
         </div>
 
-        ${renderMemberGroup('공금 대상', '현재 공금 납부 대상 멤버', targetRows, settings, statusMap, admin.saving, 'target')}
-        ${renderMemberGroup('예외 · 제외', '공금 대상에서 개별 제외된 멤버', excludedRows, settings, statusMap, admin.saving, 'excluded')}
-        ${renderMemberGroup('비활성 멤버', '퇴사·비활성 등 현재 공금 대상이 아닌 멤버', inactiveRows, settings, statusMap, admin.saving, 'inactive')}
+        ${renderMemberGroup('공금 납부 대상', '원칙적으로 공금을 납부하는 멤버 · 면제 여부와는 별개입니다.', targetRows, settings, statusMap, admin.saving, 'target')}
+        ${renderMemberGroup('공금 비대상', '주차별 공금 계산에서 제외된 멤버', excludedRows, settings, statusMap, admin.saving, 'excluded')}
+        ${renderMemberGroup('비활성 멤버', '퇴사·비활성 등 현재 공금 관리 대상이 아닌 멤버', inactiveRows, settings, statusMap, admin.saving, 'inactive')}
       </section>
     </div>
   `;
@@ -62,7 +62,7 @@ function renderMemberGroup(title, description, rows, settings, statusMap, saving
       </div>
       ${rows.length ? `
         <div class="fund-admin-member__columns" aria-hidden="true">
-          <span>멤버</span><span>이번 주</span><span>공금 대상</span><span>적용 기준일</span><span>관리</span>
+          <span>멤버</span><span>이번 주</span><span>납부 구분</span><span>적용 기준일</span><span>관리</span>
         </div>
         <div class="fund-admin-member-list">
           ${rows.map((member) => renderMember(member, settings.get(member.member_key), statusMap.get(member.nickname), saving)).join('')}
@@ -80,7 +80,7 @@ function renderMember(member, setting, status, saving) {
   const hasNote = Boolean(String(setting?.note || '').trim());
 
   return `
-    <form class="fund-admin-member ${!memberActive ? 'is-inactive' : ''} ${memberActive && !enabled ? 'is-excluded' : ''}" data-fund-member-setting-form data-member-key="${escapeAttribute(member.member_key)}" data-nickname="${escapeAttribute(member.nickname)}">
+    <form class="fund-admin-member ${!memberActive ? 'is-inactive' : ''} ${memberActive && !enabled ? 'is-excluded' : ''}" data-fund-member-setting-form data-member-key="${escapeAttribute(member.member_key)}" data-nickname="${escapeAttribute(member.nickname)}" data-joined-date="${escapeAttribute(member.joined_date || '')}">
       <div class="fund-admin-member__main">
         <div class="fund-admin-member__identity">
           <div class="fund-admin-member__name-line">
@@ -90,11 +90,10 @@ function renderMember(member, setting, status, saving) {
           ${(hasOverride || hasNote) ? `<div class="fund-admin-member__flags">${hasOverride ? '<span>기준일 보정</span>' : ''}${hasNote ? '<span>메모</span>' : ''}</div>` : ''}
         </div>
         <div class="fund-admin-member__status">${status ? renderStatusBadge(status.status) : '<span class="fund-member-status-empty">—</span>'}</div>
-        <label class="fund-admin-switch">
-          <input type="checkbox" name="enabled" ${enabled ? 'checked' : ''} ${!memberActive ? 'disabled' : ''} />
-          <span></span><b>${memberActive ? (enabled ? '대상' : '제외') : '비활성'}</b>
-        </label>
-        <div class="fund-admin-member__date" title="${hasOverride ? `원 가입일 ${formatDate(member.joined_date)}` : '가입일 기준'}">
+        <div class="fund-admin-member__eligibility ${memberActive ? (enabled ? 'is-target' : 'is-excluded') : 'is-inactive'}">
+          <span></span><b>${memberActive ? (enabled ? '납부 대상' : '비대상') : '비활성'}</b>
+        </div>
+        <div class="fund-admin-member__date" title="${hasOverride ? `기본 가입일 ${formatDate(member.joined_date)}` : '기본 가입일 기준'}">
           <b>${formatDate(effectiveDate)}</b>
           ${hasOverride ? '<small>보정</small>' : ''}
         </div>
@@ -104,12 +103,49 @@ function renderMember(member, setting, status, saving) {
         <div class="fund-admin-member__editor-wrap" data-fund-member-editor hidden>
           <div class="fund-admin-member__editor">
             <div class="fund-admin-member__editor-head">
-              <div><strong>${escapeHtml(member.nickname)}</strong><span>개별 공금 설정</span></div>
-              <small>기본 가입일 ${formatDate(member.joined_date)}</small>
+              <div>
+                <strong>${escapeHtml(member.nickname)}</strong>
+                <span>개별 공금 설정</span>
+              </div>
+              <small>회원 기본 가입일 ${formatDate(member.joined_date)}</small>
             </div>
-            <label class="fund-field"><span>공금 기준일 보정</span><input type="date" name="join_date_override" value="${escapeAttribute(setting?.join_date_override || '')}" ${!memberActive ? 'disabled' : ''} /><small>비워두면 기본 가입일을 사용합니다.</small></label>
-            <label class="fund-field fund-field--member-note"><span>운영 메모</span><input name="note" maxlength="200" value="${escapeAttribute(setting?.note || '')}" placeholder="필요한 경우만 입력" ${!memberActive ? 'disabled' : ''} /></label>
-            <button class="fund-secondary-button fund-secondary-button--small" type="submit" ${!memberActive || saving ? 'disabled' : ''}>저장</button>
+
+            <div class="fund-admin-member__editor-grid">
+              <label class="fund-field fund-field--member-setting">
+                <span>공금 납부 여부</span>
+                <select name="enabled" ${!memberActive ? 'disabled' : ''}>
+                  <option value="on" ${enabled ? 'selected' : ''}>공금 납부 대상</option>
+                  <option value="off" ${!enabled ? 'selected' : ''}>공금 비대상</option>
+                </select>
+                <small>비대상은 주차별 공금 계산에서 제외됩니다.</small>
+              </label>
+
+              <label class="fund-field fund-field--member-setting">
+                <span>기준일 적용 방식</span>
+                <select name="join_date_mode" data-fund-join-mode ${!memberActive ? 'disabled' : ''}>
+                  <option value="default" ${!hasOverride ? 'selected' : ''}>기본 가입일 사용</option>
+                  <option value="custom" ${hasOverride ? 'selected' : ''}>별도 기준일 지정</option>
+                </select>
+                <small>기본값 ${formatDate(member.joined_date)}</small>
+              </label>
+
+              <label class="fund-field fund-field--member-setting" data-fund-custom-date ${!hasOverride ? 'hidden' : ''}>
+                <span>별도 기준일</span>
+                <input type="date" name="join_date_override" value="${escapeAttribute(setting?.join_date_override || '')}" ${!memberActive || !hasOverride ? 'disabled' : ''} />
+                <small>직접 입력 대신 달력에서 선택할 수 있습니다.</small>
+              </label>
+
+              <label class="fund-field fund-field--member-note">
+                <span>운영 메모</span>
+                <input name="note" maxlength="200" value="${escapeAttribute(setting?.note || '')}" placeholder="필요한 경우만 입력" ${!memberActive ? 'disabled' : ''} />
+                <small>관리자 참고용이며 공금 계산에는 영향을 주지 않습니다.</small>
+              </label>
+            </div>
+
+            <div class="fund-admin-member__editor-footer">
+              <span>현재 적용 기준일 <b>${formatDate(effectiveDate)}</b></span>
+              <button class="fund-secondary-button fund-secondary-button--small" type="submit" ${!memberActive || saving ? 'disabled' : ''}>변경사항 저장</button>
+            </div>
           </div>
         </div>
       </div>

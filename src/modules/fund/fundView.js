@@ -517,6 +517,24 @@ function bindFundEvents(root, state, actions) {
     });
   });
 
+  root.querySelectorAll('[data-fund-join-mode]').forEach((select) => {
+    const form = select.closest('[data-fund-member-setting-form]');
+    const dateField = form?.querySelector('[data-fund-custom-date]');
+    const dateInput = dateField?.querySelector('input[name="join_date_override"]');
+    if (!form || !dateField || !dateInput) return;
+
+    const syncJoinDateMode = () => {
+      const custom = select.value === 'custom';
+      dateField.hidden = !custom;
+      dateInput.disabled = !custom || select.disabled;
+      if (custom && !dateInput.value) dateInput.value = String(form.dataset.joinedDate || '');
+      if (!custom) dateInput.value = '';
+    };
+
+    select.addEventListener('change', syncJoinDateMode);
+    syncJoinDateMode();
+  });
+
   root.querySelectorAll('[data-fund-member-setting-form]').forEach((form) => {
     form.addEventListener('submit', (event) => {
       event.preventDefault();
