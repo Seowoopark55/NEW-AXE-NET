@@ -225,3 +225,11 @@
 - 신규 멤버 등록 시 초기 비밀번호 설정 및 기존 멤버 비밀번호 재설정 지원
 - AXE TUBE를 웹 전용으로 정리하고 Discord/Legacy 동기화 상태 UI 제거
 - BOT 운영 스크립트 보안/경로 정리는 별도 서버 패키지에서 적용
+
+## CLEAN BASELINE · 2026-09-05
+- 애플리케이션 버전은 `1.48.1` 유지
+- Supabase migration 기준을 `001 ~ 052`로 확정
+- `052_tube_retired_sync_trigger_cleanup.sql`에 AXE TUBE 퇴역 Discord/Legacy 자동 동기화 Trigger 정리를 기록
+- AXE TUBE 웹 영상/댓글/추천 기능은 유지
+- `.env.example`의 제거된 Apps Script 자격증명 브리지 안내 삭제
+- Style / UX 정적 감사 기준 통과

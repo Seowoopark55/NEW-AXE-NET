@@ -525,7 +525,7 @@
   border-radius: 7px;
   background: rgba(255,255,255,.018);
 }
-.fund-admin-member__editor-wrap[hidden] { display: none !important; }
+.fund-admin-member__editor-wrap[hidden] { display: none; }
 .fund-admin-member__editor {
   grid-template-columns: minmax(180px,.85fr) minmax(200px,1.4fr) minmax(280px,2fr) 62px;
   align-items: end;
@@ -637,7 +637,7 @@
 }
 .fund-admin-member__editor-grid select { cursor: pointer; }
 .fund-admin-member__editor-grid input[type="date"] { cursor: pointer; color-scheme: dark; }
-.fund-admin-member__editor-grid [data-fund-custom-date][hidden] { display: none !important; }
+.fund-admin-member__editor-grid [data-fund-custom-date][hidden] { display: none; }
 .fund-field--member-note { grid-column: 1 / -1; }
 .fund-field--member-note input { min-height: 38px; }
 

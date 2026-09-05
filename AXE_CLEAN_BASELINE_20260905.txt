@@ -1,0 +1,38 @@
+AXE NET CLEAN BASELINE
+Date: 2026-09-05
+Application version: 1.48.1
+
+CURRENT PRODUCT DIRECTION
+- Supabase schema: new_axe_net
+- Member login: Supabase-only
+- AXE TUBE: WEB-only
+- Discord Forum Sync: retired
+- Legacy/Google Sheet TUBE backup sync: retired
+- Supabase migration baseline: 001 ~ 052
+
+BASELINE CLEANUP INCLUDED
+- Supabase Stage 20C TUBE retired sync cleanup recorded as migration 052
+- stale credential bridge comments removed from .env.example
+- root cleanup note corrected to current WEB-only TUBE direction
+- canonical fund CSS !important patches removed; native hidden state retained
+
+VALIDATION
+- package.json / package-lock.json version: 1.48.1
+- JavaScript syntax check: PASS
+- local relative import resolution: PASS
+- UX audit: PASS
+- Style audit: PASS
+- secret scan: no hard-coded service-role/token value detected
+- .env / node_modules / .git / backup artifacts: not included
+
+DB BASELINE AFTER STAGE 20C
+- BASE TABLE: 53
+- Index: 170
+- non-internal Trigger: 36
+- Function / Procedure: 103
+- RLS Policy: 41
+- View: 12
+
+NOTE
+Build output itself must be verified by the actual Vercel deployment because this audit environment
+could not complete npm dependency installation. Source-level validation above passed.

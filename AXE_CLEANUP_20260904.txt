@@ -1,17 +1,19 @@
-AXE NET 1차 안전 정리 (2026-09-04)
+AXE NET 안전 정리 기록 (2026-09-04)
+※ 이 문서는 당시 중간 정리 기록이며, 최종 상태는 AXE_CLEAN_BASELINE_20260905.txt를 기준으로 합니다.
 
-운영 종료 처리:
-- AXE TUBE 메인 메뉴 제거
-- 홈 AXE TUBE 영역 제거
-- AXE TUBE 모듈 초기화 중단
-- AXE TUBE 라우팅/신규 바로가기 제거
-- 멤버용 AXE TUBE API 신규 호출 410 차단
+현재 최종 방향:
+- AXE TUBE 웹 기능 유지
+- AXE TUBE Discord Forum Sync 퇴역
+- AXE TUBE Legacy Backup/Google Sheet 연동 퇴역
+- 웹의 영상/댓글/추천·비추천 기능은 Supabase 기준으로 유지
+- 멤버 로그인은 Supabase-only
 
-보존:
-- Supabase tube_* 테이블/데이터/migration은 변경하지 않음
-- src/modules/tube 소스는 롤백 참고용으로 보존하되 런타임 import/init 없음
-- 기존 DB 바로가기 데이터는 삭제하지 않음
+중간 정리 이후 변경:
+- v1.48.0에서 AXE TUBE를 웹 전용으로 다시 정리
+- Discord/Legacy 동기화 상태 UI 및 런타임 의존 제거
+- Supabase Stage 20C에서 퇴역 TUBE pending Trigger/Function 제거
+- 해당 DB 변경을 supabase/052_tube_retired_sync_trigger_cleanup.sql로 기준본에 반영
 
-검증:
-- src/api/server JS 문법 검사 통과
-- 삭제/비활성화된 Tube 모듈로의 런타임 import 없음
+주의:
+- 과거 docs/ 및 033~039 계열 migration은 이력/재구성 자료로 보존합니다.
+- 최종 DB 상태는 052까지 적용된 상태를 기준으로 합니다.
