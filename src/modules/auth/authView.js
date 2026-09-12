@@ -1,30 +1,37 @@
 export function renderAuthView(root, auth, actions = {}) {
   if (!root) return;
 
-  // Auth state updates re-render this root. Preserve the in-flight form values so
-  // the browser password manager cannot briefly replace a member nickname with
-  // a saved admin e-mail while the login button changes to "확인 중...".
-  const memberLoginDraft = readFormDraft(root.querySelector('[data-member-login-form]'), ['member_nickname', 'member_password']);
-  const memberSignupDraft = readFormDraft(root.querySelector('[data-member-signup-form]'), ['member_signup_nickname', 'member_signup_password', 'member_signup_password_confirm']);
-  const adminDraft = readFormDraft(root.querySelector('[data-admin-login-form]'), ['admin_email', 'admin_password']);
+  const modalRoot = document.querySelector('#auth-modal-root');
 
+  // Auth state updates re-render both roots. Preserve the in-flight form values so
+  // browser password managers do not replace a member nickname while the button
+  // changes to a loading state.
+  const memberLoginDraft = readFormDraft(modalRoot?.querySelector('[data-member-login-form]'), ['member_nickname', 'member_password']);
+  const memberSignupDraft = readFormDraft(modalRoot?.querySelector('[data-member-signup-form]'), ['member_signup_nickname', 'member_signup_password', 'member_signup_password_confirm']);
+  const adminDraft = readFormDraft(modalRoot?.querySelector('[data-admin-login-form]'), ['admin_email', 'admin_password']);
+
+  // Keep the compact account control inside the sticky topbar.
   root.innerHTML = `
     <div class="auth-control">
       ${renderAuthButton(auth)}
     </div>
-    ${auth.loginOpen ? renderLoginModal(auth) : ''}
   `;
 
-  restoreFormDraft(root.querySelector('[data-member-login-form]'), memberLoginDraft);
-  restoreFormDraft(root.querySelector('[data-member-signup-form]'), memberSignupDraft);
-  restoreFormDraft(root.querySelector('[data-admin-login-form]'), adminDraft);
+  // Render the actual dialog through a portal outside .ops-topbar. The topbar uses
+  // backdrop-filter, which makes fixed descendants use the header as their
+  // containing block in Chromium and can clip the top of tall signup dialogs.
+  if (modalRoot) {
+    modalRoot.innerHTML = auth.loginOpen ? renderLoginModal(auth) : '';
+  }
 
-  // Chrome may still group all saved credentials by origin even when each form
-  // uses a different autocomplete section. Keep the password manager enabled,
-  // but reject only a cross-filled identity (admin e-mail in member login or
-  // member nickname in admin login). Manually typed values are never touched.
-  installCrossCredentialAutofillGuard(root.querySelector('[data-member-login-form]'), 'member');
-  installCrossCredentialAutofillGuard(root.querySelector('[data-admin-login-form]'), 'admin');
+  const dialogScope = modalRoot || root;
+
+  restoreFormDraft(dialogScope.querySelector('[data-member-login-form]'), memberLoginDraft);
+  restoreFormDraft(dialogScope.querySelector('[data-member-signup-form]'), memberSignupDraft);
+  restoreFormDraft(dialogScope.querySelector('[data-admin-login-form]'), adminDraft);
+
+  installCrossCredentialAutofillGuard(dialogScope.querySelector('[data-member-login-form]'), 'member');
+  installCrossCredentialAutofillGuard(dialogScope.querySelector('[data-admin-login-form]'), 'admin');
 
   root.querySelector('[data-open-login]')?.addEventListener('click', () => {
     actions.onOpenLogin?.('member');
@@ -34,7 +41,7 @@ export function renderAuthView(root, auth, actions = {}) {
     actions.onOpenLogin?.('admin');
   });
 
-  root.querySelectorAll('[data-close-login]').forEach((element) => {
+  dialogScope.querySelectorAll('[data-close-login]').forEach((element) => {
     element.addEventListener('click', () => actions.onCloseLogin?.());
   });
 
@@ -42,15 +49,15 @@ export function renderAuthView(root, auth, actions = {}) {
     actions.onLogout?.();
   });
 
-  root.querySelectorAll('[data-login-mode]').forEach((button) => {
+  dialogScope.querySelectorAll('[data-login-mode]').forEach((button) => {
     button.addEventListener('click', () => actions.onLoginModeChange?.(button.dataset.loginMode));
   });
 
-  root.querySelectorAll('[data-member-auth-mode]').forEach((button) => {
+  dialogScope.querySelectorAll('[data-member-auth-mode]').forEach((button) => {
     button.addEventListener('click', () => actions.onMemberAuthModeChange?.(button.dataset.memberAuthMode));
   });
 
-  const memberForm = root.querySelector('[data-member-login-form]');
+  const memberForm = dialogScope.querySelector('[data-member-login-form]');
   memberForm?.addEventListener('submit', (event) => {
     event.preventDefault();
     const formData = new FormData(memberForm);
@@ -60,7 +67,7 @@ export function renderAuthView(root, auth, actions = {}) {
     });
   });
 
-  const memberSignupForm = root.querySelector('[data-member-signup-form]');
+  const memberSignupForm = dialogScope.querySelector('[data-member-signup-form]');
   memberSignupForm?.addEventListener('submit', (event) => {
     event.preventDefault();
     const formData = new FormData(memberSignupForm);
@@ -71,7 +78,7 @@ export function renderAuthView(root, auth, actions = {}) {
     });
   });
 
-  const adminForm = root.querySelector('[data-admin-login-form]');
+  const adminForm = dialogScope.querySelector('[data-admin-login-form]');
   adminForm?.addEventListener('submit', (event) => {
     event.preventDefault();
     const formData = new FormData(adminForm);

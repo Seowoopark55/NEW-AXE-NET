@@ -64,6 +64,11 @@ export function renderAppShell(root) {
         </div>
       </header>
 
+      <!-- Auth dialogs must live outside .ops-topbar. Chrome treats an ancestor
+           with backdrop-filter as a containing block for fixed descendants,
+           which caused tall signup dialogs to be clipped by the 56px header. -->
+      <div id="auth-modal-root"></div>
+
       <section class="ops-sitehead" aria-label="AXE NET 브랜드 배너와 주요 메뉴">
         <div class="ops-sitehead__inner">
           <button class="ops-hero ops-home-trigger" type="button" data-nav-home aria-label="AXE NET 홈으로 이동" title="홈으로 이동">

@@ -1,0 +1,15 @@
+NEW AXE NET v1.47.7 · AUTH MODAL + SESSION HOTFIX R1
+
+적용 방식
+1. 이 전체 폴더 내용을 기존 NEW AXE NET GitHub 프로젝트에 전체 복사/덮어쓰기
+2. Git commit / push
+3. Vercel 자동 배포 확인
+
+DB / SQL 변경 없음
+환경변수 변경 없음
+AXE BOT 배포 명령 사용 금지
+
+확인 항목
+- 짧은 브라우저 높이 / DevTools 도킹 상태에서도 로그인·첫 가입 창 상단이 보이는지
+- 로그아웃 상태 첫 접속에서 /api/member-session validate가 401이 아니라 200으로 끝나는지
+- 첫 가입 / 로그인 / 로그아웃 정상 동작

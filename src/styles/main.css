@@ -371,6 +371,17 @@ button { -webkit-tap-highlight-color: transparent; }
   color: #d1ad67;
 }
 
+
+/* AXE NET 1.47.7 · auth dialog viewport portal */
+#auth-modal-root {
+  position: relative;
+  z-index: 100;
+}
+
+#auth-modal-root:empty {
+  display: none;
+}
+
 .auth-modal-backdrop {
   position: fixed;
   inset: 0;
@@ -387,6 +398,8 @@ button { -webkit-tap-highlight-color: transparent; }
   width: min(450px, calc(100vw - 32px));
   max-height: calc(100dvh - 32px);
   transform: translate(-50%, -50%);
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   overflow-x: hidden;
   overflow-y: auto;
   border: 1px solid rgba(255,179,33,.18);

@@ -92,11 +92,40 @@ export default async function handler(req, res) {
       return sendJson(res, 200, { ok: true });
     }
 
-    const context = await requireMemberSession(token);
+    // Session validation is a bootstrap probe, not an authenticated operation.
+    // Returning 401 for a normal logged-out visitor creates a red network/console
+    // error even though the client handles it. Keep all real actions protected,
+    // but make validate return a clean 200 authenticated:false state.
+    if (action === 'validate' && !token) {
+      return sendJson(res, 200, {
+        ok: true,
+        authenticated: false,
+        member: null,
+        expires_at: null,
+      });
+    }
+
+    let context;
+    try {
+      context = await requireMemberSession(token);
+    } catch (sessionError) {
+      const normalized = normalizeApiError(sessionError);
+      if (action === 'validate' && (normalized.status === 401 || normalized.status === 403)) {
+        clearMemberSessionCookie(req, res);
+        return sendJson(res, 200, {
+          ok: true,
+          authenticated: false,
+          member: null,
+          expires_at: null,
+        });
+      }
+      throw sessionError;
+    }
 
     if (action === 'validate') {
       return sendJson(res, 200, {
         ok: true,
+        authenticated: true,
         member: publicMember(context.member),
         expires_at: context.session.expires_at,
       });

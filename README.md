@@ -1,4 +1,13 @@
-# AXE NET PRO v1.47.6
+# NEW AXE NET 1.47.7 · AUTH MODAL + SESSION HOTFIX R1
+
+- Fixed tall member signup/login dialogs being clipped by the sticky topbar.
+  Root cause: Chromium treats `backdrop-filter` ancestors as containing blocks for fixed descendants.
+  Auth dialogs now render through a viewport-level portal outside `.ops-topbar`.
+- `/api/member-session` `validate` now returns HTTP 200 with `authenticated:false` for normal logged-out/expired sessions, removing the misleading red 401 console/network error.
+- All non-validation member-session actions still require a valid member session and keep their existing 401/403 protection.
+- No database migration and no environment-variable change required.
+
+# AXE NET PRO v1.47.7
 
 ## v1.47.6 · 신규 멤버 회원가입 복구 HOTFIX
 - Supabase 멤버 인증 전환 이후 빠졌던 `첫 가입` UI/API를 복구했습니다.

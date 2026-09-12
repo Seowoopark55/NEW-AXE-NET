@@ -43,6 +43,7 @@ export async function signUpMember(nickname, password) {
 export async function restoreMemberSession() {
   try {
     const data = await postJson('/api/member-session', { action: 'validate' });
+    if (data.authenticated === false || !data.member) return null;
     return {
       member: data.member,
       expires_at: data.expires_at,
