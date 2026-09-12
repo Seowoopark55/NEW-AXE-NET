@@ -489,52 +489,6 @@ function bindFundEvents(root, state, actions) {
     });
   });
 
-  root.querySelectorAll('[data-fund-member-manage-toggle]').forEach((button) => {
-    button.addEventListener('click', () => {
-      const form = button.closest('[data-fund-member-setting-form]');
-      if (!form) return;
-      const editor = form.querySelector('[data-fund-member-editor]');
-      if (!editor) return;
-      const willOpen = editor.hidden;
-
-      root.querySelectorAll('[data-fund-member-setting-form]').forEach((otherForm) => {
-        const otherEditor = otherForm.querySelector('[data-fund-member-editor]');
-        const otherButton = otherForm.querySelector('[data-fund-member-manage-toggle]');
-        if (otherEditor) otherEditor.hidden = true;
-        if (otherButton) {
-          otherButton.setAttribute('aria-expanded', 'false');
-          otherButton.textContent = '관리';
-        }
-        otherForm.classList.remove('is-managing');
-      });
-
-      if (willOpen) {
-        editor.hidden = false;
-        button.setAttribute('aria-expanded', 'true');
-        button.textContent = '닫기';
-        form.classList.add('is-managing');
-      }
-    });
-  });
-
-  root.querySelectorAll('[data-fund-join-mode]').forEach((select) => {
-    const form = select.closest('[data-fund-member-setting-form]');
-    const dateField = form?.querySelector('[data-fund-custom-date]');
-    const dateInput = dateField?.querySelector('input[name="join_date_override"]');
-    if (!form || !dateField || !dateInput) return;
-
-    const syncJoinDateMode = () => {
-      const custom = select.value === 'custom';
-      dateField.hidden = !custom;
-      dateInput.disabled = !custom || select.disabled;
-      if (custom && !dateInput.value) dateInput.value = String(form.dataset.joinedDate || '');
-      if (!custom) dateInput.value = '';
-    };
-
-    select.addEventListener('change', syncJoinDateMode);
-    syncJoinDateMode();
-  });
-
   root.querySelectorAll('[data-fund-member-setting-form]').forEach((form) => {
     form.addEventListener('submit', (event) => {
       event.preventDefault();

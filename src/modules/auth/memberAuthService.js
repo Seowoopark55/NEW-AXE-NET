@@ -31,6 +31,15 @@ export async function signInMember(nickname, password) {
   };
 }
 
+export async function signUpMember(nickname, password) {
+  const data = await postJson('/api/member-signup', { nickname, password });
+  return {
+    member: data.member,
+    expires_at: data.expires_at,
+    admin_bridge: data.admin_bridge || null,
+  };
+}
+
 export async function restoreMemberSession() {
   try {
     const data = await postJson('/api/member-session', { action: 'validate' });

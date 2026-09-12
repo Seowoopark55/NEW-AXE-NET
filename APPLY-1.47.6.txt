@@ -1,0 +1,45 @@
+NEW AXE NET v1.47.6 · MEMBER SIGNUP HOTFIX R1
+
+증상
+- 신규 입사자가 AXE NET에서 회원가입할 방법이 없어 로그인할 수 없음
+
+원인
+- Supabase 멤버 자격증명 전환 이후 현재 웹에는 로그인/legacy first-login 이관만 남아 있었고,
+  신규 멤버가 최초 credential을 만드는 회원가입 UI/API가 빠져 있었음.
+
+수정
+- 로그인 모달 > 멤버 로그인에 `로그인 / 첫 가입` 탭 추가
+- 신규 `/api/member-signup` 추가
+- 관리자 멤버 명단(new_axe_net.members)에 active 상태로 등록된 멤버만 가입 허용
+- 기존 회원가입 서버를 1회 안전 브리지로 사용해 기존 미이관 닉네임 탈취 방지
+- 성공 즉시 Supabase member_credentials에 bcrypt 이관 + 30일 멤버 세션 발급
+- 이미 가입된 닉네임은 재가입 차단 후 로그인 안내
+- admin 역할은 기존 member-admin bridge 유지
+
+Supabase SQL
+- 없음. 기존 025_member_credentials.sql 구조 그대로 사용
+
+환경변수
+- 변경 없음. 기존 AXE_LEGACY_API_URL / SUPABASE 설정 그대로 사용
+
+적용
+1. 이 폴더 전체를 현재 GitHub NEW-AXE-NET 프로젝트에 덮어쓰기
+2. PowerShell에서:
+   npm.cmd install
+   npm.cmd run audit:styles
+   npm.cmd run audit:ux
+   npm.cmd run build
+3. GitHub push -> Vercel 배포
+
+배포 후 테스트
+1. 관리자 > 멤버 관리에서 신입 닉네임이 active 상태로 존재하는지 확인
+2. 로그아웃 상태에서 로그인 클릭
+3. 멤버 로그인 > 첫 가입
+4. 해당 닉네임 + 새 비밀번호 입력
+5. 가입 완료 즉시 로그인되는지 확인
+6. 로그아웃 후 같은 계정으로 일반 로그인되는지 확인
+
+주의
+- 신입이 멤버 명단에 아직 없다면 먼저 관리자 멤버 등록을 해야 함
+- 기존에 웹 계정이 있던 멤버는 `첫 가입`이 아니라 `로그인` 사용
+- AXE BOT 배포 명령(`apply-axe-upload.sh`)은 사용하지 않음. 이건 NEW AXE NET WEB 패치임

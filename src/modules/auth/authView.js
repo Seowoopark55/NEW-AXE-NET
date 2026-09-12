@@ -4,7 +4,8 @@ export function renderAuthView(root, auth, actions = {}) {
   // Auth state updates re-render this root. Preserve the in-flight form values so
   // the browser password manager cannot briefly replace a member nickname with
   // a saved admin e-mail while the login button changes to "확인 중...".
-  const memberDraft = readFormDraft(root.querySelector('[data-member-login-form]'), ['member_nickname', 'member_password']);
+  const memberLoginDraft = readFormDraft(root.querySelector('[data-member-login-form]'), ['member_nickname', 'member_password']);
+  const memberSignupDraft = readFormDraft(root.querySelector('[data-member-signup-form]'), ['member_signup_nickname', 'member_signup_password', 'member_signup_password_confirm']);
   const adminDraft = readFormDraft(root.querySelector('[data-admin-login-form]'), ['admin_email', 'admin_password']);
 
   root.innerHTML = `
@@ -14,7 +15,8 @@ export function renderAuthView(root, auth, actions = {}) {
     ${auth.loginOpen ? renderLoginModal(auth) : ''}
   `;
 
-  restoreFormDraft(root.querySelector('[data-member-login-form]'), memberDraft);
+  restoreFormDraft(root.querySelector('[data-member-login-form]'), memberLoginDraft);
+  restoreFormDraft(root.querySelector('[data-member-signup-form]'), memberSignupDraft);
   restoreFormDraft(root.querySelector('[data-admin-login-form]'), adminDraft);
 
   // Chrome may still group all saved credentials by origin even when each form
@@ -44,6 +46,10 @@ export function renderAuthView(root, auth, actions = {}) {
     button.addEventListener('click', () => actions.onLoginModeChange?.(button.dataset.loginMode));
   });
 
+  root.querySelectorAll('[data-member-auth-mode]').forEach((button) => {
+    button.addEventListener('click', () => actions.onMemberAuthModeChange?.(button.dataset.memberAuthMode));
+  });
+
   const memberForm = root.querySelector('[data-member-login-form]');
   memberForm?.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -51,6 +57,17 @@ export function renderAuthView(root, auth, actions = {}) {
     actions.onMemberLogin?.({
       nickname: String(formData.get('member_nickname') ?? '').trim(),
       password: String(formData.get('member_password') ?? ''),
+    });
+  });
+
+  const memberSignupForm = root.querySelector('[data-member-signup-form]');
+  memberSignupForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const formData = new FormData(memberSignupForm);
+    actions.onMemberSignup?.({
+      nickname: String(formData.get('member_signup_nickname') ?? '').trim(),
+      password: String(formData.get('member_signup_password') ?? ''),
+      passwordConfirm: String(formData.get('member_signup_password_confirm') ?? ''),
     });
   });
 
@@ -138,8 +155,19 @@ function renderLoginModal(auth) {
         <button class="${mode === 'admin' ? 'active' : ''}" type="button" data-login-mode="admin">관리자 인증</button>
       </div>
 
-      ${mode === 'member' ? renderMemberLoginForm(auth) : renderAdminLoginForm(auth)}
+      ${mode === 'member' ? renderMemberAuthPanel(auth) : renderAdminLoginForm(auth)}
     </section>
+  `;
+}
+
+function renderMemberAuthPanel(auth) {
+  const memberMode = auth.memberAuthMode === 'signup' ? 'signup' : 'login';
+  return `
+    <div class="auth-member-tabs" role="tablist" aria-label="멤버 계정">
+      <button class="${memberMode === 'login' ? 'active' : ''}" type="button" data-member-auth-mode="login">로그인</button>
+      <button class="${memberMode === 'signup' ? 'active' : ''}" type="button" data-member-auth-mode="signup">첫 가입</button>
+    </div>
+    ${memberMode === 'signup' ? renderMemberSignupForm(auth) : renderMemberLoginForm(auth)}
   `;
 }
 
@@ -178,6 +206,67 @@ function renderMemberLoginForm(auth) {
 
       <div class="auth-form__help">
         로그인 후 공금납부·내 제출에서 Discord 숫자 ID를 다시 입력하지 않습니다.
+      </div>
+    </form>
+  `;
+}
+
+function renderMemberSignupForm(auth) {
+  return `
+    <form class="auth-form" id="axe-member-signup-form" name="axe-member-signup" autocomplete="on" data-member-signup-form>
+      <div class="auth-form__notice">
+        <strong>신입 · 첫 이용 멤버</strong>
+        <span>회사 멤버 명단에 등록된 닉네임으로만 가입할 수 있습니다.</span>
+      </div>
+
+      <label for="axe-member-signup-nickname">
+        <span>닉네임</span>
+        <input
+          id="axe-member-signup-nickname"
+          name="member_signup_nickname"
+          autocomplete="section-axe-member-signup username"
+          autocapitalize="off"
+          spellcheck="false"
+          placeholder="등록된 AXE NET 닉네임"
+          minlength="2"
+          required
+        />
+      </label>
+
+      <label for="axe-member-signup-password">
+        <span>사용할 비밀번호</span>
+        <input
+          id="axe-member-signup-password"
+          type="password"
+          name="member_signup_password"
+          autocomplete="section-axe-member-signup new-password"
+          minlength="4"
+          maxlength="128"
+          required
+        />
+      </label>
+
+      <label for="axe-member-signup-password-confirm">
+        <span>비밀번호 확인</span>
+        <input
+          id="axe-member-signup-password-confirm"
+          type="password"
+          name="member_signup_password_confirm"
+          autocomplete="section-axe-member-signup new-password"
+          minlength="4"
+          maxlength="128"
+          required
+        />
+      </label>
+
+      ${auth.error ? `<div class="auth-form__error">${escapeHtml(auth.error)}</div>` : ''}
+
+      <button class="auth-form__submit" type="submit" ${auth.loading ? 'disabled' : ''}>
+        ${auth.loading ? '가입 중...' : '가입하고 시작하기'}
+      </button>
+
+      <div class="auth-form__help">
+        이미 비밀번호를 만든 계정은 위의 로그인 탭을 이용하세요.
       </div>
     </form>
   `;

@@ -1,0 +1,18 @@
+AXE NET v1.46.4 적용 순서
+
+1. AXE-NET-PRO-V1.46.4.zip 압축을 풉니다.
+2. 현재 GitHub의 AXE NET 프로젝트 폴더에 압축 해제된 전체 파일을 덮어씁니다.
+3. 프로젝트 폴더 PowerShell에서 아래 순서로 확인합니다.
+
+   npm.cmd run audit:styles
+   npm.cmd run audit:ux
+   npm.cmd run build
+
+4. 모두 정상이라면 GitHub에 commit/push 합니다.
+5. Vercel 배포 후 정보 > 추천세팅에서 아래를 확인합니다.
+   - 팀복 이미지 4종 선명도
+   - 겉옷에서 상의로 바로 커서를 옮겼을 때 즉시 상의 옵션 표시
+   - 상의/하의/신발 등 모든 슬롯 간 직접 이동
+   - 겉옷/신발 tooltip이 좌우/아래에서 잘리지 않는지
+
+※ AXE NET 웹사이트 배포이므로 `bash ~/apply-axe-upload.sh`는 사용하지 않습니다.

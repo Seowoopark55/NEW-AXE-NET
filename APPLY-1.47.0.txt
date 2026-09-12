@@ -1,0 +1,17 @@
+AXE NET PRO v1.47.0 적용 순서
+
+[1] Supabase SQL Editor
+- supabase/047_modbook_preset_community.sql 전체 실행
+
+[2] 웹 전체본 적용
+- AXE-NET-PRO-V1.47.0.zip 압축 해제
+- 현재 GitHub AXE NET 프로젝트 폴더에 전체 덮어쓰기
+
+[3] Windows PowerShell 검사
+npm.cmd run audit:styles
+npm.cmd run audit:ux
+npm.cmd run build
+
+[4] GitHub push -> Vercel 배포
+
+주의: 이 버전은 AXE NET 웹 업데이트이므로 AXE BOT용 `bash ~/apply-axe-upload.sh ...` 명령을 사용하지 않습니다.

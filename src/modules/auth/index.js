@@ -10,6 +10,7 @@ import {
   restoreMemberSession,
   signInMember,
   signOutMember,
+  signUpMember,
 } from './memberAuthService.js';
 import { renderAuthView } from './authView.js';
 
@@ -26,6 +27,7 @@ export async function initAuthModule() {
             ...state.auth,
             loginOpen: true,
             loginMode: mode,
+            memberAuthMode: mode === 'member' ? (state.auth.memberAuthMode || 'login') : state.auth.memberAuthMode,
             error: null,
           },
         }));
@@ -51,6 +53,62 @@ export async function initAuthModule() {
             error: null,
           },
         }));
+      },
+
+      onMemberAuthModeChange(mode) {
+        store.updateState((state) => ({
+          ...state,
+          auth: {
+            ...state.auth,
+            memberAuthMode: mode === 'signup' ? 'signup' : 'login',
+            error: null,
+          },
+        }));
+      },
+
+      async onMemberSignup({ nickname, password, passwordConfirm }) {
+        if (!nickname || !password) return;
+        if (password !== passwordConfirm) {
+          setAuthError('비밀번호 확인이 일치하지 않습니다.');
+          return;
+        }
+        setAuthLoading(true);
+
+        try {
+          const session = await signUpMember(nickname, password);
+          store.updateState((state) => ({
+            ...state,
+            auth: {
+              ...state.auth,
+              initialized: true,
+              loading: Boolean(session.admin_bridge?.auto_signin),
+              member: session.member,
+              memberSessionExpiresAt: session.expires_at,
+              memberAuthMode: 'login',
+              error: session.admin_bridge?.mode === 'error' ? session.admin_bridge.message : null,
+              loginOpen: false,
+            },
+          }));
+
+          if (session.admin_bridge?.auto_signin && session.admin_bridge?.email) {
+            try {
+              const adminSession = await signInWithPassword(session.admin_bridge.email, session.admin_bridge.secret);
+              await applyAdminSession(adminSession, { closeLogin: true });
+            } catch (adminError) {
+              console.error('[AXE NET] member signup admin auto sign-in failed:', adminError);
+              store.updateState((state) => ({
+                ...state,
+                auth: {
+                  ...state.auth,
+                  loading: false,
+                  error: '회원가입은 완료됐지만 관리자 권한 자동 연결에 실패했습니다. 최고관리자에게 문의하세요.',
+                },
+              }));
+            }
+          }
+        } catch (error) {
+          setAuthError(translateMemberAuthError(error));
+        }
       },
 
       async onMemberLogin({ nickname, password }) {
