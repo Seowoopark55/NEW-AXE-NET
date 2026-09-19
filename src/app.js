@@ -11,6 +11,7 @@ import './modules/outlaw/outlaw.css';
 import './modules/tube/tube.css';
 import './modules/ai/ai.css';
 import './modules/system-control/system-control.css';
+import './modules/cooking-control/cooking-control.css';
 import './styles/professional-polish.css';
 import { store } from './state/store.js';
 import { renderAppShell } from './components/AppShell.js';
@@ -26,6 +27,7 @@ import { initTubeModule } from './modules/tube/index.js';
 import { initFundModule } from './modules/fund/index.js';
 import { initAiModule } from './modules/ai/index.js';
 import { initSystemControlModule, isAxeNetRuntimeEnabled } from './modules/system-control/index.js';
+import { initCookingControlModule } from './modules/cooking-control/index.js';
 import { runSupabaseHealthCheck } from './modules/system/systemService.js';
 import { installHistoryRouter } from './utils/historyRouter.js';
 
@@ -115,6 +117,7 @@ async function bootstrap() {
       ['tube', initTubeModule],
       ['fund', initFundModule],
       ['ai', initAiModule],
+      ['cooking-control', initCookingControlModule],
     ];
 
     const results = await Promise.allSettled(

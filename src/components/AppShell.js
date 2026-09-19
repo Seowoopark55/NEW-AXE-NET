@@ -32,6 +32,7 @@ const NAV_GROUPS = {
       { module: 'assets', label: '자산·계좌' },
       { module: 'members', label: '멤버' },
       { module: 'ai', label: 'AXE AI', adminOnly: true },
+      { module: 'cooking-control', label: '요리 설정', adminOnly: true },
       { module: 'system-control', label: '시스템 제어', superAdminOnly: true },
     ],
   },

@@ -354,6 +354,31 @@ const initialState = {
     },
   },
 
+
+  cookingControl: {
+    initialized: false,
+    loading: false,
+    savingGuide: false,
+    error: null,
+    message: null,
+    search: '',
+    filter: 'all',
+    config: {},
+    types: [],
+    editor: {
+      open: false,
+      typeKey: null,
+      label: '',
+      shortLabel: '',
+      detail: '',
+      pricePerSet: 0,
+      sortOrder: 0,
+      enabled: true,
+      saving: false,
+      error: null,
+    },
+  },
+
   ui: {
     activeModule: 'home',
   },
