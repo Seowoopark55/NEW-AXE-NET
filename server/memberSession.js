@@ -166,6 +166,31 @@ export async function setMemberPassword(memberKey, password, migratedFrom = 'ser
   return Boolean(data);
 }
 
+export async function getRuntimeControlStatus(systemKey) {
+  const key = String(systemKey || '').trim().toLowerCase();
+  const client = getServiceClient();
+  const { data, error } = await client
+    .from('runtime_controls')
+    .select('system_key,enabled,updated_at')
+    .eq('system_key', key)
+    .maybeSingle();
+  if (error) throw error;
+  return data || null;
+}
+
+export async function requireRuntimeEnabled(systemKey = 'axe_net') {
+  const status = await getRuntimeControlStatus(systemKey);
+  if (!status || status.enabled === false) {
+    const error = new Error(systemKey === 'axe_bot'
+      ? 'AXE BOT 운영이 현재 중지되어 있습니다.'
+      : 'AXE NET 운영이 현재 중지되어 있습니다.');
+    error.code = 'RUNTIME_DISABLED';
+    error.statusCode = 503;
+    throw error;
+  }
+  return status;
+}
+
 export function invalidMemberLoginError(message = '닉네임 또는 비밀번호가 올바르지 않습니다.') {
   const error = new Error(message);
   error.code = 'MEMBER_LOGIN_FAILED';

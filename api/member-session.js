@@ -10,6 +10,7 @@ import {
   removeFundEvidence,
   readBody,
   requireMemberSession,
+  requireRuntimeEnabled,
   revokeMemberSession,
   sendJson,
 } from '../server/memberSession.js';
@@ -130,6 +131,9 @@ export default async function handler(req, res) {
         expires_at: context.session.expires_at,
       });
     }
+
+    // 로그아웃/세션 확인을 제외한 일반 멤버 API는 AXE NET OFF 상태에서 실행하지 않습니다.
+    await requireRuntimeEnabled('axe_net');
 
     if (action === 'shortcut_list') {
       const { data, error } = await context.client

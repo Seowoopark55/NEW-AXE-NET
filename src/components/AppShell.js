@@ -32,6 +32,7 @@ const NAV_GROUPS = {
       { module: 'assets', label: '자산·계좌' },
       { module: 'members', label: '멤버' },
       { module: 'ai', label: 'AXE AI', adminOnly: true },
+      { module: 'system-control', label: '시스템 제어', superAdminOnly: true },
     ],
   },
 };
@@ -143,7 +144,11 @@ function renderNavigation(activeModule, auth = {}) {
   if (!subnav) return;
 
   const group = NAV_GROUPS[activeGroupKey];
-  const visibleModules = (group?.modules || []).filter((item) => !item.adminOnly || Boolean(auth?.admin));
+  const visibleModules = (group?.modules || []).filter((item) => {
+    if (item.superAdminOnly) return auth?.admin?.admin_level === 'superadmin';
+    if (item.adminOnly) return Boolean(auth?.admin);
+    return true;
+  });
   const showSubnav = group && visibleModules.length > 1;
   subnav.hidden = !showSubnav;
 

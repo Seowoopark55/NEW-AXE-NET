@@ -8,6 +8,7 @@ import {
   onlyPost,
   publicMember,
   readBody,
+  requireRuntimeEnabled,
   sendJson,
   setMemberPassword,
   setMemberSessionCookie,
@@ -25,6 +26,7 @@ export default async function handler(req, res) {
   if (!onlyPost(req, res)) return;
 
   try {
+    await requireRuntimeEnabled('axe_net');
     const body = await readBody(req);
     const nickname = String(body.nickname || '').trim();
     const password = String(body.password || '');

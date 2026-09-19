@@ -10,6 +10,14 @@ const initialState = {
     error: null,
   },
 
+  runtimeControl: {
+    initialized: false,
+    loading: false,
+    savingKey: null,
+    error: null,
+    items: {},
+  },
+
   auth: {
     initialized: false,
     loading: false,
